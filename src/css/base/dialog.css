@@ -1,0 +1,126 @@
+label {
+    margin-bottom: 8px;
+}
+
+.dialog-container {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.3);
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.dialog {
+    position: fixed;
+    background-color: #fff;
+    min-width: 400px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dialog--form {
+    width: 724px;
+}
+
+.dialog--warning .dialog__content {
+    margin-top: 30px; 
+    margin-bottom: 10px;
+}
+
+.dialog--warning .dialog__footer {
+    background-color: #ffffff;
+}
+
+.dialog__header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.dialog-title {
+    margin: 20px 16px;
+}
+
+.dialog-x {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -372px -284px;
+    width: 24px;
+    height: 24px;
+    margin: 20px 16px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dialog-x:focus,
+.dialog-x:hover {
+    background-color: #ededed;
+}
+
+.dialog-x:active {
+    background-color: #cbcbcb;
+}
+
+.dialog__content {
+    margin-left: 16px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.dialog__content-icon {
+    height: 32px;
+    width: 32px;
+    color: yellow;
+    background-color: #ededed;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 10px 0 0;
+}
+
+.dialog__content-text {
+    width: 310px;
+}
+
+.dialog__footer {
+    padding: 10px 24px;
+    background-color: #ededed;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dialog__footer--white {
+    padding: 10px 24px;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dialog-item {
+    margin: 0 16px 16px 0;
+}
+
+.dialog-input {
+    box-sizing: border-box;
+    height: 34px;
+    width: 218px;
+    border: 1px solid #afafaf;
+    border-radius: 4px;
+    padding: 0;
+    outline: none;
+    padding: 10px;
+}
+
+.dialog-input-big {
+    width: 454px;
+}
+
+.warning-icon {
+    background: url('../../assets/icon/icon_alert-yellow.png') no-repeat;
+	width: 30px;
+	height: 30px;
+    margin: 0 16px 0 8px;
+}

@@ -1,26 +1,97 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container">
+    <the-menu></the-menu>
+    <div class="body">
+      <the-header></the-header>
+      <the-content></the-content>
+    </div>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import TheMenu from './components/layout/TheMenu.vue'
+import TheHeader from './components/layout/TheHeader.vue'
+import TheContent from './components/layout/TheContent.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    TheMenu, TheHeader, TheContent
   }
 }
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  /* font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 60px; */
+  font-family: Roboto;
+  font-size: 13px;
+}
+
+body {
+    margin: 0;
+}
+
+input::placeholder {
+    font-family: Roboto Italic;  
+}
+
+@font-face {
+    font-family: MISA Fonts;
+    src: url(./assets/font/GoogleSans-Regular.otf);
+}
+
+@font-face {
+    font-family: MISA Fonts Bold;
+    src: url(./assets/font/GoogleSans-Bold.otf);
+}
+
+@font-face {
+    font-family: Roboto;
+    src: url(./assets/font/Roboto-Regular.ttf);
+}
+
+@font-face {
+    font-family: Roboto Italic;
+    src: url(./assets/font/Roboto-Italic.ttf);
+}
+
+label {
+    display: block;
+}
+
+.row {
+    padding: 10px;
+}
+
+.label {
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.mr-10 {
+  margin-right: 10px;
+}
+
+.mr-11 {
+    margin-right: 11px;
+}
+
+.mr-20 {
+    margin-right: 20px;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.body {
+    flex: 1; 
+    background-color: #f4f7ff;
 }
 </style>

@@ -1,0 +1,23 @@
+.content-1st-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 16px 0 16px;
+}
+
+.content-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+}
+
+.content-search {
+    display: flex;
+    align-items: center;
+}
+
+.content-btns {
+    display: flex;
+    align-items: center;
+}

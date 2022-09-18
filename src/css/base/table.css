@@ -1,0 +1,197 @@
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background: #d1dae9; 
+}
+    
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #abb6c8; 
+    border-radius: 4px;
+}
+
+.table {
+    margin: 0 20px;
+    border: 1px solid #afafaf;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
+    height: 630px;
+    overflow: auto;
+}
+
+.row--selected {
+    background-color: rgba(26, 164, 200, .2);
+}
+
+table {
+    width: 100%;
+    background-color: #ffffff;
+    border-collapse: collapse;
+    border-top-left-radius: 3.5px;
+    border-top-right-radius: 3.5px;
+    position: relative;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    background-color: #f5f5f5;
+    border-top-left-radius: 3.5px;
+    border-top-right-radius: 3.5px;
+}
+
+thead tr {
+    height: 38px;
+    color: #001031;
+}
+
+tbody tr {
+    height: 40px;
+    border-bottom: 1px solid #e9ebee;
+}
+
+tbody tr:hover {
+    background-color: rgba(26, 164, 200, .2);
+}
+
+tfoot {
+    position: sticky;
+    bottom: 0;
+    background-color: #ffffff;
+}
+
+.table-function {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+tfoot {
+    height: 40px;
+    background-color: #ffffff;
+    border-bottom-left-radius: 3.5px;
+    border-bottom-right-radius: 3.5px;
+}
+
+tfoot::before {
+    content: "";
+    width: 100%;
+    background-color: #e9ebee;
+    height: 1px;
+    position: absolute;
+    top: 0;
+}
+
+.tfooter-left {
+    display: flex;
+    align-items: center;
+}
+
+.tfooter-right {
+    display: flex;
+    align-items: center;
+    width: 43%;
+}
+
+.tfooter-text {
+    margin: 0 40px 0 4px;
+}
+
+.tfooter-total {
+    margin-right: 20px;
+}
+
+.tfooter-prev {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -22px -241px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.tfooter-page {
+    border-radius: 6px;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+.tfooter-page--selected {
+    background-color: #f5f5f5;
+}
+
+.tfooter-next {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -65px -242px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+th, td {
+    text-align: left;
+}
+
+th:first-child {
+    width: 12px;
+    padding: 0 16px 0 12px;
+}
+td:first-child {
+    width: 12px;
+    padding: 0 16px 0 12px;
+}
+
+th:nth-last-child(5) {
+    text-align: right;
+}
+td:nth-last-child(5) {
+    text-align: right;
+}
+
+th:nth-last-child(4) {
+    text-align: right;
+}
+td:nth-last-child(4) {
+    text-align: right;
+}
+
+th:nth-last-child(3) {
+    text-align: right;
+}
+td:nth-last-child(3) {
+    text-align: right;
+}
+
+th:nth-last-child(2) {
+    text-align: right;
+}
+td:nth-last-child(2) {
+    text-align: right;
+}
+
+th:last-child {
+    text-align: center;
+}
+td:last-child {
+    text-align: center;
+}
+
+.icon-edit {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -156px -68px;
+	width: 16px;
+	height: 16px;
+    cursor: pointer;
+}
+
+.icon-duplicate {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -244px -112px;
+	width: 16px;
+	height: 16px;
+    cursor: pointer;
+}

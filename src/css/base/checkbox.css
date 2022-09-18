@@ -1,0 +1,7 @@
+input[type="checkbox" i] {
+    margin: 0;
+}
+
+input[type="checkbox" i]:hover {
+    outline: 4px solid rgba(26, 164, 200, .2);
+}

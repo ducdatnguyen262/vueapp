@@ -1,0 +1,5 @@
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: #fff url('../../assets/icon/qlts-icon.png') no-repeat -285px -65px;
+    width: 18px;
+    height: 18px;
+}
