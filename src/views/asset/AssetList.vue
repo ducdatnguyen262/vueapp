@@ -30,7 +30,7 @@
         <table id="employeeTable" api="/">
             <thead>
                 <tr>
-                    <th><input id="main-checkbox" type="checkbox"></th>
+                    <th><input v-model="checkedAll" @click="checkedAllMethod()" type="checkbox"></th>
                     <th>
                         <div class="position-relative">
                             STT
@@ -54,9 +54,9 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(as, index) in assets" :key="as.CustomerId" :class="{'row--selected':rowSelected == index}" @click="rowSelectedMethod(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
+                <tr v-for="(as, index) in assets" :key="as.CustomerId" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == index)||checkedAll}" @click="this.rowSelected = index" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
                     <td class="ms-table-right ms-table-fit">
-                        <input type="checkbox" value="1">
+                        <input v-model="checked" :value="as.CustomerId" @change="checkedMethod()" type="checkbox">
                     </td>
                     <td>{{index + 1}}</td>
                     <td>{{as.CustomerCode}}</td>
@@ -70,11 +70,11 @@
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index" @click="rowEdit(as)"  class="icon-edit"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll" @click="rowEdit(as)"  class="icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index" @click="rowDuplicate(as)" class="icon-duplicate"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll" @click="rowDuplicate(as)" class="icon-duplicate"></div>
                                 <d-tooltip text="Nhân bản" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -110,7 +110,7 @@
                     <td><b>249.000.000</b></td>
                     <td><b>19.716.000</b></td>
                     <td><b>229.284.000</b></td>
-                    <td></td>
+                    <td><button @click="checkedMethod()"></button></td>
                 </tr>
             </tfoot>
         </table>
@@ -165,11 +165,28 @@ export default {
         this.dialogShow = true
         this.title = "Nhân bản tài sản"
     },
-    rowSelectedMethod(index) {
-        // if(this.rowSelected == index) 
-        // this.rowSelected = -1
-        // else 
-        this.rowSelected = index
+    checkedAllMethod() {
+        this.checked = []
+        this.checkboxSelected = []
+        this.rowSelected = -1
+        if (!this.checkedAll) {
+            for (let index in this.assets) {
+                this.checked.push(this.assets[index].CustomerId)
+            }
+        }
+    },
+    checkedMethod() {
+        for (let i in this.checked) {
+            for (let index in this.assets) {
+                if (this.checked[i] == this.assets[index].CustomerId) {
+                    this.checkboxSelected[index] = index
+                }
+            }
+        }
+    },
+    myMethod: function(event) {
+      if (event.target.checked) console.log("checked");
+      else console.log("unchecked");
     },
     formatMoney(money) {
         money = new Intl.NumberFormat('de-DE', {}).format(money)
@@ -203,7 +220,10 @@ export default {
         detailFormMode: 1,
         rowSelected: -1,
         rowHover: -1,
-        title: "Thêm tài sản"
+        title: "Thêm tài sản",
+        checkedAll: false,
+        checked: [],
+        checkboxSelected: [],
     }
   }
 }
