@@ -19,7 +19,7 @@
                 <d-tooltip text="Xuất"></d-tooltip>
             </div>
             <div class="position-relative">
-                <d-button icon="delete" type="small"></d-button>
+                <d-button @click="this.deleteShow = true" icon="delete" type="small"></d-button>
                 <d-tooltip text="Xóa"></d-tooltip>
             </div>
         </div>
@@ -37,26 +37,26 @@
                             <d-tooltip text="Số thứ tự"></d-tooltip>
                         </div>
                     </th>
-                    <th prop-name="CustomerCode">Mã tài sản</th>
-                    <th prop-name="FullName">Tên tài sản</th>
-                    <th format-date prop-name="DateOfBirth">Loại tài sản</th>
-                    <th prop-name="FullName">Bộ phận sử dụng</th>
-                    <th prop-name="Gender">Số lượng</th>
-                    <th format-money prop-name="PhoneNumber">Nguyên giá</th>
-                    <th format-money prop-name="PhoneNumber">                       
+                    <th>Mã tài sản</th>
+                    <th>Tên tài sản</th>
+                    <th format-date>Loại tài sản</th>
+                    <th>Bộ phận sử dụng</th>
+                    <th>Số lượng</th>
+                    <th format-money>Nguyên giá</th>
+                    <th format-money>                       
                         <div class="position-relative">
                             HM/KH lũy kế
                             <d-tooltip text="Hao mòn khấu hao lũy kế"></d-tooltip>
                         </div>
                     </th>
-                    <th format-money prop-name="PhoneNumber">Giá trị còn lại</th>
+                    <th format-money>Giá trị còn lại</th>
                     <th>Chức năng</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(as, index) in assets" :key="as.CustomerId" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == index)||checkedAll}" @click="this.rowSelected = index" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
+                <tr v-for="(as, index) in assets" :key="as.CustomerId" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == index)||checkedAll}" @click="rowSelect(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
                     <td class="ms-table-right ms-table-fit">
-                        <input v-model="checked" :value="as.CustomerId" @change="checkedMethod()" type="checkbox">
+                        <input v-model="checked" :value="as.CustomerId" @click.stop @change="checkedMethod(index)" type="checkbox">
                     </td>
                     <td>{{index + 1}}</td>
                     <td>{{as.CustomerCode}}</td>
@@ -70,11 +70,11 @@
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll" @click="rowEdit(as)"  class="icon-edit"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == index" @click="rowEdit(as)"  class="icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll" @click="rowDuplicate(as)" class="icon-duplicate"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == index" @click="rowDuplicate(as)" class="icon-duplicate"></div>
                                 <d-tooltip text="Nhân bản" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -110,7 +110,7 @@
                     <td><b>249.000.000</b></td>
                     <td><b>19.716.000</b></td>
                     <td><b>229.284.000</b></td>
-                    <td><button @click="checkedMethod()"></button></td>
+                    <td></td>
                 </tr>
             </tfoot>
         </table>
@@ -122,10 +122,15 @@
     </div>
 
     <!-- Dialog chi tiết tài sản -->
-    <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="asSelected" @hideDialog="hideDialogMethod" :title="title"></asset-detail>
+    <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="asSelected" @hideDialog="hideDialogMethod" @hideDialogSuccess="hideDialogSuccessMethod" :title="title"></asset-detail>
 
     <!-- Dialog cảnh báo -->
+    <d-dialog v-if="deleteShow" @closeNotify="closeNotifyMethod" @confirmNotify="confirmNotifyMethod" text="Bạn có muốn xóa tài sản " textbtn="Xóa"></d-dialog>
 
+    <!-- Toast thông báo thành công -->
+    <transition name="toast">
+        <d-toast v-show="toastShow"></d-toast>
+    </transition>
 </template>
 
 <script>
@@ -134,15 +139,25 @@ import DSearch from '@/components/base/DSearch.vue'
 import DTooltip from '@/components/base/DTooltip.vue'
 import AssetDetail from './AssetDetail.vue'
 import DCombobox from '../../components/base/DCombobox.vue'
+import DDialog from '@/components/base/DDialog.vue'
+import DToast from '@/components/base/DToast.vue'
 
 
 export default {
-  components: { DButton, DSearch, DTooltip, AssetDetail, DCombobox },
+  components: { DButton, DSearch, DTooltip, AssetDetail, DCombobox, DDialog, DToast },
   name:"AssetList",
   props: {
     
   },
   methods: {
+    closeNotifyMethod() {
+        this.deleteShow = false
+    },
+    confirmNotifyMethod() {
+        this.deleteShow = false
+        // Xóa tài sản
+        
+    },
     btnAddOnClick() {
         this.asSelected = {}
         this.dialogShow = true
@@ -151,6 +166,15 @@ export default {
     hideDialogMethod () {
         this.dialogShow = false
         this.loadData()
+    },
+    hideDialogSuccessMethod() {
+        this.dialogShow = false
+        this.loadData()
+        this.toastShow = true
+        setTimeout(() => this.toastShow = false, 3000)
+    },
+    rowSelect(index) {
+        this.rowSelected = index
     },
     rowEdit(asset) {
         this.asSelected = asset
@@ -175,7 +199,8 @@ export default {
             }
         }
     },
-    checkedMethod() {
+    checkedMethod(ind) {
+        if (this.checkboxSelected[ind] == ind) this.checkboxSelected[ind] = null
         for (let i in this.checked) {
             for (let index in this.assets) {
                 if (this.checked[i] == this.assets[index].CustomerId) {
@@ -224,6 +249,8 @@ export default {
         checkedAll: false,
         checked: [],
         checkboxSelected: [],
+        deleteShow: false,
+        toastShow: false,
     }
   }
 }
@@ -235,4 +262,5 @@ export default {
     @import url('../../css/base/dialog.css');
     @import url('../../css/base/loading.css');
     @import url('../../css/base/combobox.css');
+    @import url('../../css/base/toasttransition.css');
 </style>

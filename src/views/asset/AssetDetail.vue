@@ -8,11 +8,11 @@
             <div class="dialog__content">
                 <div class="dialog-item">
                     <label>Mã tài sản <span style="color: red;">*</span></label>
-                    <input id="txtEmployeeCode" v-model="asset.CustomerCode" isRequired prop-name="CustomerCode" class="dialog-input" type="text">
+                    <input id="txtEmployeeCode" v-model="asset.CustomerCode" isRequired class="dialog-input" type="text">
                 </div>
                 <div class="dialog-item">
                     <label>Tên tài sản <span style="color: red;">*</span></label>
-                    <input id="txtFullName" v-model="asset.FullName" isRequired prop-name="FullName" class="dialog-input dialog-input-big" type="text" placeholder="Nhập tên tài sản">
+                    <input id="txtFullName" v-model="asset.FullName" isRequired class="dialog-input dialog-input-big" type="text" placeholder="Nhập tên tài sản">
                 </div>
                 <div class="dialog-item">
                     <label>Mã bộ phận sử dụng <span style="color: red;">*</span></label>
@@ -66,12 +66,12 @@
                 </div>
             </div>
             <div class="dialog__footer">
-                <DButton @click="btnCloseOnClick" id="btnCloseForm" text="Hủy" type="white" class="mr-10"></DButton>
-                <DButton @click="btnSaveOnClick" id="btnSave" text="Lưu"></DButton>
+                <DButton @click="btnCloseOnClick" text="Hủy" type="white" class="mr-10"></DButton>
+                <DButton @click="btnSaveOnClick" text="Lưu"></DButton>
             </div>
         </div>
     </div>
-    <d-dialog></d-dialog>
+    <d-dialog v-if="notifyShow" @closeNotify="closeNotifyMethod" @confirmNotify="confirmNotifyMethod" text="Bạn có muốn hủy bỏ khai báo tài sản này?" textbtn="Hủy bỏ"></d-dialog>
 </template>
 
 <script>
@@ -100,6 +100,7 @@ export default {
         return {
             asset: {},
             v$: useValidate(),
+            notifyShow: false,
         }
     },
     validations() {
@@ -112,8 +113,15 @@ export default {
         }
     },
     methods: {
-        btnCloseOnClick() {
+        closeNotifyMethod() {
+            this.notifyShow = false
+        },
+        confirmNotifyMethod() {
+            this.notifyShow = false
             this.$emit("hideDialog")
+        },
+        btnCloseOnClick() {
+            this.notifyShow = true
         },
         btnSaveOnClick() {
             var method = "POST"
@@ -142,8 +150,7 @@ export default {
                             alert("Lỗi phía Server") 
                             break
                         default: 
-                            alert("Success")
-                            this.$emit("hideDialog")
+                            this.$emit("hideDialogSuccess")
                     }
                 })
                 .catch(res => {

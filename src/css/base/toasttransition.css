@@ -1,0 +1,17 @@
+/* toast đi vào */
+.toast-enter-from {
+    opacity: 0;
+    transform: translateX(300px);
+}
+.toast-enter-active {
+    transition: 0.5s ease;
+}
+
+/* toast đi ra */
+.toast-leave-to {
+    opacity: 0;
+    transform: translateX(300px);
+}
+.toast-leave-active {
+    transition: 0.5s ease;
+}

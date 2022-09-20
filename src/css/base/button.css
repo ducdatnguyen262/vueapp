@@ -35,6 +35,21 @@
     background-color: #bbbbbb;
 }
 
+.button--white-border {
+    background-color: #ffffff;
+    color: #000;
+    border: 1px solid #c3c3c3;
+}
+
+.button--white-border:focus,
+.button--white-border:hover {
+    background-color: #e9e9e9;
+}
+
+.button--white-border:active {
+    background-color: #bbbbbb;
+}
+
 .button--small {
     min-width: 24px;
     width: 40px;

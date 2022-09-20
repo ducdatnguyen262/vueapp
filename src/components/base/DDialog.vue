@@ -1,24 +1,37 @@
 <template>
-    <div v-if="isShow" class="dialog-container">
+    <div class="dialog-container">
         <div class="dialog dialog--warning">
             <div class="dialog__content">
                 <div class="warning-icon"></div>
-                <div class="dialog__content-text">Bạn có muốn hủy bỏ khai báo tài sản này?</div>
+                <div class="dialog__content-text">{{text}}</div>
             </div>
             <div class="dialog__footer">
-                <button @click="isShow = false" class="dialog-close button">Đóng</button>
+                <!-- <button @click="isShow = false" class="dialog-close button">Đóng</button> -->
+                <DButton @click="closeNotify" text="Không" type="white-border" class="mr-10"></DButton>
+                <DButton @click="confirmNotify" :text="textbtn"></DButton>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import DButton from './DButton.vue';
 export default {
+    props: ["text", "textbtn"],
     data() {
         return {
-            isShow: false
+            
+        };
+    },
+    methods: {
+        closeNotify() {
+            this.$emit("closeNotify")
+        },
+        confirmNotify() {
+            this.$emit("confirmNotify")
         }
-    }
+    },
+    components: { DButton }
 }
 </script>
 
