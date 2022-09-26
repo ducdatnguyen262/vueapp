@@ -3,7 +3,7 @@
         <div class="dialog dialog--form">
             <div class="dialog__header">
                 <h2 class="dialog-title">{{title}}</h2>
-                <button ref="btnx" style="background-color:#fff; border:none;">
+                <button ref="btnx" class="dialog-x-container">
                     <div @click="btnCloseOnClick" class="dialog-x"></div>
                 </button>
             </div>
@@ -46,16 +46,11 @@
                 </div>
                 <div class="dialog-item">
                     <label>Ngày mua <span style="color: red;">*</span></label>
-                    <!-- <input v-model="asset.purchase_date" class="dialog-input" type="date"> -->
-                    <el-date-picker
-                        v-model="value1"
-                        type="date"
-                        placeholder="Pick a day"
-                    />
+                    <el-date-picker class="datepicker" v-model="asset.purchase_date" type="date"/>
                 </div>
                 <div class="dialog-item">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
-                    <input v-model="asset.production_year" class="dialog-input" type="date">
+                    <el-date-picker class="datepicker" v-model="asset.production_date" type="date"/>
                 </div>
                 <div class="dialog-item">
                     <label>Năm theo dõi</label>
@@ -87,7 +82,6 @@ import useValidate from '@vuelidate/core'
 import {required} from '@vuelidate/validators'
 import DDialog from '@/components/base/DDialog.vue';
 import DDialog1Button from '../../components/base/DDialog1Button.vue';
-// import Emun from '../../js/enum.js'
     
 export default {
     name:"AssetDetail",
@@ -101,20 +95,22 @@ export default {
         title: String,
     },
     created() {
+        // Lấy tài sản là tài sản được truyền vào
         this.asset = this.assetSelected
     },
     mounted() {
+        // Focus vào ô đầu của dialog
         this.focusFirst()
     },
     data() {
         return {
-            asset: {},
-            v$: useValidate(),
-            notifyShow: false,
-            errorArray: [],
-            errorMessage: "",
-            validateShow: false,
-            api: "https://localhost:7182/api/v1/Assets", //"https://cukcuk.manhnv.net/api/v1/Customers"
+            asset: {}, // Lưu dữ liệu tài sản
+            notifyShow: false, // Có hiển thị dialog cảnh báo hay không
+            v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
+            errorArray: [], // Dãy chứa các lỗi validate
+            errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
+            validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate hay không
+            api: "https://localhost:7182/api/v1/Assets", // API lấy tài sản
         }
     },
     validations() {
@@ -127,9 +123,18 @@ export default {
         }
     },
     methods: {
+        /**
+         * Đóng dialog cảnh báo lỗi validate
+         * NDDAT (19/07/2022)
+         */
         closeValidateMethod() {
             this.validateShow = false
         },
+
+        /**
+         * Tạo thông điệp cho dialog cảnh báo lỗi validate
+         * NDDAT (19/07/2022)
+         */        
         createValidateMessage() {
             try{
                 this.errorMessage = "Cần phải nhập thông tin: "
@@ -141,22 +146,53 @@ export default {
                 console.log(error);
             }
         },
+
+        /**
+         * Đóng dialog cảnh báo
+         * NDDAT (15/07/2022)
+         */
         closeNotifyMethod() {
             this.notifyShow = false
         },
+
+        /**
+         * Xác nhận và đóng dialog cảnh báo
+         * NDDAT (15/07/2022)
+         */
         confirmNotifyMethod() {
-            this.notifyShow = false
+            this.closeNotifyMethod()
             this.$emit("hideDialog")
         },
+
+        /**
+         * Focus vào phần tử đầu tiên
+         * NDDAT (15/07/2022)
+         */
         focusFirst() {
             this.$refs.asset_code.focus()
         },
+
+        /**
+         * Chuyển focus lên đầu sau khi đến cuối dialog tài sản
+         * NDDAT (15/07/2022)
+         */
         focusBack() {
             this.$refs.btnx.focus()
         },
+
+        /**
+         * Click vào button để đóng dialog tài sản
+         * NDDAT (15/07/2022)
+         */
         btnCloseOnClick() {
+            // Hiện cảnh báo có muốn đóng hay không
             this.notifyShow = true
         },
+
+        /**
+         * Click vào button để lưu tài sản
+         * NDDAT (15/07/2022)
+         */
         btnSaveOnClick() {
             try{
                 var method = "POST"
@@ -171,7 +207,7 @@ export default {
                     this.validateShow = true
                 } else {
                     // Cất dữ liệu:
-        
+                    console.log(1);
                     if(this.formMode == 2) {
                         method = "PUT"
                         url = url + `/${this.asset.fixed_asset_id}`

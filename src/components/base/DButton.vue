@@ -8,14 +8,6 @@
 <script>
 export default {
     props:["text", "icon", "type", "id"],
-    methods: {
-
-    },
-    data() {
-        return {
-            
-        }
-    }
 }
 </script>
 

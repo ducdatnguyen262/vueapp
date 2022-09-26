@@ -15,7 +15,7 @@
     border-radius: 4px;
 }
 
-.table {
+.table-container {
     margin: 0 20px;
     border: 1px solid #afafaf;
     box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
@@ -32,7 +32,7 @@
     background-color: rgba(26, 164, 200, .2);
 }
 
-table {
+.table {
     width: 100%;
     background-color: #ffffff;
     border-collapse: collapse;
@@ -40,28 +40,28 @@ table {
     height: 630px;
 }
 
-thead {
+.thead {
     position: sticky;
     top: 0;
     background-color: #f5f5f5;
     z-index: 1;
 }
 
-thead tr {
+.thead tr {
     height: 38px;
     color: #001031;
 }
 
-tbody tr {
+.tbody tr {
     height: 40px;
     border-bottom: 1px solid #e9ebee;
 }
 
-tbody tr:hover {
+.tbody tr:hover {
     background-color: rgba(26, 164, 200, .2);
 }
 
-tfoot {
+.tfoot {
     position: sticky;
     bottom: 0;
     background-color: #ffffff;
@@ -73,18 +73,9 @@ tfoot {
     justify-content: space-evenly;
 }
 
-tfoot {
+.tfoot {
     height: 40px;
     background-color: #ffffff;
-}
-
-tfoot::before {
-    content: "";
-    width: 100%;
-    background-color: #e9ebee;
-    height: 1px;
-    position: absolute;
-    top: 0;
 }
 
 .tfooter-left {
@@ -146,51 +137,51 @@ tfoot::before {
     margin-left: 10px;
 }
 
-th, td {
+.thead th, .tbody td {
     text-align: left;
 }
 
-th:first-child {
+.thead th:first-child {
     width: 12px;
     padding: 0 16px 0 12px;
 }
-td:first-child {
+.tbody td:first-child {
     width: 12px;
     padding: 0 16px 0 12px;
 }
 
-th:nth-last-child(5) {
+.thead th:nth-last-child(5) {
     text-align: right;
 }
-td:nth-last-child(5) {
-    text-align: right;
-}
-
-th:nth-last-child(4) {
-    text-align: right;
-}
-td:nth-last-child(4) {
+.tbody td:nth-last-child(5) {
     text-align: right;
 }
 
-th:nth-last-child(3) {
+.thead th:nth-last-child(4) {
     text-align: right;
 }
-td:nth-last-child(3) {
-    text-align: right;
-}
-
-th:nth-last-child(2) {
-    text-align: right;
-}
-td:nth-last-child(2) {
+.tbody td:nth-last-child(4) {
     text-align: right;
 }
 
-th:last-child {
+.thead th:nth-last-child(3) {
+    text-align: right;
+}
+.tbody td:nth-last-child(3) {
+    text-align: right;
+}
+
+.thead th:nth-last-child(2) {
+    text-align: right;
+}
+.tbody td:nth-last-child(2) {
+    text-align: right;
+}
+
+.thead th:last-child {
     text-align: center;
 }
-td:last-child {
+.tbody td:last-child {
     text-align: center;
 }
 

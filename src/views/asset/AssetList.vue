@@ -26,9 +26,9 @@
     </div>
 
     <!-- Table -->
-    <div class="table">
-        <table>
-            <thead>
+    <div class="table-container">
+        <table class="table">
+            <thead class="thead">
                 <tr>
                     <th><input v-model="checkedAll" @click="checkedAllMethod()" type="checkbox"></th>
                     <th>
@@ -53,7 +53,7 @@
                     <th>Chức năng</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="tbody">
                 <tr v-for="(as, index) in assets" :key="as.fixed_asset_id" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == index)||checkedAll}" @click="rowSelect(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
                     <td class="ms-table-right ms-table-fit">
                         <input v-model="checked" :value="as.fixed_asset_id" @click.stop @change="checkedMethod(index)" type="checkbox">
@@ -82,7 +82,7 @@
                 </tr>
                 <tr style="height:auto;"></tr>
             </tbody>
-            <tfoot>
+            <tfoot class="tfoot">
                 <tr>
                     <td colspan="6">
                         <div class="tfooter-left">
@@ -99,15 +99,15 @@
                             <div @click="prevPage()" class="tfooter-prev position-relative">
                                 <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
                             </div>
-                            <div :class="{'tfooter-page--selected':page == 1}" class="tfooter-page">1</div>
+                            <div @click="toPage(1)" :class="{'tfooter-page--selected':page == 1}" class="tfooter-page">1</div>
                             <div v-show="page>=3 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
-                            <div v-show="page<3 && totalPage!=1" :class="{'tfooter-page--selected':page == 2}" class="tfooter-page">2</div>
-                            <div v-show="page<3 && totalPage!=1" :class="{'tfooter-page--selected':page == 3}" class="tfooter-page">3</div>
+                            <div @click="toPage(2)" v-show="(page<3 || totalPage==5) && totalPage!=1" :class="{'tfooter-page--selected':page == 2}" class="tfooter-page">2</div>
+                            <div @click="toPage(3)" v-show="page<3 && totalPage!=1" :class="{'tfooter-page--selected':page == 3}" class="tfooter-page">3</div>
                             <div v-show="page>=3 && page<totalPage-1 && totalPage!=1" class="tfooter-page tfooter-page--selected">{{page}}</div>
                             <div v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
-                            <div v-show="page>=totalPage-1 && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-2}" class="tfooter-page">{{totalPage-2}}</div>
-                            <div v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-1}" class="tfooter-page">{{totalPage-1}}</div>
-                            <div v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" class="tfooter-page">{{totalPage}}</div>
+                            <div @click="toPage(totalPage-2)" v-show="page>=totalPage-1 && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-2}" class="tfooter-page">{{totalPage-2}}</div>
+                            <div @click="toPage(totalPage-1)" v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-1}" class="tfooter-page">{{totalPage-1}}</div>
+                            <div @click="toPage(totalPage)" v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" class="tfooter-page">{{totalPage}}</div>
                             <div @click="nextPage()" class="tfooter-next position-relative">
                                 <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
                             </div>
@@ -154,50 +154,94 @@ import Resource from '../../js/resource.js'
 export default {
   components: { DButton, DSearch, DTooltip, AssetDetail, DCombobox, DDialog, DToast },
   name:"AssetList",
-  props: {
-    
-  },
   computed: {
+    // Tạo api lấy tài sản
     api : function() {
         return "https://localhost:7182/api/v1/Assets/filter?limit="+this.tableView+"&page="+this.page
     }
   },
   methods: {
+    /**
+     * Nhấn button hiển thị dialog thêm tài sản
+     * NDDAT (15/07/2022)
+     */
     btnAddOnClick() {
         this.asSelected = {}
         this.dialogShow = true
         this.title = Resource.DialogTitle.add
     },
+
+    /**
+     * Nhấn button hiển thị dialog cảnh báo xóa tài sản
+     * NDDAT (15/07/2022)
+     */
     btnDeleteOnClick() {
         this.deleteShow = true
     },
+
+    /**
+     * Đóng dialog cảnh báo xóa tài sản
+     * NDDAT (15/07/2022)
+     */
     closeDelete() {
         this.deleteShow = false
     },
+
+    /**
+     * Xác nhận xóa và đóng dialog cảnh báo xóa tài sản
+     * NDDAT (15/07/2022)
+     */
     confirmDelete() {
-        this.deleteShow = false
+        this.closeDelete()
         // Xóa tài sản
         
     },
+
+    /**
+     * Ẩn dialog chi tiết tài sản
+     * NDDAT (15/07/2022)
+     */
     hideDialogMethod () {
         this.dialogShow = false
         this.loadData()
     },
+
+    /**
+     * Hiện thông báo thêm thành công và ẩn dialog chi tiết tài sản
+     * NDDAT (15/07/2022)
+     */
     hideDialogSuccessMethod() {
-        this.dialogShow = false
-        this.loadData()
+        this.hideDialogMethod()
         this.toastShow = true
         setTimeout(() => this.toastShow = false, 3000)
     },
+
+    /**
+     * Click 1 dòng trong bảng để highlight
+     * NDDAT (15/07/2022)
+     * @param {int} index số thứ tự dòng
+     */
     rowSelect(index) {
         this.rowSelected = index
     },
+
+    /**
+     * Nhấn button hiển thị dialog sửa tài sản
+     * NDDAT (15/07/2022)
+     * @param {Asset} asset tài sản đang chọn
+     */
     rowEdit(asset) {
         this.asSelected = asset
         this.dialogShow = true
         this.detailFormMode = 2
         this.title = Resource.DialogTitle.edit
     },
+
+    /**
+     * Nhấn button hiển thị dialog nhân bản tài sản
+     * NDDAT (15/07/2022)
+     * @param {Asset} asset tài sản đang chọn
+     */
     rowDuplicate(asset) {
         // Sinh ra mã tài sản mới
 
@@ -205,6 +249,11 @@ export default {
         this.dialogShow = true
         this.title = Resource.DialogTitle.duplicate
     },
+
+    /**
+     * Click vào checkbox đầu bảng để chọn toàn bộ bảng
+     * NDDAT (15/07/2022)
+     */
     checkedAllMethod() {
         try{
             this.checked = []
@@ -219,6 +268,12 @@ export default {
             console.log(error);
         }
     },
+
+    /**
+     * Click vào checkbox để chọn dòng đó
+     * NDDAT (15/07/2022)
+     * @param {int} ind số thứ tự dòng của checkbox
+     */
     checkedMethod(ind) {
         try{
             if (this.checkboxSelected[ind] == ind) this.checkboxSelected[ind] = null
@@ -233,18 +288,54 @@ export default {
             console.log(error);
         }
     },
+
+    /**
+     * Về trang trước
+     * NDDAT (25/07/2022)
+     */
     prevPage() {
         if(this.page > 1){
             this.page--
         this.loadData()
         }  
     },
+
+    /**
+     * Sang trang sau
+     * NDDAT (25/07/2022)
+     */
     nextPage() {
         if(this.page < this.totalPage){
             this.page++
             this.loadData()
         }    
     },
+
+    /**
+     * Tới trang được chọn
+     * NDDAT (25/07/2022)
+     * @param {int} page số trang
+     */
+    toPage(page) {
+        this.page = page
+        this.loadData()
+    },
+
+    /**
+     * Tính tổng số trang của bảng
+     * NDDAT (25/07/2022)
+     */
+    totalPageMethod() {
+        if(this.tableTotal <= this.tableView || this.tableView == -1) this.totalPage = 1
+        else if(this.tableTotal%this.tableView==0) this.totalPage = this.tableTotal/this.tableView
+        else this.totalPage = (this.tableTotal-(this.tableTotal%this.tableView))/this.tableView + 1
+    },
+
+    /**
+     * Định dạng tiền tệ
+     * NDDAT (18/07/2022)
+     * @param {double} money số tiền
+     */
     formatMoney(money) {
         try {
             money = new Intl.NumberFormat('de-DE', {}).format(money)
@@ -253,6 +344,11 @@ export default {
             console.log(error);
         }  
     },
+
+    /**
+     * Gọi api lấy dữ liệu rồi reload lại trang
+     * NDDAT (15/07/2022)
+     */
     loadData() {
         try{
             // Gọi api lấy dữ liệu
@@ -273,34 +369,30 @@ export default {
             console.log(error);
         }
     },
-    totalPageMethod() {
-        if(this.tableTotal <= this.tableView || this.tableView == -1) this.totalPage = 1
-        else if(this.tableTotal%this.tableView==0) this.totalPage = this.tableTotal/this.tableView
-        else this.totalPage = (this.tableTotal-(this.tableTotal%this.tableView))/this.tableView + 1
-    }
   },
   created() {
+    // Thực hiện gọi api lấy dữ liệu
     this.loadData()
   },
   data() {
     return {
         assets:[],
-        isLoading: false,
-        dialogShow: false,
-        asSelected: {},
-        detailFormMode: 1,
-        rowSelected: -1,
-        rowHover: -1,
-        title: "Thêm tài sản",
-        checkedAll: false,
-        checked: [],
-        checkboxSelected: [],
-        deleteShow: false,
-        toastShow: false,
-        tableTotal: 0,
-        tableView: 20,
-        totalPage: 1,
-        page: 1,
+        isLoading: false, // Có đang loading hay không
+        dialogShow: false, // Hiển thị dialog hay không
+        asSelected: {}, // Tài sản được chọn
+        detailFormMode: 1, // Loại của dialog chi tiết tài sản
+        rowSelected: -1, // Dòng được chọn tạm thời (click)
+        rowHover: -1, // Dòng được hover
+        title: "Thêm tài sản", // Title của dialog dialog chi tiết tài sản
+        checkedAll: false, // Có check toàn bộ checkbox hay không
+        checked: [], // Danh sách các dòng được chọn (checkbox)
+        checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
+        deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
+        toastShow: false, // Hiển thị toast thông báo thành công hay không
+        tableTotal: 0, // Tổng số bản ghi
+        tableView: 20, // Số trang hiển thị
+        totalPage: 1, // Tổng số trang
+        page: 1, // Trang đang chọn
     }
   }
 }

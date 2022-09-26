@@ -19,18 +19,27 @@ export default {
     props:['placeholder', 'id'],
     data() {
         return {
-            isOpen: false,
-            isHover: -1,
-            items: [],
-            value: "",
-            api:"https://localhost:7182/api/v1/Departments",
+            isOpen: false, // Combobox có đang mở không
+            isHover: -1, // Hover vào 1 phần tử trong combobox
+            items: [], // Danh sách các phần tử trong combobox
+            value: "", // Tên phần tử đang chọn
+            api:"https://localhost:7182/api/v1/Departments", // API lấy dữ liệu
         }
     },
     methods: {
+        /**
+         * Chọn 1 phần tử trong combobox
+         * NDDAT (19/07/2022)
+         */
         selected(data) {
             this.value = data
             this.isOpen = false
         },
+
+        /**
+         * Gọi API lấy dữ liệu
+         * NDDAT (19/07/2022)
+         */
         loadData() {
             // Gọi api lấy dữ liệu
             fetch(this.api, {method:"GET"})
@@ -44,6 +53,7 @@ export default {
         },
     },
     created() {
+        // Gọi API lấy dữ liệu khi tạo combobox
         this.loadData()
     }
 }

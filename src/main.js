@@ -1,12 +1,12 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-// import MsCombobox from 'ms-combobox'
 import HomeList from './views/home/HomeList.vue'
 import OverviewList from './views/overview/OverviewList.vue'
 import AssetList from './views/asset/AssetList.vue'
 import ReportList from './views/report/ReportList.vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import vi from 'element-plus/es/locale/lang/vi'
 import {createRouter, createWebHistory } from 'vue-router'
 
 // B2: Định nghĩa các router
@@ -26,7 +26,7 @@ const router = createRouter({
 // ROUTES
 // STORE
 const app = createApp(App)
-// app.component("MsCombobox", MsCombobox)
+app.use(ElementPlus, {locale:vi})
 app.use(ElementPlus)
 app.use(router)
 app.mount('#app')

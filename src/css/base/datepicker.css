@@ -1,5 +1,32 @@
-input[type="date"]::-webkit-calendar-picker-indicator {
-    background: #fff url('../../assets/icon/qlts-icon.png') no-repeat -285px -65px;
-    width: 18px;
+/* input[type="date"]::-webkit-calendar-picker-indicator {
+    background: #fff url('../../assets/icon/qlts-icon.png') no-repeat -285px -65px !important;
+    width: 18px !important;
     height: 18px;
+} */
+
+.el-input__wrapper {
+    height: 34px;
+    border: 1px solid #afafaf;
+    box-shadow: none !important;
+    background: #fff url('../../assets/icon/datepicker-icon.png') no-repeat 190px 10px !important;
+}
+
+.el-input__wrapper:hover {
+    border:1px solid #53bad5 !important;
+}
+
+.el-input__wrapper:focus {
+    border:1px solid #6fc6dc !important;
+}
+
+.el-input__wrapper:active {
+    border:1px solid #c3c3c3 !important;
+}
+
+.el-input__prefix-inner {
+    display: none !important;
+}
+
+.el-input__suffix-inner {
+    display: none !important;
 }

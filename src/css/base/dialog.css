@@ -46,6 +46,12 @@ label {
     margin: 20px 16px;
 }
 
+.dialog-x-container {
+    background-color:#fff; 
+    border:none; 
+    padding: 0;
+}
+
 .dialog-x {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -372px -284px;
     width: 24px;
@@ -107,7 +113,7 @@ label {
 .dialog-input {
     box-sizing: border-box;
     height: 34px;
-    width: 218px;
+    width: 220px;
     border: 1px solid #afafaf;
     border-radius: 4px;
     padding: 0;
@@ -117,7 +123,7 @@ label {
 }
 
 .dialog-input-big {
-    width: 454px;
+    width: 456px;
 }
 
 .warning-icon {
