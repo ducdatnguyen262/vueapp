@@ -34,6 +34,7 @@ label {
 
 .dialog--warning .dialog__footer {
     background-color: #ffffff;
+    padding-bottom: 16px;
 }
 
 .dialog__header {
@@ -86,7 +87,7 @@ label {
 }
 
 .dialog__footer {
-    padding: 10px 24px;
+    padding: 10px 16px;
     background-color: #ededed;
     display: flex;
     justify-content: flex-end;
@@ -112,6 +113,7 @@ label {
     padding: 0;
     outline: none;
     padding: 10px;
+    font-family: Roboto;
 }
 
 .dialog-input-big {

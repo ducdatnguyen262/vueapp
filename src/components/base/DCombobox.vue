@@ -3,11 +3,11 @@
         <input type="text" :placeholder="placeholder" v-model=value>
         <button @click="isOpen = !isOpen" @blur="isOpen = false"></button>
         <div v-show="isOpen" class="combobox__data">
-            <div v-for="(item, index) in items" :key="item.DepartmentId" @click="selected(item.DepartmentName)" @mouseover="isHover = index" @mouseleave="isHover = -1" class="combobox__item">
+            <div v-for="(item, index) in items" :key="item.department_id" @mousedown="selected(item.department_name)" @mouseover="isHover = index" @mouseleave="isHover = -1" class="combobox__item">
                 <div style="width: 30px;">
-                    <i v-show="isHover == index" class="fa-solid fa-check"></i>  
+                    <i v-show="isHover == index" class="fa-solid fa-check"></i>
                 </div>
-                {{item.DepartmentName}}
+                {{item.department_name}}
             </div>
         </div>
     </div>
@@ -23,7 +23,7 @@ export default {
             isHover: -1,
             items: [],
             value: "",
-            api:"",
+            api:"https://localhost:7182/api/v1/Departments",
         }
     },
     methods: {
@@ -33,11 +33,10 @@ export default {
         },
         loadData() {
             // Gọi api lấy dữ liệu
-            fetch("https://cukcuk.manhnv.net/api/v1/Departments", {method:"GET"})
+            fetch(this.api, {method:"GET"})
             .then(res => res.json())
             .then(data => {
                 this.items = data
-                // console.log(data);
             })
             .catch(res => {
                 console.log(res);

@@ -19,6 +19,7 @@
     margin: 0 20px;
     border: 1px solid #afafaf;
     box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
+    border-radius: 3.5px;
     height: 630px;
     overflow: auto;
 }
@@ -35,17 +36,14 @@ table {
     width: 100%;
     background-color: #ffffff;
     border-collapse: collapse;
-    border-top-left-radius: 3.5px;
-    border-top-right-radius: 3.5px;
     position: relative;
+    height: 630px;
 }
 
 thead {
     position: sticky;
     top: 0;
     background-color: #f5f5f5;
-    border-top-left-radius: 3.5px;
-    border-top-right-radius: 3.5px;
     z-index: 1;
 }
 
@@ -78,8 +76,6 @@ tfoot {
 tfoot {
     height: 40px;
     background-color: #ffffff;
-    border-bottom-left-radius: 3.5px;
-    border-bottom-right-radius: 3.5px;
 }
 
 tfoot::before {
@@ -110,6 +106,16 @@ tfoot::before {
     margin-right: 20px;
 }
 
+.tfooter-total select {
+    font-size: 11px; 
+    padding: 4px 6px;
+    border-radius: 2.625px;
+    border: 1px solid #afafaf;
+    width: 59px;
+    height: 25px;
+    outline: none;
+}
+
 .tfooter-prev {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -22px -241px;
     width: 20px;
@@ -129,6 +135,7 @@ tfoot::before {
 
 .tfooter-page--selected {
     background-color: #f5f5f5;
+    font-weight: bold;
 }
 
 .tfooter-next {

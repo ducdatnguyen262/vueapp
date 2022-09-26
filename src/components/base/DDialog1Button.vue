@@ -6,8 +6,7 @@
                 <div class="dialog__content-text">{{text}}</div>
             </div>
             <div class="dialog__footer">
-                <DButton @click="closeNotify" text="Không" type="white-border" class="mr-10"></DButton>
-                <DButton @click="confirmNotify" :text="textbtn"></DButton>
+                <DButton @click="closeNotify" text="Đóng"></DButton>
             </div>
         </div>
     </div>
@@ -16,7 +15,7 @@
 <script>
 import DButton from './DButton.vue';
 export default {
-    props: ["text", "textbtn"],
+    props: ["text"],
     data() {
         return {
             
@@ -26,9 +25,6 @@ export default {
         closeNotify() {
             this.$emit("closeNotify")
         },
-        confirmNotify() {
-            this.$emit("confirmNotify")
-        }
     },
     components: { DButton }
 }

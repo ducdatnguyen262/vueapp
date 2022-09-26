@@ -5,10 +5,4 @@ export default {
         //Phím ESC
         ESC : 27
     },
-
-    DialogTitle: {
-        add: "Thêm tài sản",
-        edit: "Sửa tài sản",
-        duplicate: "Nhân bản tài sản"
-    }
 }

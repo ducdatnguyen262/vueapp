@@ -13,13 +13,13 @@
             </div>
         </div>
         <div class="content-btns">
-            <d-button @click="btnAddOnClick" id="btnAdd" text="Thêm tài sản" icon="add" class="mr-11"></d-button>
+            <d-button @click="btnAddOnClick" text="Thêm tài sản" icon="add" class="mr-11"></d-button>
             <div class="position-relative">
                 <d-button icon="excel" type="small" class="mr-11"></d-button>
                 <d-tooltip text="Xuất"></d-tooltip>
             </div>
             <div class="position-relative">
-                <d-button @click="this.deleteShow = true" icon="delete" type="small"></d-button>
+                <d-button @click="btnDeleteOnClick" icon="delete" type="small"></d-button>
                 <d-tooltip text="Xóa"></d-tooltip>
             </div>
         </div>
@@ -27,7 +27,7 @@
 
     <!-- Table -->
     <div class="table">
-        <table id="employeeTable" api="/">
+        <table>
             <thead>
                 <tr>
                     <th><input v-model="checkedAll" @click="checkedAllMethod()" type="checkbox"></th>
@@ -54,19 +54,19 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(as, index) in assets" :key="as.CustomerId" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == index)||checkedAll}" @click="rowSelect(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
+                <tr v-for="(as, index) in assets" :key="as.fixed_asset_id" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == index)||checkedAll}" @click="rowSelect(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
                     <td class="ms-table-right ms-table-fit">
-                        <input v-model="checked" :value="as.CustomerId" @click.stop @change="checkedMethod(index)" type="checkbox">
+                        <input v-model="checked" :value="as.fixed_asset_id" @click.stop @change="checkedMethod(index)" type="checkbox">
                     </td>
                     <td>{{index + 1}}</td>
-                    <td>{{as.CustomerCode}}</td>
-                    <td>{{as.FullName}}</td>
-                    <td>{{as.FullName}}</td>
-                    <td>{{as.FullName}}</td>
-                    <td>{{as.Gender}}</td>
-                    <td>{{formatMoney(as.PhoneNumber)}}</td>
-                    <td>{{formatMoney(as.PhoneNumber)}}</td>
-                    <td>{{formatMoney(as.PhoneNumber)}}</td>
+                    <td>{{as.fixed_asset_code}}</td>
+                    <td>{{as.fixed_asset_name}}</td>
+                    <td>{{as.department_name}}</td>
+                    <td>{{as.fixed_asset_category_name}}</td>
+                    <td>{{as.quantity}}</td>
+                    <td>{{formatMoney(as.cost)}}</td>
+                    <td>{{formatMoney(as.cost)}}</td>
+                    <td>{{formatMoney(as.cost)}}</td>
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
@@ -80,28 +80,35 @@
                         </div>
                     </td>
                 </tr>
+                <tr style="height:auto;"></tr>
             </tbody>
             <tfoot>
                 <tr>
                     <td colspan="6">
                         <div class="tfooter-left">
-                            <div class="tfooter-text">Tổng số <b>200</b> bản ghi</div>
-                            <div class="tfooter-total" style="font-size: 11px;">
-                                <select style="font-size: 11px; padding: 4px 6px;">
+                            <div class="tfooter-text">Tổng số <b>{{tableTotal}}</b> bản ghi</div>
+                            <div class="tfooter-total">
+                                <select @change="page=1;loadData()" v-model="tableView">
                                     <option value="10">10</option>
                                     <option value="20" selected>20</option>
+                                    <option value="80">80</option>
                                     <option value="100">100</option>
-                                    <option value="all">All</option>
+                                    <option value="-1">All</option>
                                 </select>
                             </div>
-                            <div class="tfooter-prev position-relative">
+                            <div @click="prevPage()" class="tfooter-prev position-relative">
                                 <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
                             </div>
-                            <div class="tfooter-page tfooter-page--selected" style="margin-right: 7px;"><b>1</b></div>
-                            <div class="tfooter-page">2</div>
-                            <div class="tfooter-page" style="margin-right: 0 5px;">...</div>
-                            <div class="tfooter-page">10</div>
-                            <div class="tfooter-next position-relative">
+                            <div :class="{'tfooter-page--selected':page == 1}" class="tfooter-page">1</div>
+                            <div v-show="page>=3 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
+                            <div v-show="page<3 && totalPage!=1" :class="{'tfooter-page--selected':page == 2}" class="tfooter-page">2</div>
+                            <div v-show="page<3 && totalPage!=1" :class="{'tfooter-page--selected':page == 3}" class="tfooter-page">3</div>
+                            <div v-show="page>=3 && page<totalPage-1 && totalPage!=1" class="tfooter-page tfooter-page--selected">{{page}}</div>
+                            <div v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
+                            <div v-show="page>=totalPage-1 && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-2}" class="tfooter-page">{{totalPage-2}}</div>
+                            <div v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-1}" class="tfooter-page">{{totalPage-1}}</div>
+                            <div v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" class="tfooter-page">{{totalPage}}</div>
+                            <div @click="nextPage()" class="tfooter-next position-relative">
                                 <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
                             </div>
                         </div>
@@ -125,7 +132,7 @@
     <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="asSelected" @hideDialog="hideDialogMethod" @hideDialogSuccess="hideDialogSuccessMethod" :title="title"></asset-detail>
 
     <!-- Dialog cảnh báo -->
-    <d-dialog v-if="deleteShow" @closeNotify="closeNotifyMethod" @confirmNotify="confirmNotifyMethod" text="Bạn có muốn xóa tài sản " textbtn="Xóa"></d-dialog>
+    <d-dialog v-if="deleteShow" @closeNotify="closeDelete" @confirmNotify="confirmDelete" text="Bạn có muốn xóa tài sản " textbtn="Xóa"></d-dialog>
 
     <!-- Toast thông báo thành công -->
     <transition name="toast">
@@ -141,6 +148,7 @@ import AssetDetail from './AssetDetail.vue'
 import DCombobox from '../../components/base/DCombobox.vue'
 import DDialog from '@/components/base/DDialog.vue'
 import DToast from '@/components/base/DToast.vue'
+import Resource from '../../js/resource.js'
 
 
 export default {
@@ -149,19 +157,27 @@ export default {
   props: {
     
   },
+  computed: {
+    api : function() {
+        return "https://localhost:7182/api/v1/Assets/filter?limit="+this.tableView+"&page="+this.page
+    }
+  },
   methods: {
-    closeNotifyMethod() {
-        this.deleteShow = false
-    },
-    confirmNotifyMethod() {
-        this.deleteShow = false
-        // Xóa tài sản
-        
-    },
     btnAddOnClick() {
         this.asSelected = {}
         this.dialogShow = true
-        this.title = "Thêm tài sản"
+        this.title = Resource.DialogTitle.add
+    },
+    btnDeleteOnClick() {
+        this.deleteShow = true
+    },
+    closeDelete() {
+        this.deleteShow = false
+    },
+    confirmDelete() {
+        this.deleteShow = false
+        // Xóa tài sản
+        
     },
     hideDialogMethod () {
         this.dialogShow = false
@@ -180,58 +196,88 @@ export default {
         this.asSelected = asset
         this.dialogShow = true
         this.detailFormMode = 2
-        this.title = "Sửa tài sản"
+        this.title = Resource.DialogTitle.edit
     },
     rowDuplicate(asset) {
         // Sinh ra mã tài sản mới
 
         this.asSelected = asset
         this.dialogShow = true
-        this.title = "Nhân bản tài sản"
+        this.title = Resource.DialogTitle.duplicate
     },
     checkedAllMethod() {
-        this.checked = []
-        this.checkboxSelected = []
-        this.rowSelected = -1
-        if (!this.checkedAll) {
-            for (let index in this.assets) {
-                this.checked.push(this.assets[index].CustomerId)
+        try{
+            this.checked = []
+            this.checkboxSelected = []
+            this.rowSelected = -1
+            if (!this.checkedAll) {
+                for (let index in this.assets) {
+                    this.checked.push(this.assets[index].fixed_asset_id)
+                }
             }
+        } catch (error) {
+            console.log(error);
         }
     },
     checkedMethod(ind) {
-        if (this.checkboxSelected[ind] == ind) this.checkboxSelected[ind] = null
-        for (let i in this.checked) {
-            for (let index in this.assets) {
-                if (this.checked[i] == this.assets[index].CustomerId) {
-                    this.checkboxSelected[index] = index
+        try{
+            if (this.checkboxSelected[ind] == ind) this.checkboxSelected[ind] = null
+            for (let i in this.checked) {
+                for (let index in this.assets) {
+                    if (this.checked[i] == this.assets[index].fixed_asset_id) {
+                        this.checkboxSelected[index] = index
+                    }
                 }
             }
+        } catch (error) {
+            console.log(error);
         }
     },
-    myMethod: function(event) {
-      if (event.target.checked) console.log("checked");
-      else console.log("unchecked");
+    prevPage() {
+        if(this.page > 1){
+            this.page--
+        this.loadData()
+        }  
+    },
+    nextPage() {
+        if(this.page < this.totalPage){
+            this.page++
+            this.loadData()
+        }    
     },
     formatMoney(money) {
-        money = new Intl.NumberFormat('de-DE', {}).format(money)
+        try {
+            money = new Intl.NumberFormat('de-DE', {}).format(money)
         return money
+        } catch (error) {
+            console.log(error);
+        }  
     },
     loadData() {
-        // Gọi api lấy dữ liệu
-        this.isLoading = true
-        fetch("https://cukcuk.manhnv.net/api/v1/Customers", {method:"GET"})
-        .then(res => res.json())
-        .then(data => {
-            this.assets = data
-            // console.log(data);
-            this.isLoading = false
-        })
-        .catch(res => {
-            console.log(res);
-            this.isLoading = false
-        })
+        try{
+            // Gọi api lấy dữ liệu
+            this.isLoading = true
+            fetch(this.api, {method:"GET"})
+            .then(res => res.json())
+            .then(data => {
+                this.assets = Object.values(data)[0]
+                this.tableTotal = Object.values(data)[1]
+                this.totalPageMethod()
+                this.isLoading = false
+            })
+            .catch(res => {
+                console.log(res);
+                this.isLoading = false
+            })
+        } catch (error) {
+            console.log(error);
+        }
     },
+    totalPageMethod() {
+        if(this.tableTotal <= this.tableView || this.tableView == -1) this.totalPage = 1
+        else if(this.tableTotal%this.tableView==0) this.totalPage = this.tableTotal/this.tableView
+        else this.totalPage = (this.tableTotal-(this.tableTotal%this.tableView))/this.tableView + 1
+    }
   },
   created() {
     this.loadData()
@@ -239,8 +285,8 @@ export default {
   data() {
     return {
         assets:[],
-        isLoading:false,
-        dialogShow:false,
+        isLoading: false,
+        dialogShow: false,
         asSelected: {},
         detailFormMode: 1,
         rowSelected: -1,
@@ -251,6 +297,10 @@ export default {
         checkboxSelected: [],
         deleteShow: false,
         toastShow: false,
+        tableTotal: 0,
+        tableView: 20,
+        totalPage: 1,
+        page: 1,
     }
   }
 }
@@ -262,5 +312,6 @@ export default {
     @import url('../../css/base/dialog.css');
     @import url('../../css/base/loading.css');
     @import url('../../css/base/combobox.css');
+    @import url('../../css/base/checkbox.css');
     @import url('../../css/base/toasttransition.css');
 </style>

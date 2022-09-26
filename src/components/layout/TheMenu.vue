@@ -49,10 +49,10 @@
         </router-link>
         <div class="sidebar-footer">
             <div v-show="isOpen" @click="sidebarClose" class="sidebar-icon-close position-relative">
-                <d-tooltip text="Thu gọn Menu" class="tool-tip--top"></d-tooltip>
+                <d-tooltip text="Thu gọn" class="tool-tip--top"></d-tooltip>
             </div>
             <div v-show="!isOpen" @click="sidebarOpen" class="sidebar-icon-open position-relative">
-                <d-tooltip text="Mở rộng Menu" class="tool-tip--top"></d-tooltip>
+                <d-tooltip text="Mở rộng" class="tool-tip--top"></d-tooltip>
             </div>
         </div>
     </div>
