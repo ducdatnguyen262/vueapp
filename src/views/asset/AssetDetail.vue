@@ -156,7 +156,7 @@ export default {
         },
 
         /**
-         * Xác nhận và đóng dialog cảnh báo
+         * Xác nhận hủy bỏ khai báo
          * NDDAT (15/07/2022)
          */
         confirmNotifyMethod() {
@@ -169,7 +169,11 @@ export default {
          * NDDAT (15/07/2022)
          */
         focusFirst() {
-            this.$refs.asset_code.focus()
+            try {
+                this.$refs.asset_code.focus()
+            } catch (error) {
+                console.log(error);
+            }
         },
 
         /**
@@ -177,7 +181,11 @@ export default {
          * NDDAT (15/07/2022)
          */
         focusBack() {
-            this.$refs.btnx.focus()
+            try {
+                this.$refs.btnx.focus()
+            } catch (error) {
+                console.log(error);
+            }
         },
 
         /**

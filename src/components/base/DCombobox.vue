@@ -30,6 +30,7 @@ export default {
         /**
          * Chọn 1 phần tử trong combobox
          * NDDAT (19/07/2022)
+         * @param {string} data tên phần tử đang chọn
          */
         selected(data) {
             this.value = data
@@ -41,15 +42,19 @@ export default {
          * NDDAT (19/07/2022)
          */
         loadData() {
-            // Gọi api lấy dữ liệu
-            fetch(this.api, {method:"GET"})
-            .then(res => res.json())
-            .then(data => {
-                this.items = data
-            })
-            .catch(res => {
-                console.log(res);
-            })
+            try {
+                // Gọi api lấy dữ liệu
+                fetch(this.api, {method:"GET"})
+                .then(res => res.json())
+                .then(data => {
+                    this.items = data
+                })
+                .catch(res => {
+                    console.log(res);
+                })
+            } catch (error) {
+                console.log(error);
+            }
         },
     },
     created() {
