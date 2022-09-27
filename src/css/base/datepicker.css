@@ -30,3 +30,7 @@
 .el-input__suffix-inner {
     display: none !important;
 }
+
+.datepicker--error .el-input__wrapper {
+    border: 1px solid red !important;
+}

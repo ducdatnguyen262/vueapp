@@ -16,7 +16,7 @@
 <script>
 
 export default {
-    props:['placeholder', 'id'],
+    props:['placeholder'],
     data() {
         return {
             isOpen: false, // Combobox có đang mở không
@@ -29,7 +29,7 @@ export default {
     methods: {
         /**
          * Chọn 1 phần tử trong combobox
-         * NDDAT (19/07/2022)
+         * NDDAT (19/09/2022)
          * @param {string} data tên phần tử đang chọn
          */
         selected(data) {
@@ -39,7 +39,7 @@ export default {
 
         /**
          * Gọi API lấy dữ liệu
-         * NDDAT (19/07/2022)
+         * NDDAT (19/09/2022)
          */
         loadData() {
             try {

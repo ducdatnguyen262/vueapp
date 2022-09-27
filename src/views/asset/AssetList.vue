@@ -1,8 +1,11 @@
 <template>
     <!-- Content Menu -->
     <div class="content-menu">
-        <div class="content-search">                 
-            <d-search placeholder="Tìm kiếm tài sản" class="mr-11"></d-search>
+        <div class="content-search">
+            <div class="search">
+                <div class="search__icon"></div>
+                <input v-model="search" @keyup="searchMethod(search)" class="search__input mr-11" type="text" placeholder="Tìm kiếm tài sản">
+            </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
                 <d-combobox placeholder="Loại tài sản" class="combobox-icon-padding mr-11"></d-combobox>
@@ -39,17 +42,17 @@
                     </th>
                     <th>Mã tài sản</th>
                     <th>Tên tài sản</th>
-                    <th format-date>Loại tài sản</th>
+                    <th>Loại tài sản</th>
                     <th>Bộ phận sử dụng</th>
                     <th>Số lượng</th>
-                    <th format-money>Nguyên giá</th>
-                    <th format-money>                       
+                    <th>Nguyên giá</th>
+                    <th>                       
                         <div class="position-relative">
                             HM/KH lũy kế
                             <d-tooltip text="Hao mòn khấu hao lũy kế"></d-tooltip>
                         </div>
                     </th>
-                    <th format-money>Giá trị còn lại</th>
+                    <th>Giá trị còn lại</th>
                     <th>Chức năng</th>
                 </tr>
             </thead>
@@ -61,8 +64,8 @@
                     <td>{{index + 1}}</td>
                     <td>{{as.fixed_asset_code}}</td>
                     <td>{{as.fixed_asset_name}}</td>
-                    <td>{{as.department_name}}</td>
                     <td>{{as.fixed_asset_category_name}}</td>
+                    <td>{{as.department_name}}</td>
                     <td>{{as.quantity}}</td>
                     <td>{{formatMoney(as.cost)}}</td>
                     <td>{{formatMoney(as.cost)}}</td>
@@ -142,38 +145,68 @@
 
 <script>
 import DButton from '../../components/base/DButton.vue'
-import DSearch from '@/components/base/DSearch.vue'
 import DTooltip from '@/components/base/DTooltip.vue'
 import AssetDetail from './AssetDetail.vue'
 import DCombobox from '../../components/base/DCombobox.vue'
 import DDialog from '@/components/base/DDialog.vue'
 import DToast from '@/components/base/DToast.vue'
+import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 
 
 export default {
-  components: { DButton, DSearch, DTooltip, AssetDetail, DCombobox, DDialog, DToast },
+  components: { DButton, DTooltip, AssetDetail, DCombobox, DDialog, DToast },
   name:"AssetList",
+  props: [],
+  created() {
+    // Thực hiện gọi api lấy dữ liệu
+    this.isLoading = true
+    this.loadData()
+    this.isLoading = false
+  },
+  data() {
+    return {
+        assets:[],
+        isLoading: false, // Có đang loading hay không
+        dialogShow: false, // Hiển thị dialog hay không
+        asSelected: {}, // Tài sản được chọn
+        detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
+        rowSelected: -1, // Dòng được chọn tạm thời (click)
+        rowHover: -1, // Dòng được hover
+        title: "", // Title của dialog dialog chi tiết tài sản
+        checkedAll: false, // Có check toàn bộ checkbox hay không
+        checked: [], // Danh sách các dòng được chọn (checkbox)
+        checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
+        deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
+        toastShow: false, // Hiển thị toast thông báo thành công hay không
+        tableTotal: 0, // Tổng số bản ghi
+        tableView: 20, // Số trang hiển thị
+        totalPage: 1, // Tổng số trang
+        page: 1, // Trang đang chọn
+        keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
+    }
+  },
   computed: {
     // Tạo api lấy tài sản
     api : function() {
-        return "https://localhost:7182/api/v1/Assets/filter?limit="+this.tableView+"&page="+this.page
+        return "https://localhost:7182/api/v1/Assets/filter?keyword="+this.keyword+"&limit="+this.tableView+"&page="+this.page
     }
   },
   methods: {
     /**
      * Nhấn button hiển thị dialog thêm tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     btnAddOnClick() {
         this.asSelected = {}
         this.dialogShow = true
-        this.title = Resource.DialogTitle.add
+        this.detailFormMode = Enum.FormMode.Add
+        this.title = Resource.DialogTitle.Add
     },
 
     /**
      * Nhấn button hiển thị dialog cảnh báo xóa tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     btnDeleteOnClick() {
         this.deleteShow = true
@@ -181,7 +214,7 @@ export default {
 
     /**
      * Đóng dialog cảnh báo xóa tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     closeDelete() {
         this.deleteShow = false
@@ -189,7 +222,7 @@ export default {
 
     /**
      * Xác nhận xóa và đóng dialog cảnh báo xóa tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     confirmDelete() {
         this.closeDelete()
@@ -199,7 +232,7 @@ export default {
 
     /**
      * Ẩn dialog chi tiết tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     hideDialogMethod () {
         this.dialogShow = false
@@ -208,7 +241,7 @@ export default {
 
     /**
      * Hiện thông báo thêm thành công và ẩn dialog chi tiết tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     hideDialogSuccessMethod() {
         this.hideDialogMethod()
@@ -218,7 +251,7 @@ export default {
 
     /**
      * Click 1 dòng trong bảng để highlight
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      * @param {int} index số thứ tự dòng
      */
     rowSelect(index) {
@@ -227,19 +260,19 @@ export default {
 
     /**
      * Nhấn button hiển thị dialog sửa tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      * @param {Asset} asset tài sản đang chọn
      */
     rowEdit(asset) {
         this.asSelected = asset
         this.dialogShow = true
-        this.detailFormMode = 2
-        this.title = Resource.DialogTitle.edit
+        this.detailFormMode = Enum.FormMode.Edit
+        this.title = Resource.DialogTitle.Edit
     },
 
     /**
      * Nhấn button hiển thị dialog nhân bản tài sản
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      * @param {Asset} asset tài sản đang chọn
      */
     rowDuplicate(asset) {
@@ -247,18 +280,38 @@ export default {
 
         this.asSelected = asset
         this.dialogShow = true
-        this.title = Resource.DialogTitle.duplicate
+        this.detailFormMode = Enum.FormMode.Add
+        this.title = Resource.DialogTitle.Duplicate
+    },
+
+    /**
+     * Tìm kiếm theo mã và tên tài sản
+     * NDDAT (27/09/2022)
+     * @param {String} keyword từ khóa tìm kiếm
+     */
+    searchMethod(keyword) {
+        console.log(keyword);
+        this.keyword = keyword
+        this.loadData()
+    },
+
+    /**
+     * Đặt lại toàn bộ checkbox
+     * NDDAT (27/09/2022)
+     */
+    resetChecked() {
+        this.checked = []
+        this.checkboxSelected = []
+        this.rowSelected = -1
     },
 
     /**
      * Click vào checkbox đầu bảng để chọn toàn bộ bảng
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     checkedAllMethod() {
         try{
-            this.checked = []
-            this.checkboxSelected = []
-            this.rowSelected = -1
+            this.resetChecked()
             if (!this.checkedAll) {
                 for (let index in this.assets) {
                     this.checked.push(this.assets[index].fixed_asset_id)
@@ -271,7 +324,7 @@ export default {
 
     /**
      * Click vào checkbox để chọn dòng đó
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      * @param {int} ind số thứ tự dòng của checkbox
      */
     checkedMethod(ind) {
@@ -291,21 +344,23 @@ export default {
 
     /**
      * Về trang trước
-     * NDDAT (25/07/2022)
+     * NDDAT (25/09/2022)
      */
     prevPage() {
         if(this.page > 1){
+            this.resetChecked()
             this.page--
-        this.loadData()
+            this.loadData()
         }  
     },
 
     /**
      * Sang trang sau
-     * NDDAT (25/07/2022)
+     * NDDAT (25/09/2022)
      */
     nextPage() {
         if(this.page < this.totalPage){
+            this.resetChecked()
             this.page++
             this.loadData()
         }    
@@ -313,17 +368,18 @@ export default {
 
     /**
      * Tới trang được chọn
-     * NDDAT (25/07/2022)
+     * NDDAT (25/09/2022)
      * @param {int} page số trang
      */
     toPage(page) {
+        this.resetChecked()
         this.page = page
         this.loadData()
     },
 
     /**
      * Tính tổng số trang của bảng
-     * NDDAT (25/07/2022)
+     * NDDAT (25/09/2022)
      */
     totalPageMethod() {
         if(this.tableTotal <= this.tableView || this.tableView == -1) this.totalPage = 1
@@ -333,7 +389,7 @@ export default {
 
     /**
      * Định dạng tiền tệ
-     * NDDAT (18/07/2022)
+     * NDDAT (18/09/2022)
      * @param {double} money số tiền
      */
     formatMoney(money) {
@@ -347,59 +403,35 @@ export default {
 
     /**
      * Gọi api lấy dữ liệu rồi reload lại trang
-     * NDDAT (15/07/2022)
+     * NDDAT (15/09/2022)
      */
     loadData() {
         try{
             // Gọi api lấy dữ liệu
-            this.isLoading = true
-            fetch(this.api, {method:"GET"})
+            // this.isLoading = true
+            fetch(this.api, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]
                 this.tableTotal = Object.values(data)[1]
                 this.totalPageMethod()
-                this.isLoading = false
+                // this.isLoading = false
             })
             .catch(res => {
                 console.log(res);
-                this.isLoading = false
+                // this.isLoading = false
             })
         } catch (error) {
             console.log(error);
         }
     },
   },
-  created() {
-    // Thực hiện gọi api lấy dữ liệu
-    this.loadData()
-  },
-  data() {
-    return {
-        assets:[],
-        isLoading: false, // Có đang loading hay không
-        dialogShow: false, // Hiển thị dialog hay không
-        asSelected: {}, // Tài sản được chọn
-        detailFormMode: 1, // Loại của dialog chi tiết tài sản
-        rowSelected: -1, // Dòng được chọn tạm thời (click)
-        rowHover: -1, // Dòng được hover
-        title: "Thêm tài sản", // Title của dialog dialog chi tiết tài sản
-        checkedAll: false, // Có check toàn bộ checkbox hay không
-        checked: [], // Danh sách các dòng được chọn (checkbox)
-        checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
-        deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
-        toastShow: false, // Hiển thị toast thông báo thành công hay không
-        tableTotal: 0, // Tổng số bản ghi
-        tableView: 20, // Số trang hiển thị
-        totalPage: 1, // Tổng số trang
-        page: 1, // Trang đang chọn
-    }
-  }
 }
 </script>
 
 <style scoped>
     @import url('../../css/views/asset.css');
+    @import url('../../css/base/search.css');
     @import url('../../css/base/table.css');
     @import url('../../css/base/dialog.css');
     @import url('../../css/base/loading.css');

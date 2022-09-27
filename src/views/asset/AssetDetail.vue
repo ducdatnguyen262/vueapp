@@ -10,15 +10,15 @@
             <div class="dialog__content">
                 <div class="dialog-item">
                     <label>Mã tài sản <span style="color: red;">*</span></label>
-                    <input v-model="asset.fixed_asset_code" ref="asset_code" class="dialog-input" type="text">
+                    <input v-model="asset.fixed_asset_code" :class="{'input--error':!asset.fixed_asset_code}" ref="asset_code" class="dialog-input" type="text">
                 </div>
                 <div class="dialog-item">
                     <label>Tên tài sản <span style="color: red;">*</span></label>
-                    <input v-model="asset.fixed_asset_name" class="dialog-input dialog-input-big" type="text" placeholder="Nhập tên tài sản">
+                    <input v-model="asset.fixed_asset_name" :class="{'input--error':!asset.fixed_asset_name}" class="dialog-input dialog-input-big" type="text" placeholder="Nhập tên tài sản">
                 </div>
                 <div class="dialog-item">
                     <label>Mã bộ phận sử dụng <span style="color: red;">*</span></label>
-                    <d-combobox placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
+                    <d-combobox :class="'combobox--error'" placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
                 </div>
                 <div class="dialog-item">
                     <label>Tên bộ phận sử dụng</label>
@@ -26,7 +26,7 @@
                 </div>
                 <div class="dialog-item">
                     <label>Mã loại tài sản <span style="color: red;">*</span></label>
-                    <d-combobox placeholder="Chọn mã loại tài sản"></d-combobox>
+                    <d-combobox :class="'combobox--error'" placeholder="Chọn mã loại tài sản"></d-combobox>
                 </div>
                 <div class="dialog-item">
                     <label>Tên loại tài sản</label>
@@ -34,23 +34,23 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số lượng <span style="color: red;">*</span></label>
-                    <input v-model="asset.quantity" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
                 </div>
                 <div class="dialog-item">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
-                    <input v-model="asset.cost" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.cost" :class="{'input--error':!asset.cost&&asset.cost!=0}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
                 </div>
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
-                    <input v-model="asset.depreciation_rate" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate&&asset.depreciation_rate!=0}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
                 </div>
                 <div class="dialog-item">
                     <label>Ngày mua <span style="color: red;">*</span></label>
-                    <el-date-picker class="datepicker" v-model="asset.purchase_date" type="date"/>
+                    <el-date-picker v-model="asset.purchase_date" :class="{'datepicker--error':!asset.purchase_date}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
                 </div>
                 <div class="dialog-item">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
-                    <el-date-picker class="datepicker" v-model="asset.production_date" type="date"/>
+                    <el-date-picker v-model="asset.production_date" :class="{'datepicker--error':!asset.production_date}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
                 </div>
                 <div class="dialog-item">
                     <label>Năm theo dõi</label>
@@ -58,11 +58,11 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số năm sử dụng <span style="color: red;">*</span></label>
-                    <input v-model="asset.life_time" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
                 </div>
                 <div class="dialog-item">
                     <label>Giá trị hao mòn năm <span style="color: red;">*</span></label>
-                    <input v-model="asset.PhoneNumber" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.PhoneNumber" :class="{'input--error':!asset.PhoneNumber&&asset.PhoneNumber!=0}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
                 </div>
             </div>
             <div class="dialog__footer">
@@ -82,6 +82,8 @@ import useValidate from '@vuelidate/core'
 import {required} from '@vuelidate/validators'
 import DDialog from '@/components/base/DDialog.vue';
 import DDialog1Button from '../../components/base/DDialog1Button.vue';
+import Enum from '../../js/enum.js'
+import Resource from '../../js/resource.js'
     
 export default {
     name:"AssetDetail",
@@ -90,13 +92,14 @@ export default {
         assetSelected: Function,
         formMode: {
             type: Number,
-            default: 1
+            default: Enum.FormMode.Add
         },
         title: String,
     },
     created() {
         // Lấy tài sản là tài sản được truyền vào
         this.asset = this.assetSelected
+        this.defaultDate()
     },
     mounted() {
         // Focus vào ô đầu của dialog
@@ -124,8 +127,17 @@ export default {
     },
     methods: {
         /**
+         * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
+         * NDDAT (19/09/2022)
+         */        
+        defaultDate() {
+            if (this.asset.purchase_date == null) this.asset.purchase_date = new Date()
+            if (this.asset.production_date == null) this.asset.production_date = new Date()
+        },
+
+        /**
          * Đóng dialog cảnh báo lỗi validate
-         * NDDAT (19/07/2022)
+         * NDDAT (19/09/2022)
          */
         closeValidateMethod() {
             this.validateShow = false
@@ -133,7 +145,7 @@ export default {
 
         /**
          * Tạo thông điệp cho dialog cảnh báo lỗi validate
-         * NDDAT (19/07/2022)
+         * NDDAT (19/09/2022)
          */        
         createValidateMessage() {
             try{
@@ -149,7 +161,7 @@ export default {
 
         /**
          * Đóng dialog cảnh báo
-         * NDDAT (15/07/2022)
+         * NDDAT (15/09/2022)
          */
         closeNotifyMethod() {
             this.notifyShow = false
@@ -157,7 +169,7 @@ export default {
 
         /**
          * Xác nhận hủy bỏ khai báo
-         * NDDAT (15/07/2022)
+         * NDDAT (15/09/2022)
          */
         confirmNotifyMethod() {
             this.closeNotifyMethod()
@@ -166,7 +178,7 @@ export default {
 
         /**
          * Focus vào phần tử đầu tiên
-         * NDDAT (15/07/2022)
+         * NDDAT (15/09/2022)
          */
         focusFirst() {
             try {
@@ -178,7 +190,7 @@ export default {
 
         /**
          * Chuyển focus lên đầu sau khi đến cuối dialog tài sản
-         * NDDAT (15/07/2022)
+         * NDDAT (15/09/2022)
          */
         focusBack() {
             try {
@@ -190,7 +202,7 @@ export default {
 
         /**
          * Click vào button để đóng dialog tài sản
-         * NDDAT (15/07/2022)
+         * NDDAT (15/09/2022)
          */
         btnCloseOnClick() {
             // Hiện cảnh báo có muốn đóng hay không
@@ -199,25 +211,25 @@ export default {
 
         /**
          * Click vào button để lưu tài sản
-         * NDDAT (15/07/2022)
+         * NDDAT (15/09/2022)
          */
         btnSaveOnClick() {
             try{
-                var method = "POST"
+                var method = Resource.Method.Post
                 var url = this.api
                 // Validate dữ liệu:
                 this.v$.$validate()
                 if (this.v$.$error) {
                     this.errorArray = []
-                    if (this.v$.asset.fixed_asset_code.$error) this.errorArray.push("mã tài sản\n");
-                    if (this.v$.asset.fixed_asset_name.$error) this.errorArray.push("tên tài sản");
+                    if (this.v$.asset.fixed_asset_code.$error) this.errorArray.push(Resource.IsEmpty.Code);
+                    if (this.v$.asset.fixed_asset_name.$error) this.errorArray.push(Resource.IsEmpty.Name);
                     this.createValidateMessage()
                     this.validateShow = true
                 } else {
                     // Cất dữ liệu:
                     console.log(1);
-                    if(this.formMode == 2) {
-                        method = "PUT"
+                    if(this.formMode == Enum.FormMode.Edit) {
+                        method = Resource.Method.Put
                         url = url + `/${this.asset.fixed_asset_id}`
                     }
                     fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})

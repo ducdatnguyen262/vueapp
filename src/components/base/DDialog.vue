@@ -25,7 +25,7 @@ export default {
     methods: {
         /**
          * Phát ra tín hiệu cho component cha về sự kiện closeNotify
-         * NDDAT (19/07/2022)
+         * NDDAT (19/09/2022)
          */
         closeNotify() {
             this.$emit("closeNotify")
@@ -33,7 +33,7 @@ export default {
 
         /**
          * Phát ra tín hiệu cho component cha về sự kiện confirmNotify
-         * NDDAT (19/07/2022)
+         * NDDAT (19/09/2022)
          */
         confirmNotify() {
             this.$emit("confirmNotify")

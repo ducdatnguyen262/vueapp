@@ -185,6 +185,22 @@
     text-align: center;
 }
 
+.tfoot td:nth-last-child(5) {
+    text-align: right;
+}
+
+.tfoot td:nth-last-child(4) {
+    text-align: right;
+}
+
+.tfoot td:nth-last-child(3) {
+    text-align: right;
+}
+
+.tfoot td:nth-last-child(2) {
+    text-align: right;
+}
+
 .icon-edit {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -156px -68px;
 	width: 16px;
