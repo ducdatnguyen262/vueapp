@@ -8,11 +8,11 @@
             </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
-                <d-combobox placeholder="Loại tài sản" class="combobox-icon-padding mr-11"></d-combobox>
+                <d-combobox type="1" main="department_name" placeholder="Loại tài sản" class="combobox-icon-padding mr-11"></d-combobox>
             </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
-                <d-combobox placeholder="Bộ phận sử dụng" class="combobox-icon-padding"></d-combobox>
+                <d-combobox type="2" main="fixed_asset_category_name" placeholder="Bộ phận sử dụng" class="combobox-icon-padding"></d-combobox>
             </div>
         </div>
         <div class="content-btns">
@@ -68,8 +68,8 @@
                     <td>{{as.department_name}}</td>
                     <td>{{as.quantity}}</td>
                     <td>{{formatMoney(as.cost)}}</td>
-                    <td>{{formatMoney(as.cost)}}</td>
-                    <td>{{formatMoney(as.cost)}}</td>
+                    <td>{{formatMoney(as.cost*as.depreciation_rate/100)}}</td>
+                    <td>{{formatMoney(as.cost-as.cost*as.depreciation_rate/100)}}</td>
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
@@ -160,9 +160,7 @@ export default {
   props: [],
   created() {
     // Thực hiện gọi api lấy dữ liệu
-    this.isLoading = true
     this.loadData()
-    this.isLoading = false
   },
   data() {
     return {
@@ -184,13 +182,14 @@ export default {
         totalPage: 1, // Tổng số trang
         page: 1, // Trang đang chọn
         keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
+        mainUrl: "https://localhost:7182/api/v1/Assets" // url chính để nối các trường vào
     }
   },
   computed: {
     // Tạo api lấy tài sản
     api : function() {
         return "https://localhost:7182/api/v1/Assets/filter?keyword="+this.keyword+"&limit="+this.tableView+"&page="+this.page
-    }
+    },
   },
   methods: {
     /**
@@ -222,12 +221,38 @@ export default {
 
     /**
      * Xác nhận xóa và đóng dialog cảnh báo xóa tài sản
-     * NDDAT (15/09/2022)
+     * NDDAT (28/09/2022)
      */
     confirmDelete() {
         this.closeDelete()
         // Xóa tài sản
-        
+        if(this.rowSelected != -1){
+            console.log(this.assets[this.rowSelected]);
+            try{
+                // Xóa dữ liệu:
+                var url = this.mainUrl + `/${this.assets[this.rowSelected].fixed_asset_id}`
+                fetch(url, {method: Resource.Method.Delete, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
+                .then(res => res.json())
+                .then(res =>{
+                    var status = res.status
+                        switch(status) {
+                            case 400: 
+                                alert("Dữ liệu đầu vào ko hợp lệ") 
+                                break
+                            case 500: 
+                                alert("Lỗi phía Server") 
+                                break
+                            default: 
+                                this.loadData()
+                        }
+                })
+                .catch(res => {
+                    console.log(res);
+                })
+            } catch (error) {
+                console.log(error);
+            }
+        }
     },
 
     /**
@@ -337,6 +362,7 @@ export default {
                     }
                 }
             }
+            console.log(this.checked);
         } catch (error) {
             console.log(error);
         }
@@ -408,18 +434,18 @@ export default {
     loadData() {
         try{
             // Gọi api lấy dữ liệu
-            // this.isLoading = true
+            this.isLoading = true
             fetch(this.api, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]
                 this.tableTotal = Object.values(data)[1]
                 this.totalPageMethod()
-                // this.isLoading = false
+                this.isLoading = false
             })
             .catch(res => {
                 console.log(res);
-                // this.isLoading = false
+                this.isLoading = false
             })
         } catch (error) {
             console.log(error);

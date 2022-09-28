@@ -18,31 +18,31 @@
                 </div>
                 <div class="dialog-item">
                     <label>Mã bộ phận sử dụng <span style="color: red;">*</span></label>
-                    <d-combobox :class="'combobox--error'" placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
+                    <d-combobox :vmodelValue="asset.department_code" type="1" main="department_code" @comboboxSelected="comboboxDepartment" :class="'combobox--error'" placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
                 </div>
                 <div class="dialog-item">
                     <label>Tên bộ phận sử dụng</label>
-                    <input class="dialog-input dialog-input-big" type="text" disabled>
+                    <input v-model="asset.department_name" class="dialog-input dialog-input-big" type="text" disabled>
                 </div>
                 <div class="dialog-item">
                     <label>Mã loại tài sản <span style="color: red;">*</span></label>
-                    <d-combobox :class="'combobox--error'" placeholder="Chọn mã loại tài sản"></d-combobox>
+                    <d-combobox :vmodelValue="asset.fixed_asset_category_code"  type="2" main="fixed_asset_category_code" @comboboxSelected="comboboxCategory" :class="'combobox--error'" placeholder="Chọn mã loại tài sản"></d-combobox>
                 </div>
                 <div class="dialog-item">
                     <label>Tên loại tài sản</label>
-                    <input class="dialog-input dialog-input-big" type="text" disabled>
+                    <input v-model="asset.fixed_asset_category_name" class="dialog-input dialog-input-big" type="text" disabled>
                 </div>
                 <div class="dialog-item">
                     <label>Số lượng <span style="color: red;">*</span></label>
-                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
                 <div class="dialog-item">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
-                    <input v-model="asset.cost" :class="{'input--error':!asset.cost&&asset.cost!=0}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.cost" :class="{'input--error':!asset.cost&&asset.cost!=0}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
-                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate&&asset.depreciation_rate!=0}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate&&asset.depreciation_rate!=0}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
                 </div>
                 <div class="dialog-item">
                     <label>Ngày mua <span style="color: red;">*</span></label>
@@ -58,11 +58,11 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số năm sử dụng <span style="color: red;">*</span></label>
-                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
                 <div class="dialog-item">
                     <label>Giá trị hao mòn năm <span style="color: red;">*</span></label>
-                    <input v-model="asset.PhoneNumber" :class="{'input--error':!asset.PhoneNumber&&asset.PhoneNumber!=0}" class="dialog-input" type="number" min="0" oninput="this.value = !!this.value && Math.abs(this.value)">
+                    <input v-model="depreciationYear" :class="{'input--error':!depreciationYear&&depreciationYear!=0}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
             </div>
             <div class="dialog__footer">
@@ -99,11 +99,15 @@ export default {
     created() {
         // Lấy tài sản là tài sản được truyền vào
         this.asset = this.assetSelected
-        this.defaultDate()
+        this.defaultValue()
     },
     mounted() {
         // Focus vào ô đầu của dialog
         this.focusFirst()
+    },
+    updated() {
+        // Cập nhật hao mòn năm
+        this.depreciationYear = this.asset.cost * this.asset.depreciation_rate / 100
     },
     data() {
         return {
@@ -114,6 +118,7 @@ export default {
             errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
             validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate hay không
             api: "https://localhost:7182/api/v1/Assets", // API lấy tài sản
+            depreciationYear: 0, // Hao mòn năm
         }
     },
     validations() {
@@ -127,12 +132,39 @@ export default {
     },
     methods: {
         /**
+         * Cập nhật dữ liệu phòng ban khi chọn trong combobox
+         * NDDAT (28/09/2022)
+         * @param {string} id id phòng ban
+         * @param {string} code mã phòng ban
+         * @param {string} name tên phòng ban
+         */
+        comboboxDepartment(id, code, name) {
+            this.asset.department_id = id
+            this.asset.department_code = code
+            this.asset.department_name = name
+        },
+
+        /**
+         * Cập nhật dữ liệu loại tài sản khi chọn trong combobox
+         * NDDAT (28/09/2022)
+         * @param {string} id id loại tài sản
+         * @param {string} code mã loại tài sản
+         * @param {string} name tên loại tài sản
+         */
+        comboboxCategory(id, code, name) {
+            this.asset.fixed_asset_category_id = id
+            this.asset.fixed_asset_category_code = code
+            this.asset.fixed_asset_category_name = name
+        },
+
+        /**
          * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
          * NDDAT (19/09/2022)
          */        
-        defaultDate() {
+         defaultValue() {
             if (this.asset.purchase_date == null) this.asset.purchase_date = new Date()
             if (this.asset.production_date == null) this.asset.production_date = new Date()
+            if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
         },
 
         /**
@@ -249,7 +281,6 @@ export default {
                     })
                     .catch(res => {
                         console.log(res);
-                        alert("Failed")
                     })
                 }
             } catch (error) {
