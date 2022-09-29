@@ -8,11 +8,11 @@
             </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
-                <d-combobox type="1" main="department_name" placeholder="Loại tài sản" class="combobox-icon-padding mr-11"></d-combobox>
+                <d-combobox type="2" main="fixed_asset_category_name" @searchAll="searchAllCategory" @comboboxSearch="categorySearch" placeholder="Loại tài sản" class="combobox-icon-padding mr-11"></d-combobox>
             </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
-                <d-combobox type="2" main="fixed_asset_category_name" placeholder="Bộ phận sử dụng" class="combobox-icon-padding"></d-combobox>
+                <d-combobox type="1" main="department_name" @searchAll="searchAllDepartment" @comboboxSearch="departmentSearch" placeholder="Bộ phận sử dụng" class="combobox-icon-padding"></d-combobox>
             </div>
         </div>
         <div class="content-btns">
@@ -182,13 +182,15 @@ export default {
         totalPage: 1, // Tổng số trang
         page: 1, // Trang đang chọn
         keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
+        departmentId: "",
+        categoryId: "",
         mainUrl: "https://localhost:7182/api/v1/Assets", // url chính để nối các trường vào,
     }
   },
   computed: {
     // Tạo api lấy tài sản
     api : function() {
-        return "https://localhost:7182/api/v1/Assets/filter?keyword="+this.keyword+"&limit="+this.tableView+"&page="+this.page
+        return "https://localhost:7182/api/v1/Assets/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
     },
   },
   methods: {
@@ -341,6 +343,42 @@ export default {
     searchMethod(keyword) {
         console.log(keyword);
         this.keyword = keyword
+        this.loadData()
+    },
+
+    /**
+     * Tìm kiếm toàn bộ loại tài sản
+     * NDDAT (29/09/2022)
+     */
+     searchAllCategory() {
+        this.categoryId = ""
+        this.loadData()
+    },
+
+    /**
+     * Tìm kiếm toàn bộ phòng ban
+     * NDDAT (29/09/2022)
+     */
+    searchAllDepartment() {
+        this.departmentId = ""
+        this.loadData()
+    },
+
+    /**
+     * Tìm kiếm loại tài sản
+     * NDDAT (29/09/2022)
+     */
+    categorySearch(id) {
+        this.categoryId = id
+        this.loadData()
+    },
+
+    /**
+     * Tìm kiếm phòng ban
+     * NDDAT (29/09/2022)
+     */
+    departmentSearch(id) {
+        this.departmentId = id
         this.loadData()
     },
 

@@ -1,6 +1,6 @@
 <template>
     <div class="combobox">
-        <input type="text" :placeholder="placeholder" v-model=value>
+        <input type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()">
         <button tabindex="-1" @click="isOpen = !isOpen" @blur="isOpen = false"></button>
         <div v-show="isOpen" class="combobox__data">
             <div v-for="(item, index) in items" :key="item[cb.id]" @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name])" @mouseover="isHover = index" @mouseleave="isHover = -1" class="combobox__item">
@@ -53,6 +53,12 @@ export default {
         }
     },
     methods: {
+        searchAll() {
+            if (!this.value) {
+                this.$emit("searchAll")
+            }
+        },
+
         /**
          * Truyền các biến vào combobox theo kiểu của prop 'type'
          * NDDAT (28/09/2022)
@@ -79,6 +85,7 @@ export default {
             this.value = main
             this.isOpen = false
             this.$emit("comboboxSelected", id, code, name)
+            this.$emit("comboboxSearch", id)
         },
 
         /**
