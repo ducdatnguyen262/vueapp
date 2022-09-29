@@ -182,7 +182,7 @@ export default {
         totalPage: 1, // Tổng số trang
         page: 1, // Trang đang chọn
         keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
-        mainUrl: "https://localhost:7182/api/v1/Assets" // url chính để nối các trường vào
+        mainUrl: "https://localhost:7182/api/v1/Assets", // url chính để nối các trường vào,
     }
   },
   computed: {
@@ -304,9 +304,33 @@ export default {
         // Sinh ra mã tài sản mới
 
         this.asSelected = asset
+        this.generateNextCode()
         this.dialogShow = true
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Duplicate
+    },
+
+    /**
+     * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
+     * NDDAT (29/09/2022)
+     */
+    generateNextCode() {
+        try{
+            // Gọi api lấy dữ liệu
+            this.isLoading = true
+            fetch(this.mainUrl + `/nextCode`, {method: Resource.Method.Get})
+            .then(res => res.json())
+            .then(data => {
+                this.asSelected.fixed_asset_code = Object.values(data)[0]
+                this.isLoading = false
+            })
+            .catch(res => {
+                console.log(res);
+                this.isLoading = false
+            })
+        } catch (error) {
+            console.log(error);
+        }
     },
 
     /**
