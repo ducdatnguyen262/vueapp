@@ -11,14 +11,16 @@
                 <div class="dialog-item">
                     <label>Mã tài sản <span style="color: red;">*</span></label>
                     <input v-model="asset.fixed_asset_code" :class="{'input--error':!asset.fixed_asset_code && this.isSubmited}" ref="asset_code" class="dialog-input" type="text">
+                    <d-tooltip-warning text="Mã tài sản"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Tên tài sản <span style="color: red;">*</span></label>
                     <input v-model="asset.fixed_asset_name" :class="{'input--error':!asset.fixed_asset_name && this.isSubmited}" class="dialog-input dialog-input-big" type="text" placeholder="Nhập tên tài sản">
+                    <d-tooltip-warning text="Tên tài sản"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Mã bộ phận sử dụng <span style="color: red;">*</span></label>
-                    <d-combobox :vmodelValue="asset.department_code" type="1" main="department_code" @comboboxSelected="comboboxDepartment" :isSubmited="this.isSubmited" placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
+                    <d-combobox :vmodelValue="asset.department_code" type="1" main="department_code" @comboboxSelected="comboboxDepartment" :isSubmited="this.isSubmited" tooptipText="Mã bộ phận sử dụng" placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
                 </div>
                 <div class="dialog-item">
                     <label>Tên bộ phận sử dụng</label>
@@ -26,7 +28,8 @@
                 </div>
                 <div class="dialog-item">
                     <label>Mã loại tài sản <span style="color: red;">*</span></label>
-                    <d-combobox :vmodelValue="asset.fixed_asset_category_code"  type="2" main="fixed_asset_category_code" @comboboxSelected="comboboxCategory" :isSubmited="this.isSubmited" placeholder="Chọn mã loại tài sản"></d-combobox>
+                    <d-combobox :vmodelValue="asset.fixed_asset_category_code"  type="2" main="fixed_asset_category_code" @comboboxSelected="comboboxCategory" :isSubmited="this.isSubmited" tooptipText="Mã loại tài sản" placeholder="Chọn mã loại tài sản"></d-combobox>
+                    <d-tooltip-warning text="Mã loại tài sản"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Tên loại tài sản</label>
@@ -34,23 +37,28 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số lượng <span style="color: red;">*</span></label>
-                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
-                    <input v-model="asset.cost" :class="{'input--error':!asset.cost && asset.cost!=0 && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.cost" :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <d-tooltip-warning text="Nguyên giá"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
-                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!=0 && this.isSubmited}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
+                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
+                    <d-tooltip-warning text="Tỉ lệ hao mòn"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Ngày mua <span style="color: red;">*</span></label>
                     <el-date-picker v-model="asset.purchase_date" :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
+                    <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
                     <el-date-picker v-model="asset.production_date" :class="{'datepicker--error':!asset.production_date && this.isSubmited}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
+                    <d-tooltip-warning text="Ngày bắt đầu sử dụng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Năm theo dõi</label>
@@ -58,11 +66,13 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số năm sử dụng <span style="color: red;">*</span></label>
-                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time && asset.life_time!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <d-tooltip-warning text="Số năm sử dụng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Giá trị hao mòn năm <span style="color: red;">*</span></label>
-                    <input v-model="depreciationYear" :class="{'input--error':!depreciationYear && depreciationYear!=0 && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="depreciationYear" @focus="lastFocus = true" @blur="lastFocus = false" :class="{'input--error':!depreciationYear && depreciationYear!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <d-tooltip-warning text="Giá trị hao mòn năm"></d-tooltip-warning>
                 </div>
             </div>
             <div class="dialog__footer">
@@ -84,10 +94,11 @@ import DDialog from '@/components/base/DDialog.vue';
 import DDialog1Button from '../../components/base/DDialog1Button.vue';
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
+import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DCombobox, DButton, DDialog, DDialog1Button },
+    components: { DCombobox, DButton, DDialog, DDialog1Button, DTooltipWarning },
     props: {
         assetSelected: Function,
         formMode: {
@@ -107,7 +118,7 @@ export default {
     },
     updated() {
         // Cập nhật hao mòn năm
-        this.depreciationYear = this.asset.cost * this.asset.depreciation_rate / 100
+        this.depreciationUpdate()
     },
     data() {
         return {
@@ -120,6 +131,7 @@ export default {
             api: "https://localhost:7182/api/v1/Assets", // API lấy tài sản
             depreciationYear: 0, // Hao mòn năm
             isSubmited: false, // Đã submit form hay chưa (sau khi submit thì mới validate)
+            lastFocus: false, // Có đang focus vào ô cuối (Giá trị hao mòn năm) hay không
         }
     },
     validations() {
@@ -171,10 +183,18 @@ export default {
          * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
          * NDDAT (19/09/2022)
          */        
-         defaultValue() {
+        defaultValue() {
             if (this.asset.purchase_date == null) this.asset.purchase_date = new Date()
             if (this.asset.production_date == null) this.asset.production_date = new Date()
             if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
+            if (this.asset.cost == null) this.asset.cost = 0
+        },
+
+        depreciationUpdate() {
+            if(this.asset.cost && this.asset.depreciation_rate && this.depreciationYear) {
+                if(this.lastFocus) this.asset.depreciation_rate = this.depreciationYear * 100 / this.asset.cost
+                else this.depreciationYear = this.asset.cost * this.asset.depreciation_rate / 100
+            }
         },
 
         /**

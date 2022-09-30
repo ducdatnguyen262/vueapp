@@ -1,0 +1,20 @@
+.tool-tip-warning {
+    position: absolute;
+    white-space: nowrap;
+    font-weight: normal;
+    bottom: 40px;
+    left: 0;
+    background-color: #f93154;
+    color: #ffffff;
+    padding: 8px;
+    border-radius: 3px;
+    z-index: 4;
+}
+
+.input--error:hover+.tool-tip-warning {
+    display: block;
+}
+
+.datepicker--error:hover+.tool-tip-warning {
+    display: block;
+}

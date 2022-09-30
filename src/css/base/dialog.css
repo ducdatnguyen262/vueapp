@@ -109,6 +109,7 @@ label {
 
 .dialog-item {
     margin: 0 16px 16px 0;
+    position: relative;
 }
 
 .dialog-input {

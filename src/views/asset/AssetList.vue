@@ -239,10 +239,10 @@ export default {
                     var status = res.status
                         switch(status) {
                             case 400: 
-                                alert("Dữ liệu đầu vào ko hợp lệ") 
+                                console.log(Resource.ErrorCode[400]);
                                 break
                             case 500: 
-                                alert("Lỗi phía Server") 
+                                console.log(Resource.ErrorCode[500]);
                                 break
                             default: 
                                 this.loadData()
@@ -350,7 +350,7 @@ export default {
      * Tìm kiếm toàn bộ loại tài sản
      * NDDAT (29/09/2022)
      */
-     searchAllCategory() {
+    searchAllCategory() {
         this.categoryId = ""
         this.loadData()
     },
