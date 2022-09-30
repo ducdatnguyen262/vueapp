@@ -127,7 +127,16 @@ export default {
             asset: { 
                 fixed_asset_code: { required },
                 fixed_asset_name: { required },
-             },
+                department_code: { required },
+                fixed_asset_category_code: { required },
+                quantity: { required },
+                cost: { required },
+                depreciation_rate: { required },
+                purchase_date: { required },
+                production_date: { required },
+                life_time: { required },           
+            },
+            depreciationYear: { required },
         }
     },
     methods: {
@@ -183,8 +192,8 @@ export default {
             try{
                 this.errorMessage = "Cần phải nhập thông tin: "
                 for(let i in this.errorArray) {
-                    this.errorMessage = this.errorMessage + this.errorArray[i]
-                    if(i != this.errorArray.length - 1) this.errorMessage = this.errorMessage +", "
+                    this.errorMessage = this.errorMessage + '\n' + ' - ' + this.errorArray[i]
+                    // if(i != this.errorArray.length - 1) this.errorMessage = this.errorMessage +", "
                 }
             } catch (error) {
                 console.log(error);
@@ -253,8 +262,17 @@ export default {
                 this.v$.$validate()
                 if (this.v$.$error) {
                     this.errorArray = []
-                    if (this.v$.asset.fixed_asset_code.$error) this.errorArray.push(Resource.IsEmpty.Code);
-                    if (this.v$.asset.fixed_asset_name.$error) this.errorArray.push(Resource.IsEmpty.Name);
+                    if (this.v$.asset.fixed_asset_code.$error) this.errorArray.push(Resource.IsEmpty.code);
+                    if (this.v$.asset.fixed_asset_name.$error) this.errorArray.push(Resource.IsEmpty.name);
+                    if (this.v$.asset.department_code.$error) this.errorArray.push(Resource.IsEmpty.department);
+                    if (this.v$.asset.fixed_asset_category_code.$error) this.errorArray.push(Resource.IsEmpty.category);
+                    if (this.v$.asset.quantity.$error) this.errorArray.push(Resource.IsEmpty.quantity);
+                    if (this.v$.asset.cost.$error) this.errorArray.push(Resource.IsEmpty.cost);
+                    if (this.v$.asset.depreciation_rate.$error) this.errorArray.push(Resource.IsEmpty.depreciation_rate);
+                    if (this.v$.asset.purchase_date.$error) this.errorArray.push(Resource.IsEmpty.purchase_date);
+                    if (this.v$.asset.production_date.$error) this.errorArray.push(Resource.IsEmpty.production_date);
+                    if (this.v$.asset.life_time.$error) this.errorArray.push(Resource.IsEmpty.life_time);
+                    if (this.v$.depreciationYear.$error) this.errorArray.push(Resource.IsEmpty.depreciationYear);
                     this.createValidateMessage()
                     this.validateShow = true
                 } else {
@@ -270,10 +288,10 @@ export default {
                         var status = res.status
                         switch(status) {
                             case 400: 
-                                alert("Dữ liệu đầu vào ko hợp lệ") 
+                                console.log(Resource.ErrorCode[400]);
                                 break
-                            case 500: 
-                                alert("Lỗi phía Server") 
+                            case 500:                               
+                                console.log(Resource.ErrorCode[500]);
                                 break
                             default: 
                                 this.$emit("hideDialogSuccess")

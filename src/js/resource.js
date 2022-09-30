@@ -16,8 +16,17 @@ export default {
 
     // Các thông báo nếu nhập thiếu
     IsEmpty: {
-        Code: "mã tài sản",
-        Name: "tên tài sản"
+        code: "Mã tài sản",
+        name: "Tên tài sản",
+        department: "Mã bộ phận sử dụng",
+        category: "Mã loại tài sản",
+        quantity: "Số lượng",
+        cost: "Nguyên giá",
+        depreciation_rate: "Tỉ lệ hao mòn",
+        purchase_date: "Ngày mua",
+        production_date: "Ngày bắt đầu sử dụng",
+        life_time: "Số năm sử dụng",
+        depreciationYear: "Giá trị hao mòn năm",
     },
 
     // Loại combobox
@@ -46,5 +55,11 @@ export default {
         Code: "fixed_asset_category_code",
         // Tên loại tài sản
         Name: "fixed_asset_category_name"
+    },
+
+    //Error Code
+    ErrorCode: {
+        400: "Dữ liệu đầu vào ko hợp lệ",
+        500: "Lỗi phía Server"
     }
 }
