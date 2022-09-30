@@ -10,15 +10,15 @@
             <div class="dialog__content">
                 <div class="dialog-item">
                     <label>Mã tài sản <span style="color: red;">*</span></label>
-                    <input v-model="asset.fixed_asset_code" :class="{'input--error':!asset.fixed_asset_code}" ref="asset_code" class="dialog-input" type="text">
+                    <input v-model="asset.fixed_asset_code" :class="{'input--error':!asset.fixed_asset_code && this.isSubmited}" ref="asset_code" class="dialog-input" type="text">
                 </div>
                 <div class="dialog-item">
                     <label>Tên tài sản <span style="color: red;">*</span></label>
-                    <input v-model="asset.fixed_asset_name" :class="{'input--error':!asset.fixed_asset_name}" class="dialog-input dialog-input-big" type="text" placeholder="Nhập tên tài sản">
+                    <input v-model="asset.fixed_asset_name" :class="{'input--error':!asset.fixed_asset_name && this.isSubmited}" class="dialog-input dialog-input-big" type="text" placeholder="Nhập tên tài sản">
                 </div>
                 <div class="dialog-item">
                     <label>Mã bộ phận sử dụng <span style="color: red;">*</span></label>
-                    <d-combobox :vmodelValue="asset.department_code" type="1" main="department_code" @comboboxSelected="comboboxDepartment" :class="'combobox--error'" placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
+                    <d-combobox :vmodelValue="asset.department_code" type="1" main="department_code" @comboboxSelected="comboboxDepartment" :isSubmited="this.isSubmited" placeholder="Chọn mã bộ phận sử dụng"></d-combobox>
                 </div>
                 <div class="dialog-item">
                     <label>Tên bộ phận sử dụng</label>
@@ -26,7 +26,7 @@
                 </div>
                 <div class="dialog-item">
                     <label>Mã loại tài sản <span style="color: red;">*</span></label>
-                    <d-combobox :vmodelValue="asset.fixed_asset_category_code"  type="2" main="fixed_asset_category_code" @comboboxSelected="comboboxCategory" :class="'combobox--error'" placeholder="Chọn mã loại tài sản"></d-combobox>
+                    <d-combobox :vmodelValue="asset.fixed_asset_category_code"  type="2" main="fixed_asset_category_code" @comboboxSelected="comboboxCategory" :isSubmited="this.isSubmited" placeholder="Chọn mã loại tài sản"></d-combobox>
                 </div>
                 <div class="dialog-item">
                     <label>Tên loại tài sản</label>
@@ -34,23 +34,23 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số lượng <span style="color: red;">*</span></label>
-                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
                 <div class="dialog-item">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
-                    <input v-model="asset.cost" :class="{'input--error':!asset.cost&&asset.cost!=0}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.cost" :class="{'input--error':!asset.cost && asset.cost!=0 && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
-                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate&&asset.depreciation_rate!=0}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
+                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!=0 && this.isSubmited}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
                 </div>
                 <div class="dialog-item">
                     <label>Ngày mua <span style="color: red;">*</span></label>
-                    <el-date-picker v-model="asset.purchase_date" :class="{'datepicker--error':!asset.purchase_date}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
+                    <el-date-picker v-model="asset.purchase_date" :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
                 </div>
                 <div class="dialog-item">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
-                    <el-date-picker v-model="asset.production_date" :class="{'datepicker--error':!asset.production_date}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
+                    <el-date-picker v-model="asset.production_date" :class="{'datepicker--error':!asset.production_date && this.isSubmited}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
                 </div>
                 <div class="dialog-item">
                     <label>Năm theo dõi</label>
@@ -58,11 +58,11 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số năm sử dụng <span style="color: red;">*</span></label>
-                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
                 <div class="dialog-item">
                     <label>Giá trị hao mòn năm <span style="color: red;">*</span></label>
-                    <input v-model="depreciationYear" :class="{'input--error':!depreciationYear&&depreciationYear!=0}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="depreciationYear" :class="{'input--error':!depreciationYear && depreciationYear!=0 && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                 </div>
             </div>
             <div class="dialog__footer">
@@ -119,6 +119,7 @@ export default {
             validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate hay không
             api: "https://localhost:7182/api/v1/Assets", // API lấy tài sản
             depreciationYear: 0, // Hao mòn năm
+            isSubmited: false, // Đã submit form hay chưa (sau khi submit thì mới validate)
         }
     },
     validations() {
@@ -255,6 +256,7 @@ export default {
          * NDDAT (15/09/2022)
          */
         btnSaveOnClick() {
+            this.isSubmited = true
             try{
                 var method = Resource.Method.Post
                 var url = this.api

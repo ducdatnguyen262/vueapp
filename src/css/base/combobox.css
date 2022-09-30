@@ -105,7 +105,3 @@
 	height: 8px;
     padding-right: 20px;
 }
-
-.combobox--error input:placeholder-shown {
-    border-color: red;
-}

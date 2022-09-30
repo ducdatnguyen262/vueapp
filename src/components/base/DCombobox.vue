@@ -1,6 +1,6 @@
 <template>
     <div class="combobox">
-        <input type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()">
+        <input type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" :class="{'input--error': !value && isSubmited}">
         <button tabindex="-1" @click="isOpen = !isOpen" @blur="isOpen = false"></button>
         <div v-show="isOpen" class="combobox__data">
             <div v-for="(item, index) in items" :key="item[cb.id]" @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name])" @mouseover="isHover = index" @mouseleave="isHover = -1" class="combobox__item">
@@ -17,7 +17,7 @@
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 export default {
-    props:['placeholder', 'main', 'type', 'vmodelValue'],
+    props:['placeholder', 'main', 'type', 'vmodelValue', 'isSubmited'],
     created() {
         // Gọi API lấy dữ liệu khi tạo combobox
         this.loadData()
