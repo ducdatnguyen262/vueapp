@@ -89,7 +89,7 @@
                 <tr>
                     <td colspan="6">
                         <div class="tfooter-left">
-                            <div class="tfooter-text">Tổng số <b>{{tableTotal}}</b> bản ghi</div>
+                            <div class="tfooter-text">Tổng số <b>{{totalCount}}</b> bản ghi</div>
                             <div class="tfooter-total">
                                 <select @change="page=1;loadData()" v-model="tableView">
                                     <option value="10">10</option>
@@ -116,10 +116,10 @@
                             </div>
                         </div>
                     </td>
-                    <td><b>13</b></td>
-                    <td><b>249.000.000</b></td>
-                    <td><b>19.716.000</b></td>
-                    <td><b>229.284.000</b></td>
+                    <td><b>{{totalQuantity}}</b></td>
+                    <td><b>{{formatMoney(totalCost)}}</b></td>
+                    <td><b>{{formatMoney(totalDepreciation)}}</b></td>
+                    <td><b>{{formatMoney(totalRemain)}}</b></td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -177,14 +177,18 @@ export default {
         checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
         deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
         toastShow: false, // Hiển thị toast thông báo thành công hay không
-        tableTotal: 0, // Tổng số bản ghi
         tableView: 20, // Số trang hiển thị
         totalPage: 1, // Tổng số trang
         page: 1, // Trang đang chọn
+        totalCount: 0, // Tổng số bản ghi
+        totalQuantity: 0, // Tổng số lượng
+        totalCost: 0, // Tổng số nguyên giá
+        totalDepreciation: 0, // Tổng số hao mòn lũy kế
+        totalRemain: 0, // Tổng số còn lại
         keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
-        departmentId: "",
-        categoryId: "",
-        assetCode: "",
+        departmentId: "", // Mã phòng ban để tìm kiếm
+        categoryId: "", // Mã loại tài sản để tìm kiếm
+        assetCode: "", // Mã tài sản lưu lại khi mở form
     }
   },
   computed: {
@@ -470,9 +474,9 @@ export default {
      * NDDAT (25/09/2022)
      */
     totalPageMethod() {
-        if(this.tableTotal <= this.tableView || this.tableView == -1) this.totalPage = 1
-        else if(this.tableTotal%this.tableView==0) this.totalPage = this.tableTotal/this.tableView
-        else this.totalPage = (this.tableTotal-(this.tableTotal%this.tableView))/this.tableView + 1
+        if(this.totalCount <= this.tableView || this.tableView == -1) this.totalPage = 1
+        else if(this.totalCount%this.tableView==0) this.totalPage = this.totalCount/this.tableView
+        else this.totalPage = (this.totalCount-(this.totalCount%this.tableView))/this.tableView + 1
     },
 
     /**
@@ -501,7 +505,11 @@ export default {
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]
-                this.tableTotal = Object.values(data)[1]
+                this.totalCount = Object.values(data)[1]
+                this.totalQuantity = Object.values(data)[2]
+                this.totalCost = Object.values(data)[3]
+                this.totalDepreciation = Object.values(data)[4]
+                this.totalRemain = Object.values(data)[5]
                 this.totalPageMethod()
                 this.isLoading = false
             })
