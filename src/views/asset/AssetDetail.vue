@@ -42,12 +42,12 @@
                 </div>
                 <div class="dialog-item">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
-                    <input v-model="asset.cost" :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.cost" @focus="focus = true" @blur="focus = false" :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                     <d-tooltip-warning text="Nguyên giá"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
-                    <input v-model="asset.depreciation_rate" :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
+                    <input v-model="asset.depreciation_rate" @focus="focus = true" @blur="focus = false" :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
                     <d-tooltip-warning text="Tỉ lệ hao mòn"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
@@ -71,7 +71,7 @@
                 </div>
                 <div class="dialog-item">
                     <label>Giá trị hao mòn năm <span style="color: red;">*</span></label>
-                    <input v-model="depreciationYear" @focus="lastFocus = true" @blur="lastFocus = false" :class="{'input--error':!depreciationYear && depreciationYear!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.depreciation_year" :class="{'input--error':!asset.depreciation_year && asset.depreciation_year!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
                     <d-tooltip-warning text="Giá trị hao mòn năm"></d-tooltip-warning>
                 </div>
             </div>
@@ -81,8 +81,9 @@
             </div>
         </div>
     </div>
-    <d-dialog-1-button v-if="validateShow" @closeNotify="closeValidateMethod" :text="errorMessage"></d-dialog-1-button>
-    <d-dialog v-if="notifyShow" @closeNotify="closeNotifyMethod" @confirmNotify="confirmNotifyMethod" text="Bạn có muốn hủy bỏ khai báo tài sản này?" textbtn="Hủy bỏ"></d-dialog>
+    <d-dialog-1-button v-if="validateShow" @closeNotify="this.validateShow = false" :text="errorMessage"></d-dialog-1-button>
+    <d-dialog-3-button v-if="validateProShow" @closeNotify="this.validateProShow = false" @closeNotSaveNotify="confirmNotifyMethod" @confirmNotify="confirmSaveNotify" :text="closeEditedMsg"></d-dialog-3-button>
+    <d-dialog v-if="notifyShow" @closeNotify="this.notifyShow = false" @confirmNotify="confirmNotifyMethod" :text="closeMsg" textbtn="Hủy bỏ"></d-dialog>
 </template>
 
 <script>
@@ -95,10 +96,11 @@ import DDialog1Button from '../../components/base/DDialog1Button.vue';
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
+import DDialog3Button from '@/components/base/DDialog3Button.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DCombobox, DButton, DDialog, DDialog1Button, DTooltipWarning },
+    components: { DCombobox, DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button },
     props: {
         assetSelected: Function,
         formMode: {
@@ -106,6 +108,15 @@ export default {
             default: Enum.FormMode.Add
         },
         title: String,
+        assetCode: String,
+    },
+    watch: {
+        asset: {
+            deep: true,
+            handler() {
+                this.isEdited = true
+            }
+        }
     },
     created() {
         // Lấy tài sản là tài sản được truyền vào
@@ -115,10 +126,11 @@ export default {
     mounted() {
         // Focus vào ô đầu của dialog
         this.focusFirst()
+        this.isEdited = false
     },
     updated() {
         // Cập nhật hao mòn năm
-        this.depreciationUpdate()
+        this.updateValue()
     },
     data() {
         return {
@@ -127,11 +139,13 @@ export default {
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
             errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
-            validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate hay không
-            api: "https://localhost:7182/api/v1/Assets", // API lấy tài sản
-            depreciationYear: 0, // Hao mòn năm
+            validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate thiếu hay không
+            validateProShow: false, // Có hiển thị dialog cảnh báo lỗi validate nghiệp vụ hay không
             isSubmited: false, // Đã submit form hay chưa (sau khi submit thì mới validate)
-            lastFocus: false, // Có đang focus vào ô cuối (Giá trị hao mòn năm) hay không
+            focus: false, // Có đang focus vào hay không
+            isEdited: false, // Form đã được chỉnh sửa chưa
+            closeMsg: Resource.ErrorMsg.CloseMsg, // Văn bản khi đóng form
+            closeEditedMsg: Resource.ErrorMsg.CloseEditedMsg, // Văn bản khi đóng form sau khi chỉnh sửa
         }
     },
     validations() {
@@ -147,9 +161,9 @@ export default {
                 depreciation_rate: { required },
                 purchase_date: { required },
                 production_date: { required },
-                life_time: { required },           
+                life_time: { required }, 
+                depreciation_year: { required },          
             },
-            depreciationYear: { required },
         }
     },
     methods: {
@@ -190,19 +204,10 @@ export default {
             if (this.asset.cost == null) this.asset.cost = 0
         },
 
-        depreciationUpdate() {
-            if(this.asset.cost && this.asset.depreciation_rate && this.depreciationYear) {
-                if(this.lastFocus) this.asset.depreciation_rate = this.depreciationYear * 100 / this.asset.cost
-                else this.depreciationYear = this.asset.cost * this.asset.depreciation_rate / 100
+        updateValue() {
+            if(this.focus){
+                this.asset.depreciation_year = this.asset.cost * this.asset.depreciation_rate / 100
             }
-        },
-
-        /**
-         * Đóng dialog cảnh báo lỗi validate
-         * NDDAT (19/09/2022)
-         */
-        closeValidateMethod() {
-            this.validateShow = false
         },
 
         /**
@@ -211,7 +216,7 @@ export default {
          */        
         createValidateMessage() {
             try{
-                this.errorMessage = "Cần phải nhập thông tin: "
+                this.errorMessage = Resource.ErrorMsg.ValidateEmpty
                 for(let i in this.errorArray) {
                     this.errorMessage = this.errorMessage + '\n' + ' - ' + this.errorArray[i]
                     // if(i != this.errorArray.length - 1) this.errorMessage = this.errorMessage +", "
@@ -222,11 +227,12 @@ export default {
         },
 
         /**
-         * Đóng dialog cảnh báo
-         * NDDAT (15/09/2022)
+         * Xác nhận lưu khai báo
+         * NDDAT (30/09/2022)
          */
-        closeNotifyMethod() {
-            this.notifyShow = false
+        confirmSaveNotify() {
+            this.validateProShow = false
+            this.btnSaveOnClick()
         },
 
         /**
@@ -234,7 +240,8 @@ export default {
          * NDDAT (15/09/2022)
          */
         confirmNotifyMethod() {
-            this.closeNotifyMethod()
+            this.notifyShow = false
+            this.validateProShow = false
             this.$emit("hideDialog")
         },
 
@@ -267,8 +274,9 @@ export default {
          * NDDAT (15/09/2022)
          */
         btnCloseOnClick() {
-            // Hiện cảnh báo có muốn đóng hay không
-            this.notifyShow = true
+            // Xét xem form đã được sửa chưa
+            if(this.isEdited) this.validateProShow = true
+            else this.notifyShow = true
         },
 
         /**
@@ -279,7 +287,7 @@ export default {
             this.isSubmited = true
             try{
                 var method = Resource.Method.Post
-                var url = this.api
+                var url = Resource.Url.Main
                 // Validate dữ liệu:
                 this.v$.$validate()
                 if (this.v$.$error) {
@@ -294,34 +302,60 @@ export default {
                     if (this.v$.asset.purchase_date.$error) this.errorArray.push(Resource.IsEmpty.purchase_date);
                     if (this.v$.asset.production_date.$error) this.errorArray.push(Resource.IsEmpty.production_date);
                     if (this.v$.asset.life_time.$error) this.errorArray.push(Resource.IsEmpty.life_time);
-                    if (this.v$.depreciationYear.$error) this.errorArray.push(Resource.IsEmpty.depreciationYear);
+                    if (this.v$.asset.depreciation_year.$error) this.errorArray.push(Resource.IsEmpty.depreciation_year);
                     this.createValidateMessage()
                     this.validateShow = true
+                } else if(this.asset.depreciation_year > this.asset.cost) {
+                    this.errorMessage = "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá"
+                    this.validateShow = true
+                } else if (this.asset.depreciation_rate != 1 / this.asset.life_time) {
+                    this.errorMessage = "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng"
+                    this.validateShow = true
                 } else {
-                    // Cất dữ liệu:
-                    console.log(1);
-                    if(this.formMode == Enum.FormMode.Edit) {
-                        method = Resource.Method.Put
-                        url = url + `/${this.asset.fixed_asset_id}`
+                    // Kiểm tra mã trùng nhau
+                    try{
+                        // Gọi api lấy dữ liệu
+                        fetch(Resource.Url.Main + `/duplicateCode/${this.asset.fixed_asset_code}`, {method: Resource.Method.Get})
+                        .then(res => res.json())
+                        .then(data => {
+                            let dup = Object.values(data)[0]
+                            if (this.formMode == Enum.FormMode.Edit ? (this.asset.fixed_asset_code == this.assetCode ? dup>1 : dup>0) : dup>0) {
+                                this.errorMessage = Resource.ErrorMsg.ValidateDuplicateCode
+                                this.validateShow = true
+                            }
+                            else {
+                                // Cất dữ liệu:
+                                console.log(1);
+                                if(this.formMode == Enum.FormMode.Edit) {
+                                    method = Resource.Method.Put
+                                    url = url + `/${this.asset.fixed_asset_id}`
+                                }
+                                fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
+                                .then(res => res.json())
+                                .then(res =>{
+                                    var status = res.status
+                                    switch(status) {
+                                        case 400: 
+                                            console.log(Resource.ErrorCode[400]);
+                                            break
+                                        case 500:                               
+                                            console.log(Resource.ErrorCode[500]);
+                                            break
+                                        default: 
+                                            this.$emit("hideDialogSuccess")
+                                    }
+                                })
+                                .catch(res => {
+                                    console.log(res);
+                                })
+                            }
+                        })
+                        .catch(res => {
+                            console.log(res);
+                        })
+                    } catch (error) {
+                        console.log(error);
                     }
-                    fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
-                    .then(res => res.json())
-                    .then(res =>{
-                        var status = res.status
-                        switch(status) {
-                            case 400: 
-                                console.log(Resource.ErrorCode[400]);
-                                break
-                            case 500:                               
-                                console.log(Resource.ErrorCode[500]);
-                                break
-                            default: 
-                                this.$emit("hideDialogSuccess")
-                        }
-                    })
-                    .catch(res => {
-                        console.log(res);
-                    })
                 }
             } catch (error) {
                 console.log(error);

@@ -68,8 +68,8 @@
                     <td>{{as.department_name}}</td>
                     <td>{{as.quantity}}</td>
                     <td>{{formatMoney(as.cost)}}</td>
-                    <td>{{formatMoney(as.cost*as.depreciation_rate/100)}}</td>
-                    <td>{{formatMoney(as.cost-as.cost*as.depreciation_rate/100)}}</td>
+                    <td>{{formatMoney(as.depreciation_year*as.life_time)}}</td>
+                    <td>{{formatMoney(as.cost-as.depreciation_year*as.life_time<0 ? 0 : as.cost-as.depreciation_year*as.life_time)}}</td>
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
@@ -132,7 +132,7 @@
     </div>
 
     <!-- Dialog chi tiết tài sản -->
-    <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="asSelected" @hideDialog="hideDialogMethod" @hideDialogSuccess="hideDialogSuccessMethod" :title="title"></asset-detail>
+    <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="asSelected" @hideDialog="hideDialogMethod" @hideDialogSuccess="hideDialogSuccessMethod" :assetCode="assetCode" :title="title"></asset-detail>
 
     <!-- Dialog cảnh báo -->
     <d-dialog v-if="deleteShow" @closeNotify="closeDelete" @confirmNotify="confirmDelete" text="Bạn có muốn xóa tài sản " textbtn="Xóa"></d-dialog>
@@ -184,13 +184,13 @@ export default {
         keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
         departmentId: "",
         categoryId: "",
-        mainUrl: "https://localhost:7182/api/v1/Assets", // url chính để nối các trường vào,
+        assetCode: "",
     }
   },
   computed: {
     // Tạo api lấy tài sản
     api : function() {
-        return "https://localhost:7182/api/v1/Assets/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
+        return Resource.Url.Main+"/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
     },
   },
   methods: {
@@ -200,9 +200,10 @@ export default {
      */
     btnAddOnClick() {
         this.asSelected = {}
-        this.dialogShow = true
+        this.generateNextCode()
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Add
+        this.dialogShow = true
     },
 
     /**
@@ -232,7 +233,7 @@ export default {
             console.log(this.assets[this.rowSelected]);
             try{
                 // Xóa dữ liệu:
-                var url = this.mainUrl + `/${this.assets[this.rowSelected].fixed_asset_id}`
+                var url = Resource.Url.Main + `/${this.assets[this.rowSelected].fixed_asset_id}`
                 fetch(url, {method: Resource.Method.Delete, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
                 .then(res => res.json())
                 .then(res =>{
@@ -292,9 +293,10 @@ export default {
      */
     rowEdit(asset) {
         this.asSelected = asset
-        this.dialogShow = true
+        this.assetCode = this.asSelected.fixed_asset_code
         this.detailFormMode = Enum.FormMode.Edit
         this.title = Resource.DialogTitle.Edit
+        this.dialogShow = true
     },
 
     /**
@@ -303,13 +305,11 @@ export default {
      * @param {Asset} asset tài sản đang chọn
      */
     rowDuplicate(asset) {
-        // Sinh ra mã tài sản mới
-
         this.asSelected = asset
         this.generateNextCode()
-        this.dialogShow = true
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Duplicate
+        this.dialogShow = true
     },
 
     /**
@@ -320,7 +320,7 @@ export default {
         try{
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.mainUrl + `/nextCode`, {method: Resource.Method.Get})
+            fetch(Resource.Url.Main + `/nextCode`, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
                 this.asSelected.fixed_asset_code = Object.values(data)[0]

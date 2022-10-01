@@ -26,7 +26,7 @@ export default {
         purchase_date: "Ngày mua",
         production_date: "Ngày bắt đầu sử dụng",
         life_time: "Số năm sử dụng",
-        depreciationYear: "Giá trị hao mòn năm",
+        depreciation_year: "Giá trị hao mòn năm",
     },
 
     // Loại combobox
@@ -61,5 +61,18 @@ export default {
     ErrorCode: {
         400: "Dữ liệu đầu vào ko hợp lệ",
         500: "Lỗi phía Server"
+    },
+
+    //Error Message
+    ErrorMsg: {
+        CloseMsg: "Bạn có muốn hủy bỏ khai báo tài sản này?",
+        CloseEditedMsg: "Thông tin thay đổi sẽ không được cập nhật nếu bạn không lưu. Bạn có muốn lưu các thay đổi này?",
+        ValidateEmpty: "Cần phải nhập thông tin: ",
+        ValidateDuplicateCode: "Mã tài sản đã tồn tại",
+    },
+
+    //Url
+    Url: {
+        Main: "https://localhost:7182/api/v1/Assets"
     }
 }

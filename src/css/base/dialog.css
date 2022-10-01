@@ -90,7 +90,7 @@ label {
 
 .dialog__content-text {
     width: 310px;
-    white-space: pre;
+    white-space: pre-line;
 }
 
 .dialog__footer {

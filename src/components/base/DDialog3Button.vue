@@ -6,8 +6,9 @@
                 <div class="dialog__content-text">{{text}}</div>
             </div>
             <div class="dialog__footer">
-                <DButton @click="closeNotify" text="Không" type="outline" class="mr-10"></DButton>
-                <DButton @click="confirmNotify" :text="textbtn"></DButton>
+                <DButton @click="closeNotify" text="Hủy bỏ" type="outline" class="mr-10"></DButton>
+                <DButton @click="closeNotSaveNotify" text="Không lưu" type="sub" class="mr-10"></DButton>
+                <DButton @click="confirmNotify" text="Lưu"></DButton>
             </div>
         </div>
     </div>
@@ -29,6 +30,14 @@ export default {
          */
         closeNotify() {
             this.$emit("closeNotify")
+        },
+
+        /**
+         * Phát ra tín hiệu cho component cha về sự kiện closeNotSaveNotify
+         * NDDAT (19/09/2022)
+         */
+        closeNotSaveNotify() {
+            this.$emit("closeNotSaveNotify")
         },
 
         /**
