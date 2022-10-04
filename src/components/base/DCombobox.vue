@@ -1,12 +1,12 @@
 <template>
     <div class="combobox">
-        <input type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" :class="{'input--error': !value && isSubmited}">
+        <input type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" @click="isOpen = !isOpen" @blur="isOpen = false" :class="{'input--error': !value && isSubmited}">
         <d-tooltip-warning :text="tooptipText"></d-tooltip-warning>
         <button tabindex="-1" @click="isOpen = !isOpen" @blur="isOpen = false"></button>
         <div v-show="isOpen" class="combobox__data">
-            <div v-for="(item, index) in items" :key="item[cb.id]" @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name])" @mouseover="isHover = index" @mouseleave="isHover = -1" class="combobox__item">
+            <div v-for="(item, index) in items" :key="item[cb.id]" @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" @mouseover="isHover = index" @mouseleave="isHover = -1" :class="{'combobox__item--selected': item[main]==value}" class="combobox__item">
                 <div style="width: 30px;">
-                    <i v-show="isHover == index" class="fa-solid fa-check"></i>
+                    <i v-show="(isHover == index) || (item[main]==value)" class="fa-solid fa-check"></i>
                 </div>
                 {{item[main]}}
             </div>
@@ -47,11 +47,9 @@ export default {
         // Tạo API lấy dữ liệu
         api: function () {
             if (this.type == Enum.ComboboxType.Department)
-                return "https://localhost:7182/api/v1/" + Resource.ComboboxType.Department + "s";
-            if (this.type == Enum.ComboboxType.Category)
-                return "https://localhost:7182/api/v1/" + Resource.ComboboxType.Category + "s";
+                return Resource.Url.Department;
             else
-                return "https://localhost:7182/api/v1/Departments";
+                return Resource.Url.Category;
         }
     },
     methods: {
@@ -85,11 +83,12 @@ export default {
          * NDDAT (19/09/2022)
          * @param {string} data tên phần tử đang chọn
          */
-        selected(main, id, code, name) {
+        selected(main, id, code, name, depreciation_rate, life_time) {
             this.value = main;
             this.isOpen = false;
             this.$emit("comboboxSelected", id, code, name);
             this.$emit("comboboxSearch", id);
+            if(this.main == 'fixed_asset_category_code') this.$emit('updateWithCategoryCode', depreciation_rate, life_time)
         },
         /**
          * Gọi API lấy dữ liệu

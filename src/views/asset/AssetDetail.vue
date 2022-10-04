@@ -28,7 +28,7 @@
                 </div>
                 <div class="dialog-item">
                     <label>Mã loại tài sản <span style="color: red;">*</span></label>
-                    <d-combobox :vmodelValue="asset.fixed_asset_category_code"  type="2" main="fixed_asset_category_code" @comboboxSelected="comboboxCategory" :isSubmited="this.isSubmited" tooptipText="Mã loại tài sản" placeholder="Chọn mã loại tài sản"></d-combobox>
+                    <d-combobox :vmodelValue="asset.fixed_asset_category_code"  type="2" main="fixed_asset_category_code" @comboboxSelected="comboboxCategory" @updateWithCategoryCode="updateWithCategoryCode" :isSubmited="this.isSubmited" tooptipText="Mã loại tài sản" placeholder="Chọn mã loại tài sản"></d-combobox>
                     <d-tooltip-warning text="Mã loại tài sản"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
@@ -37,17 +37,24 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số lượng <span style="color: red;">*</span></label>
-                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.quantity" :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" class="dialog-input" type="number" @keyup="notNegative('quantity')" min="0" oninput="validity.valid||(value='');">
                     <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
-                    <input v-model="asset.cost" @focus="focus = true" @blur="focus = false" :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <!-- <input v-model="asset.cost" @focus="focus = true" @blur="focus = false" :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}" class="dialog-input" type="number" @keyup="notNegative('cost')" min="0" oninput="validity.valid||(value='');"> -->
+                    <d-input-money v-model="asset.cost" @focus="focus = true" @blur="focus = false" :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}"
+                        :options="{
+                        currency: 'EUR',
+                        currencyDisplay: 'hidden',
+                        valueRange: {min: 0},
+                        hideGroupingSeparatorOnFocus: false,
+                        }"/>
                     <d-tooltip-warning text="Nguyên giá"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
-                    <input v-model="asset.depreciation_rate" @focus="focus = true" @blur="focus = false" :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" max="100" oninput="validity.valid||(value='');">  
+                    <input v-model="asset.depreciation_rate" @focus="focus = true" @blur="focus = false" :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" class="dialog-input" type="number" @keyup="notNegative('depreciation_rate')" min="0" oninput="validity.valid||(value='');">
                     <d-tooltip-warning text="Tỉ lệ hao mòn"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
@@ -66,12 +73,19 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số năm sử dụng <span style="color: red;">*</span></label>
-                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time && asset.life_time!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <input v-model="asset.life_time" :class="{'input--error':!asset.life_time && asset.life_time!='0' && this.isSubmited}" class="dialog-input" type="number" @keyup="notNegative('life_time')" min="0" oninput="validity.valid||(value='');">
                     <d-tooltip-warning text="Số năm sử dụng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Giá trị hao mòn năm <span style="color: red;">*</span></label>
-                    <input v-model="asset.depreciation_year" :class="{'input--error':!asset.depreciation_year && asset.depreciation_year!='0' && this.isSubmited}" class="dialog-input" type="number" min="0" oninput="validity.valid||(value='');">
+                    <!-- <input v-model="asset.depreciation_year" :class="{'input--error':!asset.depreciation_year && asset.depreciation_year!='0' && this.isSubmited}" class="dialog-input" type="number" @keyup="notNegative('depreciation_year')" min="0" oninput="validity.valid||(value='');"> -->
+                    <d-input-money v-model="asset.depreciation_year" :class="{'input--error':!asset.depreciation_year && asset.depreciation_year!='0' && this.isSubmited}"
+                        :options="{
+                            currency: 'EUR',
+                            currencyDisplay: 'hidden',
+                            valueRange: {min: 0},
+                            hideGroupingSeparatorOnFocus: false,
+                        }"/>
                     <d-tooltip-warning text="Giá trị hao mòn năm"></d-tooltip-warning>
                 </div>
             </div>
@@ -97,10 +111,11 @@ import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
+import DInputMoney from '../../components/base/DInputMoney.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DCombobox, DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button },
+    components: { DCombobox, DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, DInputMoney },
     props: {
         assetSelected: Function,
         formMode: {
@@ -122,6 +137,9 @@ export default {
         // Lấy tài sản là tài sản được truyền vào
         this.asset = this.assetSelected
         this.defaultValue()
+        if (this.formMode == Enum.FormMode.Add) {
+            this.generateNextCode()
+        }
     },
     mounted() {
         // Focus vào ô đầu của dialog
@@ -134,7 +152,7 @@ export default {
     },
     data() {
         return {
-            asset: {}, // Lưu dữ liệu tài sản
+            asset: {}, // Lưu dữ liệu 1 tài sản
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -168,6 +186,44 @@ export default {
     },
     methods: {
         /**
+         * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
+         * NDDAT (29/09/2022)
+         */
+        generateNextCode() {
+            try{
+                // Gọi api lấy dữ liệu
+                this.isLoading = true
+                fetch(Resource.Url.Asset + `/nextCode`, {method: Resource.Method.Get})
+                .then(res => res.json())
+                .then(data => {
+                    this.asset.fixed_asset_code = Object.values(data)[0]
+                    this.isLoading = false
+                    this.isEdited = false
+                })
+                .catch(res => {
+                    console.log(res);
+                    this.isLoading = false
+                })
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        
+        /**
+         * Định dạng tiền tệ
+         * NDDAT (18/09/2022)
+         * @param {double} money số tiền
+         */
+        formatMoney(money) {
+            try {
+                money = new Intl.NumberFormat('de-DE', {}).format(money)
+            return money
+            } catch (error) {
+                console.log(error);
+            }  
+        },
+
+        /**
          * Cập nhật dữ liệu phòng ban khi chọn trong combobox
          * NDDAT (28/09/2022)
          * @param {string} id id phòng ban
@@ -194,6 +250,16 @@ export default {
         },
 
         /**
+         * Cập nhật dữ liệu liên quan tới mã loại tài sản
+         * @param {float} depreciation_rate 
+         * @param {int} life_time 
+         */
+        updateWithCategoryCode(depreciation_rate, life_time) {
+            this.asset.depreciation_rate = depreciation_rate
+            this.asset.life_time = life_time
+        },
+
+        /**
          * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
          * NDDAT (19/09/2022)
          */        
@@ -204,10 +270,23 @@ export default {
             if (this.asset.cost == null) this.asset.cost = 0
         },
 
+        /**
+         * Cập nhật các giá trị trong form theo các điều kiện
+         * NDDAT (28/09/2022)
+         */
         updateValue() {
             if(this.focus){
                 this.asset.depreciation_year = this.asset.cost * this.asset.depreciation_rate / 100
             }
+            if(this.asset.depreciation_rate > 100) this.asset.depreciation_rate = 100
+        },
+
+        /**
+         * Cập nhật lại các giá trị nếu nó âm 
+         * NDDAT (04/10/2022)
+         */
+        notNegative(type) {
+            if(this.asset[type] < 0) this.asset[type] = 0
         },
 
         /**
@@ -287,7 +366,7 @@ export default {
             this.isSubmited = true
             try{
                 var method = Resource.Method.Post
-                var url = Resource.Url.Main
+                var url = Resource.Url.Asset
                 // Validate dữ liệu:
                 this.v$.$validate()
                 if (this.v$.$error) {
@@ -308,14 +387,14 @@ export default {
                 } else if(this.asset.depreciation_year > this.asset.cost) {
                     this.errorMessage = "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá"
                     this.validateShow = true
-                } else if (this.asset.depreciation_rate != 1 / this.asset.life_time) {
+                } else if ((this.asset.depreciation_rate != 1 / this.asset.life_time) && !(this.asset.depreciation_rate == 0.0667 &&this.asset.life_time == 15)) {
                     this.errorMessage = "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng"
                     this.validateShow = true
                 } else {
                     // Kiểm tra mã trùng nhau
                     try{
                         // Gọi api lấy dữ liệu
-                        fetch(Resource.Url.Main + `/duplicateCode/${this.asset.fixed_asset_code}`, {method: Resource.Method.Get})
+                        fetch(Resource.Url.Asset + `/duplicateCode/${this.asset.fixed_asset_code}`, {method: Resource.Method.Get})
                         .then(res => res.json())
                         .then(data => {
                             let dup = Object.values(data)[0]
@@ -325,7 +404,7 @@ export default {
                             }
                             else {
                                 // Cất dữ liệu:
-                                console.log(1);
+                                // Xét nếu là form Sửa (Mặc định là Thêm)
                                 if(this.formMode == Enum.FormMode.Edit) {
                                     method = Resource.Method.Put
                                     url = url + `/${this.asset.fixed_asset_id}`

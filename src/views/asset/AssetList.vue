@@ -57,9 +57,9 @@
                 </tr>
             </thead>
             <tbody class="tbody">
-                <tr v-for="(as, index) in assets" :key="as.fixed_asset_id" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == index)||checkedAll}" @click="rowSelect(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
+                <tr v-for="(as, index) in assets" :key="as.fixed_asset_id" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == as.fixed_asset_id)||checkedAll}" @click="rowSelect(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
                     <td class="ms-table-right ms-table-fit">
-                        <input v-model="checked" :value="as.fixed_asset_id" @click.stop @change="checkedMethod(index)" type="checkbox">
+                        <input v-model="checked" :value="as.fixed_asset_id" @click.stop @change="checkedMethod(index, as.fixed_asset_id)" type="checkbox">
                     </td>
                     <td>{{index + 1}}</td>
                     <td>{{as.fixed_asset_code}}</td>
@@ -73,11 +73,11 @@
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == index" @click="rowEdit(as)"  class="icon-edit"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == as.fixed_asset_id" @click="rowEdit(as)"  class="icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == index" @click="rowDuplicate(as)" class="icon-duplicate"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == as.fixed_asset_id" @click="rowDuplicate(as)" class="icon-duplicate"></div>
                                 <d-tooltip text="Nhân bản" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -161,10 +161,12 @@ export default {
   created() {
     // Thực hiện gọi api lấy dữ liệu
     this.loadData()
+    this.setUpCheckedAll()
   },
   data() {
     return {
-        assets:[],
+        assets:[], // Mảng lưu các tài sản đang hiện
+        assetsAll:[], // Mảng lưu toàn bộ tài sản trong database
         isLoading: false, // Có đang loading hay không
         dialogShow: false, // Hiển thị dialog hay không
         asSelected: {}, // Tài sản được chọn
@@ -194,7 +196,7 @@ export default {
   computed: {
     // Tạo api lấy tài sản
     api : function() {
-        return Resource.Url.Main+"/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
+        return Resource.Url.Asset+"/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
     },
   },
   methods: {
@@ -204,7 +206,6 @@ export default {
      */
     btnAddOnClick() {
         this.asSelected = {}
-        this.generateNextCode()
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Add
         this.dialogShow = true
@@ -233,12 +234,22 @@ export default {
     confirmDelete() {
         this.closeDelete()
         // Xóa tài sản
-        if(this.rowSelected != -1){
-            console.log(this.assets[this.rowSelected]);
+        if((this.checked[0]) || (this.rowSelected != -1)){
+            var subUrl;
+            var method;
+            if(this.checked[0]){
+                subUrl = "batch-delete";
+                method = Resource.Method.Post
+            } 
+            else {
+                subUrl = this.assets[this.rowSelected].fixed_asset_id
+                method = Resource.Method.Delete
+            }
+            console.log(this.checked);
             try{
                 // Xóa dữ liệu:
-                var url = Resource.Url.Main + `/${this.assets[this.rowSelected].fixed_asset_id}`
-                fetch(url, {method: Resource.Method.Delete, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
+                var url = Resource.Url.Asset + `/${subUrl}`
+                fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.checked)})
                 .then(res => res.json())
                 .then(res =>{
                     var status = res.status
@@ -251,6 +262,8 @@ export default {
                                 break
                             default: 
                                 this.loadData()
+                                this.checked = []
+                                this.setUpCheckedAll()
                         }
                 })
                 .catch(res => {
@@ -279,6 +292,7 @@ export default {
         this.hideDialogMethod()
         this.toastShow = true
         setTimeout(() => this.toastShow = false, 3000)
+        this.setUpCheckedAll()
     },
 
     /**
@@ -310,33 +324,9 @@ export default {
      */
     rowDuplicate(asset) {
         this.asSelected = asset
-        this.generateNextCode()
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Duplicate
         this.dialogShow = true
-    },
-
-    /**
-     * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
-     * NDDAT (29/09/2022)
-     */
-    generateNextCode() {
-        try{
-            // Gọi api lấy dữ liệu
-            this.isLoading = true
-            fetch(Resource.Url.Main + `/nextCode`, {method: Resource.Method.Get})
-            .then(res => res.json())
-            .then(data => {
-                this.asSelected.fixed_asset_code = Object.values(data)[0]
-                this.isLoading = false
-            })
-            .catch(res => {
-                console.log(res);
-                this.isLoading = false
-            })
-        } catch (error) {
-            console.log(error);
-        }
     },
 
     /**
@@ -397,20 +387,40 @@ export default {
     },
 
     /**
+     * Hàm lấy toàn bộ dữ liệu database
+     * NDDAT (15/09/2022)
+     */
+    setUpCheckedAll() {
+        try{
+            // Gọi api lấy toàn bộ dữ liệu
+            this.isLoading = true
+            fetch(Resource.Url.Asset+"/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+"-1"+"&page="+this.page, {method: Resource.Method.Get})
+            .then(res => res.json())
+            .then(data => {
+                this.assetsAll = Object.values(data)[0]
+                this.isLoading = false
+            })
+            .catch(res => {
+                console.log(res);
+                this.isLoading = false
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    },
+
+    /**
      * Click vào checkbox đầu bảng để chọn toàn bộ bảng
      * NDDAT (15/09/2022)
      */
     checkedAllMethod() {
-        try{
-            this.resetChecked()
+        this.resetChecked()
+        console.log(this.assetsAll);
             if (!this.checkedAll) {
-                for (let index in this.assets) {
-                    this.checked.push(this.assets[index].fixed_asset_id)
+                for (let index in this.assetsAll) {
+                    this.checked.push(this.assetsAll[index].fixed_asset_id)
                 }
             }
-        } catch (error) {
-            console.log(error);
-        }
     },
 
     /**
@@ -418,17 +428,16 @@ export default {
      * NDDAT (15/09/2022)
      * @param {int} ind số thứ tự dòng của checkbox
      */
-    checkedMethod(ind) {
+    checkedMethod(ind, code) {
         try{
-            if (this.checkboxSelected[ind] == ind) this.checkboxSelected[ind] = null
+            if (this.checkboxSelected[ind] == code) this.checkboxSelected[ind] = null
             for (let i in this.checked) {
                 for (let index in this.assets) {
                     if (this.checked[i] == this.assets[index].fixed_asset_id) {
-                        this.checkboxSelected[index] = index
+                        this.checkboxSelected[index] = this.assets[index].fixed_asset_id
                     }
                 }
             }
-            console.log(this.checked);
         } catch (error) {
             console.log(error);
         }
@@ -440,7 +449,6 @@ export default {
      */
     prevPage() {
         if(this.page > 1){
-            this.resetChecked()
             this.page--
             this.loadData()
         }  
@@ -452,7 +460,6 @@ export default {
      */
     nextPage() {
         if(this.page < this.totalPage){
-            this.resetChecked()
             this.page++
             this.loadData()
         }    
@@ -464,7 +471,6 @@ export default {
      * @param {int} page số trang
      */
     toPage(page) {
-        this.resetChecked()
         this.page = page
         this.loadData()
     },

@@ -129,8 +129,11 @@ label {
 }
 
 .warning-icon {
-    background: url('../../assets/icon/icon_alert-yellow.png') no-repeat;
+    /* background: url('../../assets/icon/icon_alert-yellow.png') no-repeat;
 	width: 30px;
-	height: 30px;
+	height: 30px; */
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -416px -66px;
+	width: 24px;
+	height: 20px;
     margin: 0 24px 0 16px;
 }

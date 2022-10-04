@@ -73,6 +73,8 @@ export default {
 
     //Url
     Url: {
-        Main: "https://localhost:7182/api/v1/Assets"
+        Asset: "https://localhost:7148/api/v1/Assets",
+        Department: "https://localhost:7148/api/v1/Departments",
+        Category: "https://localhost:7148/api/Categories"
     }
 }
