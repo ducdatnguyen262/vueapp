@@ -4,7 +4,7 @@
         <div class="content-search">
             <div class="search">
                 <div class="search__icon"></div>
-                <input v-model="search" @keyup="searchMethod(search)" class="search__input mr-11" type="text" placeholder="Tìm kiếm tài sản">
+                <input v-model="search" @keypress.enter="searchMethod(search)" class="search__input mr-11" type="text" placeholder="Tìm kiếm tài sản">
             </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
@@ -85,6 +85,7 @@
                 </tr>
                 <tr style="height:auto;"></tr>
             </tbody>
+            <el-empty v-if="totalCount==0" style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" description="Không có dữ liệu"/>
             <tfoot class="tfoot">
                 <tr>
                     <td colspan="6">
@@ -92,11 +93,10 @@
                             <div class="tfooter-text">Tổng số <b>{{totalCount}}</b> bản ghi</div>
                             <div class="tfooter-total">
                                 <select @change="page=1;loadData()" v-model="tableView">
-                                    <option value="10">10</option>
                                     <option value="20" selected>20</option>
-                                    <option value="80">80</option>
+                                    <option value="50">50</option>
                                     <option value="100">100</option>
-                                    <option value="-1">All</option>
+                                    <option value="200">200</option>
                                 </select>
                             </div>
                             <div @click="prevPage()" class="tfooter-prev position-relative">
@@ -104,12 +104,12 @@
                             </div>
                             <div @click="toPage(1)" :class="{'tfooter-page--selected':page == 1}" class="tfooter-page">1</div>
                             <div v-show="page>=3 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
-                            <div @click="toPage(2)" v-show="(page<3 || totalPage==5) && totalPage!=1" :class="{'tfooter-page--selected':page == 2}" class="tfooter-page">2</div>
-                            <div @click="toPage(3)" v-show="page<3 && totalPage!=1" :class="{'tfooter-page--selected':page == 3}" class="tfooter-page">3</div>
+                            <div @click="toPage(2)" v-show="(page<3 || totalPage==5 || totalPage<=3) && totalPage!=1 " :class="{'tfooter-page--selected':page == 2}" class="tfooter-page">2</div>
+                            <div @click="toPage(3)" v-show="page<3 && totalPage!=1 && totalPage>3" :class="{'tfooter-page--selected':page == 3}" class="tfooter-page">3</div>
                             <div v-show="page>=3 && page<totalPage-1 && totalPage!=1" class="tfooter-page tfooter-page--selected">{{page}}</div>
                             <div v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
-                            <div @click="toPage(totalPage-2)" v-show="page>=totalPage-1 && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-2}" class="tfooter-page">{{totalPage-2}}</div>
-                            <div @click="toPage(totalPage-1)" v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1" :class="{'tfooter-page--selected':page == totalPage-1}" class="tfooter-page">{{totalPage-1}}</div>
+                            <div @click="toPage(totalPage-2)" v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" :class="{'tfooter-page--selected':page == totalPage-2}" class="tfooter-page">{{totalPage-2}}</div>
+                            <div @click="toPage(totalPage-1)" v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" :class="{'tfooter-page--selected':page == totalPage-1}" class="tfooter-page">{{totalPage-1}}</div>
                             <div @click="toPage(totalPage)" v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" class="tfooter-page">{{totalPage}}</div>
                             <div @click="nextPage()" class="tfooter-next position-relative">
                                 <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
@@ -132,10 +132,13 @@
     </div>
 
     <!-- Dialog chi tiết tài sản -->
-    <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="asSelected" @hideDialog="hideDialogMethod" @hideDialogSuccess="hideDialogSuccessMethod" :assetCode="assetCode" :title="title"></asset-detail>
+    <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="assetSelected" @hideDialog="hideDialogMethod" @hideDialogSuccess="hideDialogSuccessMethod" :assetCode="assetCode" :title="title"></asset-detail>
 
-    <!-- Dialog cảnh báo -->
-    <d-dialog v-if="deleteShow" @closeNotify="closeDelete" @confirmNotify="confirmDelete" text="Bạn có muốn xóa tài sản " textbtn="Xóa"></d-dialog>
+    <!-- Dialog cảnh báo khi xóa -->
+    <d-dialog v-if="deleteShow" @closeNotify="closeDelete" @confirmNotify="confirmDelete" :text="deleteText" textbtn="Xóa"></d-dialog>
+
+    <!-- Dialog cảnh báo khi xóa nhưng không chọn tài sản nào -->
+    <d-dialog-1-button v-if="deleteSelectedNone" @closeNotify="this.deleteSelectedNone = false" text="Vui lòng chọn tài sản trước khi xóa."></d-dialog-1-button>
 
     <!-- Toast thông báo thành công -->
     <transition name="toast">
@@ -152,24 +155,20 @@ import DDialog from '@/components/base/DDialog.vue'
 import DToast from '@/components/base/DToast.vue'
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
+import DDialog1Button from '@/components/base/DDialog1Button.vue'
 
 
 export default {
-  components: { DButton, DTooltip, AssetDetail, DCombobox, DDialog, DToast },
+  components: { DButton, DTooltip, AssetDetail, DCombobox, DDialog, DToast, DDialog1Button },
   name:"AssetList",
   props: [],
-  created() {
-    // Thực hiện gọi api lấy dữ liệu
-    this.loadData()
-    this.setUpCheckedAll()
-  },
   data() {
     return {
         assets:[], // Mảng lưu các tài sản đang hiện
         assetsAll:[], // Mảng lưu toàn bộ tài sản trong database
         isLoading: false, // Có đang loading hay không
         dialogShow: false, // Hiển thị dialog hay không
-        asSelected: {}, // Tài sản được chọn
+        assetSelected: {}, // Tài sản được chọn
         detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
         rowSelected: -1, // Dòng được chọn tạm thời (click)
         rowHover: -1, // Dòng được hover
@@ -178,6 +177,8 @@ export default {
         checked: [], // Danh sách các dòng được chọn (checkbox)
         checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
         deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
+        deleteText:"", // Nội dung dialog cảnh báo xóa
+        deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
         toastShow: false, // Hiển thị toast thông báo thành công hay không
         tableView: 20, // Số trang hiển thị
         totalPage: 1, // Tổng số trang
@@ -193,6 +194,11 @@ export default {
         assetCode: "", // Mã tài sản lưu lại khi mở form
     }
   },
+  created() {
+    // Thực hiện gọi api lấy dữ liệu
+    this.loadData()
+    this.setUpCheckedAll()
+  },
   computed: {
     // Tạo api lấy tài sản
     api : function() {
@@ -200,12 +206,25 @@ export default {
     },
   },
   methods: {
+    // Tạo text cho dialog cảnh báo xóa
+    deleteTextCreate() {
+        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> tài sản đã được chọn.Bạn có muốn xóa các tài sản này khỏi danh sách?"
+        else{
+            for (let index in this.assets) {
+                if (this.checked[0] == this.assets[index].fixed_asset_id){
+                    this.deleteText = "Bạn có muốn xóa tài sản <b>"+this.assets[index].fixed_asset_code+"</b> - <b>"+this.assets[index].fixed_asset_name+"</b> ?"
+                    break;
+                }
+            } 
+        }
+    },
+
     /**
      * Nhấn button hiển thị dialog thêm tài sản
      * NDDAT (15/09/2022)
      */
-    btnAddOnClick() {
-        this.asSelected = {}
+    btnAddOnClick() { 
+        this.assetSelected = {}
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Add
         this.dialogShow = true
@@ -216,7 +235,13 @@ export default {
      * NDDAT (15/09/2022)
      */
     btnDeleteOnClick() {
-        this.deleteShow = true
+        if(this.checked.length == 0) {
+            this.deleteSelectedNone =true
+        }
+        else {
+            this.deleteTextCreate()
+            this.deleteShow = true
+        }
     },
 
     /**
@@ -234,31 +259,20 @@ export default {
     confirmDelete() {
         this.closeDelete()
         // Xóa tài sản
-        if((this.checked[0]) || (this.rowSelected != -1)){
-            var subUrl;
-            var method;
-            if(this.checked[0]){
-                subUrl = "batch-delete";
-                method = Resource.Method.Post
-            } 
-            else {
-                subUrl = this.assets[this.rowSelected].fixed_asset_id
-                method = Resource.Method.Delete
-            }
-            console.log(this.checked);
+        if((this.checked[0])){
             try{
                 // Xóa dữ liệu:
-                var url = Resource.Url.Asset + `/${subUrl}`
-                fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.checked)})
+                var url = Resource.Url.Asset + "/batch-delete"
+                fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.checked)})
                 .then(res => res.json())
                 .then(res =>{
                     var status = res.status
                         switch(status) {
                             case 400: 
-                                console.log(Resource.ErrorCode[400]);
+                                console.error(Resource.ErrorCode[400]);
                                 break
                             case 500: 
-                                console.log(Resource.ErrorCode[500]);
+                                console.error(Resource.ErrorCode[500]);
                                 break
                             default: 
                                 this.loadData()
@@ -267,10 +281,10 @@ export default {
                         }
                 })
                 .catch(res => {
-                    console.log(res);
+                    console.error(res);
                 })
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         }
     },
@@ -310,8 +324,8 @@ export default {
      * @param {Asset} asset tài sản đang chọn
      */
     rowEdit(asset) {
-        this.asSelected = asset
-        this.assetCode = this.asSelected.fixed_asset_code
+        this.assetSelected = asset
+        this.assetCode = this.assetSelected.fixed_asset_code
         this.detailFormMode = Enum.FormMode.Edit
         this.title = Resource.DialogTitle.Edit
         this.dialogShow = true
@@ -323,8 +337,8 @@ export default {
      * @param {Asset} asset tài sản đang chọn
      */
     rowDuplicate(asset) {
-        this.asSelected = asset
-        this.detailFormMode = Enum.FormMode.Add
+        this.assetSelected = asset
+        this.detailFormMode = Enum.FormMode.Duplicate
         this.title = Resource.DialogTitle.Duplicate
         this.dialogShow = true
     },
@@ -335,7 +349,6 @@ export default {
      * @param {String} keyword từ khóa tìm kiếm
      */
     searchMethod(keyword) {
-        console.log(keyword);
         this.keyword = keyword
         this.loadData()
     },
@@ -401,11 +414,11 @@ export default {
                 this.isLoading = false
             })
             .catch(res => {
-                console.log(res);
+                console.error(res);
                 this.isLoading = false
             })
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
 
@@ -415,7 +428,6 @@ export default {
      */
     checkedAllMethod() {
         this.resetChecked()
-        console.log(this.assetsAll);
             if (!this.checkedAll) {
                 for (let index in this.assetsAll) {
                     this.checked.push(this.assetsAll[index].fixed_asset_id)
@@ -439,7 +451,7 @@ export default {
                 }
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
 
@@ -495,7 +507,7 @@ export default {
             money = new Intl.NumberFormat('de-DE', {}).format(money)
         return money
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }  
     },
 
@@ -520,11 +532,11 @@ export default {
                 this.isLoading = false
             })
             .catch(res => {
-                console.log(res);
+                console.error(res);
                 this.isLoading = false
             })
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
   },

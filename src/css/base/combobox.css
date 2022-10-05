@@ -76,6 +76,10 @@
     background-color: #c7e0f5;
 }
 
+.combobox__item:focus {
+    background-color: #c7e0f5;
+}
+
 .combobox__item--selected {
     background-color: #c7e0f5;
 }

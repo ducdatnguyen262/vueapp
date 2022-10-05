@@ -1,6 +1,7 @@
 /* width */
 ::-webkit-scrollbar {
     width: 10px;
+    height: 12px;
 }
 
 /* Track */
@@ -20,7 +21,7 @@
     border: 1px solid #afafaf;
     box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
     border-radius: 3.5px;
-    height: 630px;
+    height: 83vh;
     overflow: auto;
 }
 
@@ -37,7 +38,7 @@
     background-color: #ffffff;
     border-collapse: collapse;
     position: relative;
-    height: 630px;
+    height: 100%;
 }
 
 .thead {
@@ -45,6 +46,10 @@
     top: 0;
     background-color: #f5f5f5;
     z-index: 1;
+}
+
+.thead div, th {
+    white-space: nowrap;
 }
 
 .thead tr {

@@ -59,7 +59,7 @@
                 </div>
                 <div class="dialog-item">
                     <label>Ngày mua <span style="color: red;">*</span></label>
-                    <el-date-picker v-model="asset.purchase_date" :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
+                    <el-date-picker v-model="asset.purchase_date" :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" format="DD/MM/YYYY" type="date" placeholder="Chọn ngày"/>
                     <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
@@ -125,31 +125,6 @@ export default {
         title: String,
         assetCode: String,
     },
-    watch: {
-        asset: {
-            deep: true,
-            handler() {
-                this.isEdited = true
-            }
-        }
-    },
-    created() {
-        // Lấy tài sản là tài sản được truyền vào
-        this.asset = this.assetSelected
-        this.defaultValue()
-        if (this.formMode == Enum.FormMode.Add) {
-            this.generateNextCode()
-        }
-    },
-    mounted() {
-        // Focus vào ô đầu của dialog
-        this.focusFirst()
-        this.isEdited = false
-    },
-    updated() {
-        // Cập nhật hao mòn năm
-        this.updateValue()
-    },
     data() {
         return {
             asset: {}, // Lưu dữ liệu 1 tài sản
@@ -162,13 +137,47 @@ export default {
             isSubmited: false, // Đã submit form hay chưa (sau khi submit thì mới validate)
             focus: false, // Có đang focus vào hay không
             isEdited: false, // Form đã được chỉnh sửa chưa
+            firstTimeEdited: true, // Form đã được chỉnh sửa sau khi truyền hết dữ liệu chưa
             closeMsg: Resource.ErrorMsg.CloseMsg, // Văn bản khi đóng form
             closeEditedMsg: Resource.ErrorMsg.CloseEditedMsg, // Văn bản khi đóng form sau khi chỉnh sửa
         }
     },
+    watch: {
+        asset: {
+            deep: true,
+            handler() {
+                this.isEdited = true
+            }
+        }
+    },
+    created() {
+        // Lấy tài sản là tài sản được truyền vào
+        this.asset = this.assetSelected
+        // Truyền vào các giá trị mặc định
+        this.defaultValue()
+        // Sinh mã tiếp theo nếu là thêm và nhân bản
+        if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
+            this.generateNextCode()
+        }
+    },
+    mounted() {
+        // Focus vào ô đầu của dialog
+        this.focusFirst()
+        // Đặt lại form là chưa sửa
+        this.isEdited = false
+    },
+    updated() {
+        // Xử lí để dữ liệu truyền vào form không được tính là đã sửa (isEdited)
+        if(this.isEdited && this.firstTimeEdited && this.formMode != Enum.FormMode.Edit){
+            this.isEdited = false
+            this.firstTimeEdited = false
+        }
+        // Cập nhật hao mòn năm
+        this.updateValue()
+    },
     validations() {
         return {
-            // asset: { required },
+            // Các trường cần validate thiếu
             asset: { 
                 fixed_asset_code: { required },
                 fixed_asset_name: { required },
@@ -198,14 +207,13 @@ export default {
                 .then(data => {
                     this.asset.fixed_asset_code = Object.values(data)[0]
                     this.isLoading = false
-                    this.isEdited = false
                 })
                 .catch(res => {
-                    console.log(res);
+                    console.error(res);
                     this.isLoading = false
                 })
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         },
         
@@ -219,7 +227,7 @@ export default {
                 money = new Intl.NumberFormat('de-DE', {}).format(money)
             return money
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }  
         },
 
@@ -301,7 +309,7 @@ export default {
                     // if(i != this.errorArray.length - 1) this.errorMessage = this.errorMessage +", "
                 }
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -332,7 +340,7 @@ export default {
             try {
                 this.$refs.asset_code.focus()
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -344,7 +352,7 @@ export default {
             try {
                 this.$refs.btnx.focus()
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -415,29 +423,29 @@ export default {
                                     var status = res.status
                                     switch(status) {
                                         case 400: 
-                                            console.log(Resource.ErrorCode[400]);
+                                            console.error(Resource.ErrorCode[400]);
                                             break
                                         case 500:                               
-                                            console.log(Resource.ErrorCode[500]);
+                                            console.error(Resource.ErrorCode[500]);
                                             break
                                         default: 
                                             this.$emit("hideDialogSuccess")
                                     }
                                 })
                                 .catch(res => {
-                                    console.log(res);
+                                    console.error(res);
                                 })
                             }
                         })
                         .catch(res => {
-                            console.log(res);
+                            console.error(res);
                         })
                     } catch (error) {
-                        console.log(error);
+                        console.error(error);
                     }
                 }
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         }
     }

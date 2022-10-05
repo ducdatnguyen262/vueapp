@@ -12,7 +12,9 @@ export default {
         //Thêm tài sản
         Add: 1,
         //Sửa tài sản
-        Edit: 2
+        Edit: 2,
+        //Nhân bản tài sản
+        Duplicate: 3
     },
 
     // Loại combobox

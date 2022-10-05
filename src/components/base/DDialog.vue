@@ -3,7 +3,7 @@
         <div class="dialog dialog--warning">
             <div class="dialog__content">
                 <div class="warning-icon"></div>
-                <div class="dialog__content-text">{{text}}</div>
+                <div class="dialog__content-text" v-html="text"></div>
             </div>
             <div class="dialog__footer">
                 <DButton @click="closeNotify" text="Không" type="outline" class="mr-10"></DButton>

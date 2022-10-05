@@ -1,6 +1,6 @@
 <template>
     <div class="combobox">
-        <input type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" @click="isOpen = !isOpen" @blur="isOpen = false" :class="{'input--error': !value && isSubmited}">
+        <input @keydown.esc="isOpen = false" type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" @focus="focusInput()" @click="isOpen = !isOpen" @blur="isOpen = false" :class="{'input--error': !value && isSubmited}">
         <d-tooltip-warning :text="tooptipText"></d-tooltip-warning>
         <button tabindex="-1" @click="isOpen = !isOpen" @blur="isOpen = false"></button>
         <div v-show="isOpen" class="combobox__data">
@@ -12,6 +12,7 @@
             </div>
         </div>
     </div>
+    <!-- <d-tooltip-warning :text="tooptipText"></d-tooltip-warning> -->
 </template>
 
 <script>
@@ -19,17 +20,8 @@ import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DTooltipWarning from './DTooltipWarning.vue'
 export default {
+    components: { DTooltipWarning },
     props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText"],
-    created() {
-        // Gọi API lấy dữ liệu khi tạo combobox
-        this.loadData();
-        // Định hình combobox theo prop 'type'
-        this.comboboxType();
-    },
-    mounted() {
-        // Lấy giá trị value để truyền vào v-model
-        this.value = this.vmodelValue;
-    },
     data() {
         return {
             isOpen: false,
@@ -37,22 +29,67 @@ export default {
             items: [],
             value: "",
             cb: {
-                id: "",
-                code: "",
+                id: "", // Lưu biến id
+                code: "", // Lưu biến mã
                 name: "" // Lưu biến tên
             },
+            keyword: "",
+            justCreateForm: true // Biến xác định xem form có vừa được tạo hay không
         };
+    },
+    created() {
+        // Gọi API lấy dữ liệu khi tạo combobox
+        this.loadData();
+        // Định hình combobox theo prop 'type'
+        this.comboboxType();
+    },
+    mounted() {
+        // Gán giá trị cho value để truyền vào v-model
+        this.value = this.vmodelValue;
+    },
+    updated() {
+        // 
+        if(this.justCreateForm == true){
+            this.justCreateForm = false
+        }
+    },
+    watch: {
+        value() {
+            if((this.value || this.value == 0) && !this.justCreateForm){
+                this.keyword = this.value
+                this.isOpen = true
+                this.loadData()
+            }
+        }
     },
     computed: {
         // Tạo API lấy dữ liệu
         api: function () {
             if (this.type == Enum.ComboboxType.Department)
-                return Resource.Url.Department;
+                return Resource.Url.Department+"/filter?keyword="+this.keyword+"&type="+this.main;
             else
-                return Resource.Url.Category;
+                return Resource.Url.Category+"/filter?keyword="+this.keyword+"&type="+this.main;
         }
     },
     methods: {
+        // nextMove(e) {
+        //     if(e.target.nextElementSibling) {
+        //         console.log(1);
+        //         this.isOpen = true
+        //         this.$nextTick(() => e.target.nextElementSibling.focus());
+        //     }
+        // },
+
+        // nextMove() {
+        //     console.log(1);
+        //     this.$nextTick(() => this.$refs.ab.focus());
+        // },
+
+        // nextMove() {
+        //     console.log(1);
+        //     this.$nextTick(() => document.getElementById('ab').focus());
+        // },
+
         /**
          * Gọi hàm tìm kiếm tất cả khi value là rỗng
          * NDDAT (30/09/2022)
@@ -62,6 +99,7 @@ export default {
                 this.$emit("searchAll");
             }
         },
+
         /**
          * Truyền các biến vào combobox theo kiểu của prop 'type'
          * NDDAT (28/09/2022)
@@ -78,6 +116,7 @@ export default {
                 this.cb.name = Resource.Category.Name;
             }
         },
+
         /**
          * Chọn 1 phần tử trong combobox
          * NDDAT (19/09/2022)
@@ -90,6 +129,7 @@ export default {
             this.$emit("comboboxSearch", id);
             if(this.main == 'fixed_asset_category_code') this.$emit('updateWithCategoryCode', depreciation_rate, life_time)
         },
+
         /**
          * Gọi API lấy dữ liệu
          * NDDAT (19/09/2022)
@@ -100,18 +140,17 @@ export default {
                 fetch(this.api, { method: "GET" })
                     .then(res => res.json())
                     .then(data => {
-                    this.items = data;
+                    this.items = Object.values(data)[0];
                 })
                     .catch(res => {
-                    console.log(res);
+                    console.error(res);
                 });
             }
             catch (error) {
-                console.log(error);
+                console.error(error);
             }
         },
     },
-    components: { DTooltipWarning }
 }
 </script>
 

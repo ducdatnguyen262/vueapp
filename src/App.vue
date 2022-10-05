@@ -88,4 +88,29 @@ label {
     flex: 1; 
     background-color: #f4f7ff;
 }
+
+/* Chặn trang web tự động tăng chiều cao*/
+html, body {
+    height: 100%; 
+    overflow-y: hidden
+}
+
+/* Scrollbar */
+/* Kích thước */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 12px;
+}
+
+/* Đường chạy */
+::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background: #d1dae9; 
+}
+    
+/* Tay cầm */
+::-webkit-scrollbar-thumb {
+    background: #abb6c8; 
+    border-radius: 4px;
+}
 </style>
