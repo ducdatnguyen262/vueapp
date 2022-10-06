@@ -5,6 +5,7 @@
     height: 36px;
     min-width: 100px;
     border: none;
+    outline: none;
     padding: 11px 20px;
     display: flex;
     align-items: center;
@@ -19,6 +20,11 @@
 
 .button:active {
     background-color: #28b7dc;
+}
+
+.button:focus {
+    background-color: #0582a2;
+    box-shadow: 0px 0px 0px 4px #cef6ff;
 }
 
 .button--sub {
@@ -36,7 +42,8 @@
 }
 
 .button--sub:focus {
-    box-shadow: 0px 0px 0px 3px #d3eef4;
+    background-color: #d1edf4;
+    box-shadow: 0px 0px 0px 4px #cef6ff;
 }
 
 .button--outline {
@@ -52,7 +59,7 @@
 
 .button--outline:focus {
     background-color: #1aa4c8;
-    box-shadow: 0px 0px 0px 3px #d3eef4;
+    box-shadow: 0px 0px 0px;
 }
 
 .button--white {
@@ -60,13 +67,17 @@
     color: #000;
 }
 
-.button--white:focus,
 .button--white:hover {
-    background-color: #e9e9e9;
+    background-color: #dcdcdc;
 }
 
 .button--white:active {
     background-color: #bbbbbb;
+}
+
+.button--white:focus {
+    background-color: #dcdcdc;
+    box-shadow: 0px 0px;
 }
 
 .button--small {
@@ -76,13 +87,17 @@
     background-color: #ffffff;
 }
 
-.button--small:focus,
 .button--small:hover {
     background-color: #e9e9e9;
 }
 
 .button--small:active {
     background-color: #bbbbbb;
+}
+
+.button--small:focus {
+    background-color: #e9e9e9;
+    box-shadow: 0px 0px;
 }
 
 .icon-add {

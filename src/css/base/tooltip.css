@@ -10,7 +10,7 @@
     padding: 2px 4px;
     border-radius: 3px;
     border: 1px solid #d6deeb;
-    z-index: 4;
+    z-index: 10;
 }
 
 .position-relative:hover .tool-tip {

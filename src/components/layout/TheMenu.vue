@@ -74,7 +74,7 @@ export default {
     },
     data() {
         return {
-            selected:0,
+            selected: 2,
             isOpen: true,
         }
     }

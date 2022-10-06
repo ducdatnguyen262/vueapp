@@ -39,6 +39,7 @@
     border-collapse: collapse;
     position: relative;
     height: 100%;
+    table-layout: fixed;
 }
 
 .thead {
@@ -60,6 +61,7 @@
 .tbody tr {
     height: 40px;
     border-bottom: 1px solid #e9ebee;
+    cursor: pointer;
 }
 
 .tbody tr:hover {
@@ -88,14 +90,9 @@
     align-items: center;
 }
 
-.tfooter-right {
-    display: flex;
-    align-items: center;
-    width: 43%;
-}
-
 .tfooter-text {
-    margin: 0 40px 0 4px;
+    margin: 0 24px 0 16px;
+    font-size: 12px;
 }
 
 .tfooter-total {
@@ -144,19 +141,59 @@
 
 .thead th, .tbody td {
     text-align: left;
+    padding: 0 10px;
 }
 
 .thead th:first-child {
-    width: 12px;
-    padding: 0 16px 0 12px;
+    padding: 0 10px 0 16px;
+    width: 2%;
 }
 .tbody td:first-child {
-    width: 12px;
-    padding: 0 16px 0 12px;
+    padding: 0 10px 0 16px;
+}
+
+.thead th:nth-child(2) {
+    text-align: center;
+    width: 2%;
+}
+.tbody td:nth-child(2) {
+    text-align: center;
+}
+
+.thead th:nth-child(3) {
+    width: 7%;
+}
+
+.thead th:nth-child(4) {
+    width: 13%;
+}
+.tbody td:nth-child(4) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.thead th:nth-child(5) {
+    width: 24%;
+}
+.tbody td:nth-child(5) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.thead th:nth-child(6) {
+    width: 16%;
+}
+.tbody td:nth-child(6) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .thead th:nth-last-child(5) {
     text-align: right;
+    width: 4%;
 }
 .tbody td:nth-last-child(5) {
     text-align: right;
@@ -164,6 +201,7 @@
 
 .thead th:nth-last-child(4) {
     text-align: right;
+    width: 9%;
 }
 .tbody td:nth-last-child(4) {
     text-align: right;
@@ -171,6 +209,7 @@
 
 .thead th:nth-last-child(3) {
     text-align: right;
+    width: 9%;
 }
 .tbody td:nth-last-child(3) {
     text-align: right;
@@ -178,6 +217,7 @@
 
 .thead th:nth-last-child(2) {
     text-align: right;
+    width: 9%;
 }
 .tbody td:nth-last-child(2) {
     text-align: right;
@@ -185,6 +225,7 @@
 
 .thead th:last-child {
     text-align: center;
+    width: 6%;
 }
 .tbody td:last-child {
     text-align: center;

@@ -64,7 +64,7 @@
                 </div>
                 <div class="dialog-item">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
-                    <el-date-picker v-model="asset.production_date" :class="{'datepicker--error':!asset.production_date && this.isSubmited}" format="YYYY/MM/DD" type="date" placeholder="Chọn ngày"/>
+                    <el-date-picker v-model="asset.production_date" :class="{'datepicker--error':!asset.production_date && this.isSubmited}" format="DD/MM/YYYY" type="date" placeholder="Chọn ngày"/>
                     <d-tooltip-warning text="Ngày bắt đầu sử dụng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
@@ -127,7 +127,35 @@ export default {
     },
     data() {
         return {
-            asset: {}, // Lưu dữ liệu 1 tài sản
+            asset: { // Lưu dữ liệu 1 tài sản
+                fixed_asset_id:"",
+                fixed_asset_code:"",
+                fixed_asset_name:"",
+                organization_id:"",
+                organization_code:"",
+                organization_name:"",
+                department_id:"",
+                department_code:"",
+                department_name:"",
+                fixed_asset_category_id:"",
+                fixed_asset_category_code:"",
+                fixed_asset_category_name:"",
+                quantity:"",
+                cost:"",
+                depreciation_rate:"",
+                purchase_date:"",
+                production_year:"",
+                production_date:"",
+                tracked_year:"",
+                life_time:"",
+                active:"",
+                depreciation_year:"",
+                created_by:"",
+                created_date:"",
+                modified_by:"",
+                modified_date:"",
+            },
+            assetMid: {}, // Lưu dữ liệu tài sản được truyền vào
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -152,7 +180,9 @@ export default {
     },
     created() {
         // Lấy tài sản là tài sản được truyền vào
-        this.asset = this.assetSelected
+        this.assetMid = this.assetSelected
+        // Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
+        this.updateAsset()   
         // Truyền vào các giá trị mặc định
         this.defaultValue()
         // Sinh mã tiếp theo nếu là thêm và nhân bản
@@ -259,11 +289,12 @@ export default {
 
         /**
          * Cập nhật dữ liệu liên quan tới mã loại tài sản
+         * NDDAT (28/09/2022)
          * @param {float} depreciation_rate 
          * @param {int} life_time 
          */
         updateWithCategoryCode(depreciation_rate, life_time) {
-            this.asset.depreciation_rate = depreciation_rate
+            this.asset.depreciation_rate = depreciation_rate ? depreciation_rate*100 : null
             this.asset.life_time = life_time
         },
 
@@ -292,6 +323,7 @@ export default {
         /**
          * Cập nhật lại các giá trị nếu nó âm 
          * NDDAT (04/10/2022)
+         * @param {string} type loại dữ liệu
          */
         notNegative(type) {
             if(this.asset[type] < 0) this.asset[type] = 0
@@ -306,7 +338,6 @@ export default {
                 this.errorMessage = Resource.ErrorMsg.ValidateEmpty
                 for(let i in this.errorArray) {
                     this.errorMessage = this.errorMessage + '\n' + ' - ' + this.errorArray[i]
-                    // if(i != this.errorArray.length - 1) this.errorMessage = this.errorMessage +", "
                 }
             } catch (error) {
                 console.error(error);
@@ -395,7 +426,7 @@ export default {
                 } else if(this.asset.depreciation_year > this.asset.cost) {
                     this.errorMessage = "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá"
                     this.validateShow = true
-                } else if ((this.asset.depreciation_rate != 1 / this.asset.life_time) && !(this.asset.depreciation_rate == 0.0667 &&this.asset.life_time == 15)) {
+                } else if (this.asset.depreciation_rate != parseFloat(100 / this.asset.life_time).toFixed(2)) {
                     this.errorMessage = "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng"
                     this.validateShow = true
                 } else {
@@ -447,6 +478,39 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+        },
+
+        /**
+         * Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
+         * NDDAT (06/10/2022)
+         */
+        updateAsset() {
+            this.asset.fixed_asset_id = this.assetMid.fixed_asset_id
+            this.asset.fixed_asset_code = this.assetMid.fixed_asset_code
+            this.asset.fixed_asset_name = this.assetMid.fixed_asset_name
+            this.asset.organization_id = this.assetMid.organization_id
+            this.asset.organization_code = this.assetMid.organization_code
+            this.asset.organization_name = this.assetMid.organization_name
+            this.asset.department_id = this.assetMid.department_id
+            this.asset.department_code = this.assetMid.department_code
+            this.asset.department_name = this.assetMid.department_name
+            this.asset.fixed_asset_category_id = this.assetMid.fixed_asset_category_id
+            this.asset.fixed_asset_category_code = this.assetMid.fixed_asset_category_code
+            this.asset.fixed_asset_category_name = this.assetMid.fixed_asset_category_name
+            this.asset.quantity = this.assetMid.quantity
+            this.asset.cost = this.assetMid.cost
+            this.asset.depreciation_rate = this.assetMid.depreciation_rate
+            this.asset.purchase_date = this.assetMid.purchase_date
+            this.asset.production_year = this.assetMid.production_year
+            this.asset.production_date = this.assetMid.production_date
+            this.asset.tracked_year = this.assetMid.tracked_year
+            this.asset.life_time = this.assetMid.life_time
+            this.asset.active = this.assetMid.active
+            this.asset.depreciation_year = this.assetMid.depreciation_year
+            this.asset.created_by = this.assetMid.created_by
+            this.asset.created_date = this.assetMid.created_date
+            this.asset.modified_by = this.assetMid.modified_by
+            this.asset.modified_date = this.assetMid.modified_date    
         }
     }
 }

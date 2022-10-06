@@ -1,24 +1,26 @@
 <template>
     <div class="combobox">
-        <input @keydown.esc="isOpen = false" type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" @focus="focusInput()" @click="isOpen = !isOpen" @blur="isOpen = false" :class="{'input--error': !value && isSubmited}">
+        <input @keydown.enter="open()" @keydown.esc="close()" type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" @click="toggle()" @blur="close()" :class="{'input--error': !value && isSubmited}">
         <d-tooltip-warning :text="tooptipText"></d-tooltip-warning>
-        <button tabindex="-1" @click="isOpen = !isOpen" @blur="isOpen = false"></button>
+        <button tabindex="-1" @click="toggle()" @blur="close()"></button>
         <div v-show="isOpen" class="combobox__data">
-            <div v-for="(item, index) in items" :key="item[cb.id]" @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" @mouseover="isHover = index" @mouseleave="isHover = -1" :class="{'combobox__item--selected': item[main]==value}" class="combobox__item">
-                <div style="width: 30px;">
+            <div v-for="(item, index) in items" :key="item[cb.id]" :id="`ab` + index" @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" @mouseover="isHover = index" @mouseleave="isHover = -1" :class="{'combobox__item--selected': item[main]==value}" class="combobox__item">
+                <div style="width: 30px; display: inline-block;">
                     <i v-show="(isHover == index) || (item[main]==value)" class="fa-solid fa-check"></i>
                 </div>
-                {{item[main]}}
+                <el-tooltip :disabled="item[main].length < 33" :content="item[main]" placement="bottom-start" effect="light">
+                    <span>{{item[main]}}</span>
+                </el-tooltip>
             </div>
         </div>
     </div>
-    <!-- <d-tooltip-warning :text="tooptipText"></d-tooltip-warning> -->
 </template>
 
 <script>
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DTooltipWarning from './DTooltipWarning.vue'
+
 export default {
     components: { DTooltipWarning },
     props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText"],
@@ -34,7 +36,7 @@ export default {
                 name: "" // Lưu biến tên
             },
             keyword: "",
-            justCreateForm: true // Biến xác định xem form có vừa được tạo hay không
+            justCreateForm: true, // Biến xác định xem form có vừa được tạo hay không
         };
     },
     created() {
@@ -48,7 +50,7 @@ export default {
         this.value = this.vmodelValue;
     },
     updated() {
-        // 
+        // Gán giá trị để tránh combobox item hiện lên khi mở form
         if(this.justCreateForm == true){
             this.justCreateForm = false
         }
@@ -57,7 +59,7 @@ export default {
         value() {
             if((this.value || this.value == 0) && !this.justCreateForm){
                 this.keyword = this.value
-                this.isOpen = true
+                this.open()
                 this.loadData()
             }
         }
@@ -69,26 +71,32 @@ export default {
                 return Resource.Url.Department+"/filter?keyword="+this.keyword+"&type="+this.main;
             else
                 return Resource.Url.Category+"/filter?keyword="+this.keyword+"&type="+this.main;
-        }
+        },
     },
     methods: {
-        // nextMove(e) {
-        //     if(e.target.nextElementSibling) {
-        //         console.log(1);
-        //         this.isOpen = true
-        //         this.$nextTick(() => e.target.nextElementSibling.focus());
-        //     }
-        // },
+        /**
+         * Đóng các item của combobox
+         * NDDAT (06/10/2022)
+         */
+        close() {
+            this.isOpen = false
+        },
 
-        // nextMove() {
-        //     console.log(1);
-        //     this.$nextTick(() => this.$refs.ab.focus());
-        // },
+        /**
+         * Mở các item của combobox
+         * NDDAT (06/10/2022)
+         */
+        open() {
+            this.isOpen = true
+        },
 
-        // nextMove() {
-        //     console.log(1);
-        //     this.$nextTick(() => document.getElementById('ab').focus());
-        // },
+        /**
+         * Đóng/Mở các item của combobox
+         * NDDAT (06/10/2022)
+         */
+        toggle() {
+            this.isOpen = !this.isOpen
+        },
 
         /**
          * Gọi hàm tìm kiếm tất cả khi value là rỗng
@@ -120,11 +128,16 @@ export default {
         /**
          * Chọn 1 phần tử trong combobox
          * NDDAT (19/09/2022)
-         * @param {string} data tên phần tử đang chọn
+         * @param {string} main phần tử chính hiện lên của combobox
+         * @param {string} id id phần tử đang chọn
+         * @param {string} code mã phần tử đang chọn
+         * @param {string} name tên phần tử đang chọn
+         * @param {string} depreciation_rate tỉ lệ hao mòn phần tử đang chọn
+         * @param {string} life_time năm sử dụng phần tử đang chọn
          */
         selected(main, id, code, name, depreciation_rate, life_time) {
             this.value = main;
-            this.isOpen = false;
+            this.close()
             this.$emit("comboboxSelected", id, code, name);
             this.$emit("comboboxSearch", id);
             if(this.main == 'fixed_asset_category_code') this.$emit('updateWithCategoryCode', depreciation_rate, life_time)

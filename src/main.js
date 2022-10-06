@@ -11,7 +11,7 @@ import {createRouter, createWebHistory } from 'vue-router'
 
 // B2: Định nghĩa các router
 const routers = [
-    {path:"/", component:HomeList},
+    {path:"/", redirect: "/tai-san" ,component:HomeList},
     {path:"/tong-quan", component:OverviewList},
     {path:"/tai-san", component:AssetList},
     {path:"/bao-cao", component:ReportList}

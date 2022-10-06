@@ -113,4 +113,10 @@ html, body {
     background: #abb6c8; 
     border-radius: 4px;
 }
+
+/* Sửa tooltip của Elemental Plus */
+.el-popper.is-light {
+    box-shadow: 2px 4px 10px 4px rgb(0 0 0 / 16%) !important;
+    font-size: 13px;
+}
 </style>

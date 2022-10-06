@@ -57,27 +57,27 @@
                 </tr>
             </thead>
             <tbody class="tbody">
-                <tr v-for="(as, index) in assets" :key="as.fixed_asset_id" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == as.fixed_asset_id)||checkedAll}" @click="rowSelect(index)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
+                <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id)||checkedAll}" @click="rowSelect(index)" @dblclick="rowEdit(asset)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
                     <td class="ms-table-right ms-table-fit">
-                        <input v-model="checked" :value="as.fixed_asset_id" @click.stop @change="checkedMethod(index, as.fixed_asset_id)" type="checkbox">
+                        <input v-model="checked" :value="asset.fixed_asset_id" @click.stop @change="checkedMethod(index, asset.fixed_asset_id)" type="checkbox">
                     </td>
                     <td>{{index + 1}}</td>
-                    <td>{{as.fixed_asset_code}}</td>
-                    <td>{{as.fixed_asset_name}}</td>
-                    <td>{{as.fixed_asset_category_name}}</td>
-                    <td>{{as.department_name}}</td>
-                    <td>{{as.quantity}}</td>
-                    <td>{{formatMoney(as.cost)}}</td>
-                    <td>{{formatMoney(as.depreciation_year*as.life_time)}}</td>
-                    <td>{{formatMoney(as.cost-as.depreciation_year*as.life_time<0 ? 0 : as.cost-as.depreciation_year*as.life_time)}}</td>
+                    <td>{{asset.fixed_asset_code}}</td>
+                    <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
+                    <td :title="asset.fixed_asset_category_name">{{asset.fixed_asset_category_name}}</td>
+                    <td :title="asset.department_name">{{asset.department_name}}</td>
+                    <td>{{asset.quantity}}</td>
+                    <td>{{formatMoney(asset.cost)}}</td>
+                    <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
+                    <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == as.fixed_asset_id" @click="rowEdit(as)"  class="icon-edit"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == asset.fixed_asset_id" @click="rowEdit(asset)"  class="icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == as.fixed_asset_id" @click="rowDuplicate(as)" class="icon-duplicate"></div>
+                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == asset.fixed_asset_id" @click="rowDuplicate(asset)" class="icon-duplicate"></div>
                                 <d-tooltip text="Nhân bản" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                 <tr>
                     <td colspan="6">
                         <div class="tfooter-left">
-                            <div class="tfooter-text">Tổng số <b>{{totalCount}}</b> bản ghi</div>
+                            <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
                             <div class="tfooter-total">
                                 <select @change="page=1;loadData()" v-model="tableView">
                                     <option value="20" selected>20</option>
@@ -166,6 +166,7 @@ export default {
     return {
         assets:[], // Mảng lưu các tài sản đang hiện
         assetsAll:[], // Mảng lưu toàn bộ tài sản trong database
+        search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
         dialogShow: false, // Hiển thị dialog hay không
         assetSelected: {}, // Tài sản được chọn
@@ -259,6 +260,7 @@ export default {
     confirmDelete() {
         this.closeDelete()
         // Xóa tài sản
+        console.log(1)
         if((this.checked[0])){
             try{
                 // Xóa dữ liệu:
@@ -438,11 +440,12 @@ export default {
     /**
      * Click vào checkbox để chọn dòng đó
      * NDDAT (15/09/2022)
-     * @param {int} ind số thứ tự dòng của checkbox
+     * @param {int} order số thứ tự dòng của checkbox
+     * @param {int} code id của dòng chứa checkbox được click
      */
-    checkedMethod(ind, code) {
+    checkedMethod(order, code) {
         try{
-            if (this.checkboxSelected[ind] == code) this.checkboxSelected[ind] = null
+            if (this.checkboxSelected[order] == code) this.checkboxSelected[order] = null
             for (let i in this.checked) {
                 for (let index in this.assets) {
                     if (this.checked[i] == this.assets[index].fixed_asset_id) {
