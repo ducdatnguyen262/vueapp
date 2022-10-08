@@ -31,13 +31,13 @@ export default {
 
     // Loại combobox
     ComboboxType: {
-        //Phòng ban
+        // Phòng ban
         Department: "Department",
-        //Loại tài sản
+        // Loại tài sản
         Category: "Category"
     },
 
-    //Phòng ban
+    // Phòng ban
     Department: {
         // Id phòng ban
         Id: "department_id",
@@ -47,7 +47,7 @@ export default {
         Name: "department_name"
     },
 
-    //Phòng ban
+    // Loại tài sản
     Category: {
         // Id loại tài sản
         Id: "fixed_asset_category_id",
@@ -57,24 +57,33 @@ export default {
         Name: "fixed_asset_category_name"
     },
 
-    //Error Code
+    // Mã lỗi
     ErrorCode: {
+        // Error 400
         400: "Dữ liệu đầu vào ko hợp lệ",
+        // Error 500
         500: "Lỗi phía Server"
     },
 
-    //Error Message
+    // Error Message
     ErrorMsg: {
+        // Lời nhắn khi đóng
         CloseMsg: "Bạn có muốn hủy bỏ khai báo tài sản này?",
+        // Lời nhắn khi đóng mà trước đó đã sửa đổi
         CloseEditedMsg: "Thông tin thay đổi sẽ không được cập nhật nếu bạn không lưu. Bạn có muốn lưu các thay đổi này?",
+        // Lời nhắn khi nhập thiếu
         ValidateEmpty: "Cần phải nhập thông tin: ",
+        // Lời nhắn khi trùng mã tài sản
         ValidateDuplicateCode: "Mã tài sản đã tồn tại",
     },
 
-    //Url
+    // Url
     Url: {
+        // Url của tài sản
         Asset: "https://localhost:7148/api/v1/Assets",
+        // Url của phòng ban
         Department: "https://localhost:7148/api/v1/Departments",
+        // Url của loại tài sản
         Category: "https://localhost:7148/api/Categories"
     }
 }

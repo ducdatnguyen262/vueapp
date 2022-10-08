@@ -2,11 +2,11 @@
     <div class="dialog-container">
         <div class="dialog dialog--warning">
             <div class="dialog__content">
-                <div class="warning-icon"></div>
+                <div tabindex="201" ref="first" @keyup.enter="focusNext()" class="warning-icon"></div>
                 <div class="dialog__content-text">{{text}}</div>
             </div>
             <div class="dialog__footer">
-                <DButton @click="closeNotify" text="Đóng"></DButton>
+                <DButton @click="closeNotify" tabindex="201" :id="'dialog1btn'" @keydown.tab="focusFirst()" text="Đóng"></DButton>
             </div>
         </div>
     </div>
@@ -16,10 +16,9 @@
 import DButton from './DButton.vue';
 export default {
     props: ["text"],
-    data() {
-        return {
-            
-        };
+    components: { DButton },
+    mounted() {
+        this.focusFirst()
     },
     methods: {
         /**
@@ -29,8 +28,23 @@ export default {
         closeNotify() {
             this.$emit("closeNotify")
         },
+
+        /**
+         * Focus vào phần tử đầu tiên
+         * NDDAT (15/09/2022)
+         */
+        focusFirst() {
+            this.$refs.first.focus()
+        },
+
+        /**
+         * Chuyển focus đến phần tử thứ 2
+         * NDDAT (15/09/2022)
+         */
+        focusNext() {
+            document.getElementById('dialog1btn').focus()
+        },
     },
-    components: { DButton }
 }
 </script>
 

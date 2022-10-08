@@ -1,12 +1,38 @@
 <template>
-    <div class="combobox">
-        <input @keydown.enter="open()" @keydown.esc="close()" type="text" :placeholder="placeholder" v-model=value @keyup="searchAll()" @click="toggle()" @blur="close()" :class="{'input--error': !value && isSubmited}">
+    <div class="combobox" @blur="close()">
+        <input 
+            v-model=value 
+            type="text" 
+            :id="'input' + tabindex" 
+            :tabindex="tabindex" 
+            :class="{'input--error': !value && isSubmited}"
+            :placeholder="placeholder" 
+            @keydown.enter="open()" 
+            @keydown.esc="close()" 
+            @keydown.down="open();focusFirstItem()" 
+            @blur="close()" 
+            @keyup="searchAll()"
+        >
         <d-tooltip-warning :text="tooptipText"></d-tooltip-warning>
         <button tabindex="-1" @click="toggle()" @blur="close()"></button>
         <div v-show="isOpen" class="combobox__data">
-            <div v-for="(item, index) in items" :key="item[cb.id]" :id="`ab` + index" @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" @mouseover="isHover = index" @mouseleave="isHover = -1" :class="{'combobox__item--selected': item[main]==value}" class="combobox__item">
+            <div v-for="(item, index) in items" :key="item[cb.id]" 
+                class="combobox__item"
+                :id="tabindex + index" 
+                :tabindex="tabindex" 
+                :class="{'combobox__item--selected': item[main]==value}" 
+                @focus="open();this.isFocus = index;" 
+                @blur="close();isFocus=-1;" 
+                @keydown.up="prevItem" 
+                @keydown.down="nextItem" 
+                @keydown.esc="focusInput()" 
+                @keydown.enter="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" 
+                @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" 
+                @mouseover="isHover = index" 
+                @mouseleave="isHover = -1"
+            >
                 <div style="width: 30px; display: inline-block;">
-                    <i v-show="(isHover == index) || (item[main]==value)" class="fa-solid fa-check"></i>
+                    <i v-show="(isHover == index) || (isFocus == index) || (item[main]==value)" class="fa-solid fa-check"></i>
                 </div>
                 <el-tooltip :disabled="item[main].length < 33" :content="item[main]" placement="bottom-start" effect="light">
                     <span>{{item[main]}}</span>
@@ -23,7 +49,7 @@ import DTooltipWarning from './DTooltipWarning.vue'
 
 export default {
     components: { DTooltipWarning },
-    props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText"],
+    props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText", "tabindex"],
     data() {
         return {
             isOpen: false,
@@ -37,6 +63,7 @@ export default {
             },
             keyword: "",
             justCreateForm: true, // Biến xác định xem form có vừa được tạo hay không
+            isFocus: -1,
         };
     },
     created() {
@@ -74,6 +101,42 @@ export default {
         },
     },
     methods: {
+        /**
+         * Focus vào input
+         * NDDAT (07/10/2022)
+         */
+        focusInput() {
+            document.getElementById(`input${this.tabindex}`).focus()
+        },
+
+        /**
+         * Focus vào item đầu tiên
+         * NDDAT (07/10/2022)
+         */
+        focusFirstItem() {
+            document.getElementById(`${this.tabindex}0`).focus()
+        },
+
+        /**
+         * Focus vào item trước đó
+         * NDDAT (07/10/2022)
+         */
+        prevItem(e) {
+            if(e.target.previousElementSibling){
+                e.target.previousElementSibling.focus()
+            }
+        },
+
+        /**
+         * Focus vào item tiếp theo
+         * NDDAT (07/10/2022)
+         */
+        nextItem(e) {
+            if(e.target.nextElementSibling){
+                e.target.nextElementSibling.focus()
+            }
+        },
+
         /**
          * Đóng các item của combobox
          * NDDAT (06/10/2022)
@@ -138,6 +201,7 @@ export default {
         selected(main, id, code, name, depreciation_rate, life_time) {
             this.value = main;
             this.close()
+            this.focusInput()
             this.$emit("comboboxSelected", id, code, name);
             this.$emit("comboboxSearch", id);
             if(this.main == 'fixed_asset_category_code') this.$emit('updateWithCategoryCode', depreciation_rate, life_time)

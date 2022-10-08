@@ -1,27 +1,29 @@
 export default {
     // Phím tắt
     KeyCode: {
-        //Phím Enter
+        // Phím Enter
         ENTER: 13,
-        //Phím ESC
-        ESC: 27
+        // Phím ESC
+        ESC: 27,
+        // Phím `
+        SelectTable: 192,
     },
 
     // Loại dialog chi tiết
     FormMode: {
-        //Thêm tài sản
+        // Thêm tài sản
         Add: 1,
-        //Sửa tài sản
+        // Sửa tài sản
         Edit: 2,
-        //Nhân bản tài sản
+        // Nhân bản tài sản
         Duplicate: 3
     },
 
     // Loại combobox
     ComboboxType: {
-        //Phòng ban
+        // Phòng ban
         Department: 1,
-        //Loại tài sản
+        // Loại tài sản
         Category: 2
     },
 }

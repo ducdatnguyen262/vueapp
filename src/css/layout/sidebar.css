@@ -150,7 +150,7 @@
     background: url('../../assets/icon/qlts-icon.png') no-repeat -285px -417px;
 	width: 22px;
 	height: 22px;
-    margin-left: auto;
+    margin: 0 10px 0 auto;
     cursor: pointer;
 }
 
@@ -158,6 +158,6 @@
     background: url('../../assets/icon/qlts-icon.png') no-repeat -329px -417px;
 	width: 22px;
 	height: 22px;
-    margin-left: auto;
+    margin: 0 auto;
     cursor: pointer;
 }

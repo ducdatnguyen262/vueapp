@@ -68,6 +68,7 @@
     height: 36px;
     width: 220px;
     line-height: 36px;
+    outline: none;
     text-overflow: ellipsis;
     overflow: hidden; 
     white-space: nowrap;

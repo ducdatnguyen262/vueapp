@@ -24,7 +24,7 @@
 
 .button:focus {
     background-color: #0582a2;
-    box-shadow: 0px 0px 0px 4px #cef6ff;
+    box-shadow: 0px 0px 3px 3px #cef6ff;
 }
 
 .button--sub {
@@ -43,7 +43,7 @@
 
 .button--sub:focus {
     background-color: #d1edf4;
-    box-shadow: 0px 0px 0px 4px #cef6ff;
+    box-shadow: 0px 0px 3px 3px #cef6ff;
 }
 
 .button--outline {
@@ -55,10 +55,12 @@
 .button--outline:hover,
 .button--outline:active {
     background-color: #1aa4c8;
+    color: #ffffff;
 }
 
 .button--outline:focus {
     background-color: #1aa4c8;
+    color: #ffffff;
     box-shadow: 0px 0px 0px;
 }
 

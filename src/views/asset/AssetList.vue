@@ -4,25 +4,64 @@
         <div class="content-search">
             <div class="search">
                 <div class="search__icon"></div>
-                <input v-model="search" @keypress.enter="searchMethod(search)" class="search__input mr-11" type="text" placeholder="Tìm kiếm tài sản">
+                <input 
+                    v-model="search" 
+                    tabindex="1" 
+                    class="search__input mr-11" 
+                    type="text" 
+                    placeholder="Tìm kiếm tài sản"
+                    @keypress.enter="searchMethod(search)"
+                >
             </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
-                <d-combobox type="2" main="fixed_asset_category_name" @searchAll="searchAllCategory" @comboboxSearch="categorySearch" placeholder="Loại tài sản" class="combobox-icon-padding mr-11"></d-combobox>
+                <d-combobox 
+                    type="2" 
+                    main="fixed_asset_category_name" 
+                    placeholder="Loại tài sản" 
+                    class="combobox-icon-padding mr-11"
+                    :tabindex="'2'" 
+                    @searchAll="searchAllCategory" 
+                    @comboboxSearch="categorySearch" 
+                />
             </div>
             <div class="combobox-with-icon">
                 <div class="combobox-icon"></div>
-                <d-combobox type="1" main="department_name" @searchAll="searchAllDepartment" @comboboxSearch="departmentSearch" placeholder="Bộ phận sử dụng" class="combobox-icon-padding"></d-combobox>
+                <d-combobox 
+                    type="1" 
+                    main="department_name" 
+                    placeholder="Bộ phận sử dụng" 
+                    class="combobox-icon-padding"
+                    :tabindex="'3'" 
+                    @searchAll="searchAllDepartment" 
+                    @comboboxSearch="departmentSearch"
+                />
             </div>
         </div>
         <div class="content-btns">
-            <d-button @click="btnAddOnClick" text="Thêm tài sản" icon="add" class="mr-11"></d-button>
+            <d-button 
+                tabindex="4" 
+                text="Thêm tài sản" 
+                icon="add" 
+                class="mr-11"
+                @click="btnAddOnClick" 
+            />
             <div class="position-relative">
-                <d-button icon="excel" type="small" class="mr-11"></d-button>
+                <d-button 
+                    tabindex="5" 
+                    icon="excel" 
+                    type="small" 
+                    class="mr-11"
+                />
                 <d-tooltip text="Xuất"></d-tooltip>
             </div>
             <div class="position-relative">
-                <d-button @click="btnDeleteOnClick" icon="delete" type="small"></d-button>
+                <d-button 
+                    tabindex="6" 
+                    icon="delete" 
+                    type="small"
+                    @click="btnDeleteOnClick" 
+                />
                 <d-tooltip text="Xóa"></d-tooltip>
             </div>
         </div>
@@ -57,9 +96,26 @@
                 </tr>
             </thead>
             <tbody class="tbody">
-                <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id)||checkedAll}" @click="rowSelect(index)" @dblclick="rowEdit(asset)" @mouseover="rowHover = index" @mouseleave="rowHover = -1">
+                <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
+                    tabindex="7" 
+                    :id="'table'+index" 
+                    :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}" 
+                    @keydown.f2="rowEdit(asset)" 
+                    @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
+                    @keydown.up="prevItem" @keydown.down="nextItem" 
+                    @focus="rowFocus=index" @click="rowSelect(index)" 
+                    @dblclick="rowEdit(asset)" 
+                    @mouseover="rowHover = index" 
+                    @mouseleave="rowHover = -1"
+                >
                     <td class="ms-table-right ms-table-fit">
-                        <input v-model="checked" :value="asset.fixed_asset_id" @click.stop @change="checkedMethod(index, asset.fixed_asset_id)" type="checkbox">
+                        <input 
+                            v-model="checked" 
+                            :value="asset.fixed_asset_id" 
+                            type="checkbox"
+                            @click.stop 
+                            @change="checkedMethod(index, asset.fixed_asset_id)" 
+                        >
                     </td>
                     <td>{{index + 1}}</td>
                     <td>{{asset.fixed_asset_code}}</td>
@@ -73,11 +129,11 @@
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == asset.fixed_asset_id" @click="rowEdit(asset)"  class="icon-edit"></div>
+                                <div @click="rowEdit(asset)" class="icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div v-show="rowHover == index || rowSelected == index || checkedAll || checkboxSelected[index] == asset.fixed_asset_id" @click="rowDuplicate(asset)" class="icon-duplicate"></div>
+                                <div @click="rowDuplicate(asset)" class="icon-duplicate"></div>
                                 <d-tooltip text="Nhân bản" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -85,7 +141,10 @@
                 </tr>
                 <tr style="height:auto;"></tr>
             </tbody>
-            <el-empty v-if="totalCount==0" style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" description="Không có dữ liệu"/>
+            <el-empty v-if="totalCount==0" 
+                description="Không có dữ liệu"
+                style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
+            />
             <tfoot class="tfoot">
                 <tr>
                     <td colspan="6">
@@ -102,15 +161,70 @@
                             <div @click="prevPage()" class="tfooter-prev position-relative">
                                 <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
                             </div>
-                            <div @click="toPage(1)" :class="{'tfooter-page--selected':page == 1}" class="tfooter-page">1</div>
-                            <div v-show="page>=3 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
-                            <div @click="toPage(2)" v-show="(page<3 || totalPage==5 || totalPage<=3) && totalPage!=1 " :class="{'tfooter-page--selected':page == 2}" class="tfooter-page">2</div>
-                            <div @click="toPage(3)" v-show="page<3 && totalPage!=1 && totalPage>3" :class="{'tfooter-page--selected':page == 3}" class="tfooter-page">3</div>
-                            <div v-show="page>=3 && page<totalPage-1 && totalPage!=1" class="tfooter-page tfooter-page--selected">{{page}}</div>
-                            <div v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" class="tfooter-page">...</div>
-                            <div @click="toPage(totalPage-2)" v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" :class="{'tfooter-page--selected':page == totalPage-2}" class="tfooter-page">{{totalPage-2}}</div>
-                            <div @click="toPage(totalPage-1)" v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" :class="{'tfooter-page--selected':page == totalPage-1}" class="tfooter-page">{{totalPage-1}}</div>
-                            <div @click="toPage(totalPage)" v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" class="tfooter-page">{{totalPage}}</div>
+                            <div 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == 1}" 
+                                @click="toPage(1)" 
+                            >
+                                1
+                            </div>
+                            <div 
+                                v-show="page>=3 && totalPage>5 && totalPage!=1" 
+                                class="tfooter-page"
+                            >
+                                ...
+                            </div>
+                            <div 
+                                v-show="(page<3 || totalPage==5 || totalPage==3) && totalPage>=3 " 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == 2}" 
+                                @click="toPage(2)" 
+                            >
+                                2
+                            </div>
+                            <div 
+                                v-show="page<3 && totalPage!=1 && totalPage>3" 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == 3}" 
+                                @click="toPage(3)" 
+                            >
+                                3
+                            </div>
+                            <div 
+                                v-show="page>=3 && page<totalPage-1 && totalPage!=1" 
+                                class="tfooter-page tfooter-page--selected"
+                            >
+                                {{page}}
+                            </div>
+                            <div 
+                                v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" 
+                                class="tfooter-page"
+                            >
+                                ...
+                            </div>
+                            <div 
+                                v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == totalPage-2}" 
+                                @click="toPage(totalPage-2)" 
+                            >
+                                {{totalPage-2}}
+                            </div>
+                            <div 
+                                v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == totalPage-1}" 
+                                @click="toPage(totalPage-1)" 
+                            >
+                                {{totalPage-1}}
+                            </div>
+                            <div 
+                                v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" 
+                                class="tfooter-page"
+                                @click="toPage(totalPage)" 
+                            >
+                                {{totalPage}}
+                            </div>
                             <div @click="nextPage()" class="tfooter-next position-relative">
                                 <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
                             </div>
@@ -132,13 +246,30 @@
     </div>
 
     <!-- Dialog chi tiết tài sản -->
-    <asset-detail v-if="dialogShow" :formMode="detailFormMode" :assetSelected="assetSelected" @hideDialog="hideDialogMethod" @hideDialogSuccess="hideDialogSuccessMethod" :assetCode="assetCode" :title="title"></asset-detail>
+    <asset-detail 
+        v-if="dialogShow" 
+        :formMode="detailFormMode" 
+        :assetSelected="assetSelected" 
+        :assetCode="assetCode" 
+        :title="title"
+        @hideDialogSuccess="hideDialogSuccessMethod" 
+        @hideDialog="hideDialogMethod" 
+    />
 
     <!-- Dialog cảnh báo khi xóa -->
-    <d-dialog v-if="deleteShow" @closeNotify="closeDelete" @confirmNotify="confirmDelete" :text="deleteText" textbtn="Xóa"></d-dialog>
+    <d-dialog 
+        v-if="deleteShow" 
+        :text="deleteText" textbtn="Xóa"
+        @closeNotify="closeDelete" 
+        @confirmNotify="confirmDelete" 
+    />
 
     <!-- Dialog cảnh báo khi xóa nhưng không chọn tài sản nào -->
-    <d-dialog-1-button v-if="deleteSelectedNone" @closeNotify="this.deleteSelectedNone = false" text="Vui lòng chọn tài sản trước khi xóa."></d-dialog-1-button>
+    <d-dialog-1-button 
+        v-if="deleteSelectedNone" 
+        text="Vui lòng chọn tài sản trước khi xóa."
+        @closeNotify="this.deleteSelectedNone = false" 
+    />
 
     <!-- Toast thông báo thành công -->
     <transition name="toast">
@@ -173,6 +304,8 @@ export default {
         detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
         rowSelected: -1, // Dòng được chọn tạm thời (click)
         rowHover: -1, // Dòng được hover
+        rowFocus: -1, // Dòng được focus
+        rowFocusDelete: [], // Chứa id của dòng được focus để xóa
         title: "", // Title của dialog dialog chi tiết tài sản
         checkedAll: false, // Có check toàn bộ checkbox hay không
         checked: [], // Danh sách các dòng được chọn (checkbox)
@@ -200,19 +333,30 @@ export default {
     this.loadData()
     this.setUpCheckedAll()
   },
+  mounted() {
+    this.$nextTick(() => {
+    //   document.getElementById(`table0`).focus()
+    })
+  },
   computed: {
     // Tạo api lấy tài sản
     api : function() {
-        return Resource.Url.Asset+"/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
+        return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
     },
   },
   methods: {
-    // Tạo text cho dialog cảnh báo xóa
+    /**
+     * Tạo text cho dialog cảnh báo xóa
+     * NDDAT (26/09/2022)
+     */
     deleteTextCreate() {
         if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> tài sản đã được chọn.Bạn có muốn xóa các tài sản này khỏi danh sách?"
-        else{
+        else {
+            var id
+            if(this.checked.length == 1) id = this.checked[0];
+            else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
             for (let index in this.assets) {
-                if (this.checked[0] == this.assets[index].fixed_asset_id){
+                if (id == this.assets[index].fixed_asset_id){
                     this.deleteText = "Bạn có muốn xóa tài sản <b>"+this.assets[index].fixed_asset_code+"</b> - <b>"+this.assets[index].fixed_asset_name+"</b> ?"
                     break;
                 }
@@ -246,10 +390,22 @@ export default {
     },
 
     /**
+     * Nhấn phím tắt Delete hiển thị dialog cảnh báo xóa tài sản
+     * NDDAT (07/10/2022)
+     * @param {string} id ID tài sản đang focus
+     */
+    deleteOnKey(id) {
+        this.rowFocusDelete[0] = id;
+        this.deleteTextCreate()
+        this.deleteShow = true
+    },
+
+    /**
      * Đóng dialog cảnh báo xóa tài sản
      * NDDAT (15/09/2022)
      */
     closeDelete() {
+        document.getElementById(`table${this.rowFocus+1}`).focus()
         this.deleteShow = false
     },
 
@@ -258,14 +414,15 @@ export default {
      * NDDAT (28/09/2022)
      */
     confirmDelete() {
-        this.closeDelete()
         // Xóa tài sản
-        console.log(1)
-        if((this.checked[0])){
+        if(this.rowFocusDelete[0] || this.checked[0]){
             try{
                 // Xóa dữ liệu:
                 var url = Resource.Url.Asset + "/batch-delete"
-                fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.checked)})
+                var body = ""
+                if(this.checked[0]) body = this.checked
+                else body = this.rowFocusDelete
+                fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
                 .then(res => res.json())
                 .then(res =>{
                     var status = res.status
@@ -277,7 +434,9 @@ export default {
                                 console.error(Resource.ErrorCode[500]);
                                 break
                             default: 
+                                this.closeDelete()
                                 this.loadData()
+                                this.rowFocusDelete = []
                                 this.checked = []
                                 this.setUpCheckedAll()
                         }
@@ -296,6 +455,9 @@ export default {
      * NDDAT (15/09/2022)
      */
     hideDialogMethod () {
+        if(this.rowFocus > -1) {
+            document.getElementById(`table${this.rowFocus}`).focus()
+        }
         this.dialogShow = false
         this.loadData()
     },
@@ -385,6 +547,7 @@ export default {
     /**
      * Tìm kiếm phòng ban
      * NDDAT (29/09/2022)
+     * @param {string} id ID phòng ban
      */
     departmentSearch(id) {
         this.departmentId = id
@@ -409,7 +572,7 @@ export default {
         try{
             // Gọi api lấy toàn bộ dữ liệu
             this.isLoading = true
-            fetch(Resource.Url.Asset+"/filter?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+"-1"+"&page="+this.page, {method: Resource.Method.Get})
+            fetch(Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+"-1"+"&page="+this.page, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
                 this.assetsAll = Object.values(data)[0]
@@ -444,17 +607,33 @@ export default {
      * @param {int} code id của dòng chứa checkbox được click
      */
     checkedMethod(order, code) {
-        try{
-            if (this.checkboxSelected[order] == code) this.checkboxSelected[order] = null
-            for (let i in this.checked) {
-                for (let index in this.assets) {
-                    if (this.checked[i] == this.assets[index].fixed_asset_id) {
-                        this.checkboxSelected[index] = this.assets[index].fixed_asset_id
-                    }
+        if (this.checkboxSelected[order] == code) this.checkboxSelected[order] = null
+        for (let i in this.checked) {
+            for (let index in this.assets) {
+                if (this.checked[i] == this.assets[index].fixed_asset_id) {
+                    this.checkboxSelected[index] = this.assets[index].fixed_asset_id
                 }
             }
-        } catch (error) {
-            console.error(error);
+        }
+    },
+
+    /**
+     * Focus vào item trước đó
+     * NDDAT (07/10/2022)
+     */
+    prevItem(e) {
+        if(e.target.previousElementSibling){
+            e.target.previousElementSibling.focus()
+        }
+    },
+
+    /**
+     * Focus vào item tiếp theo
+     * NDDAT (07/10/2022)
+     */
+    nextItem(e) {
+        if(e.target.nextElementSibling){
+            e.target.nextElementSibling.focus()
         }
     },
 
@@ -506,12 +685,8 @@ export default {
      * @param {double} money số tiền
      */
     formatMoney(money) {
-        try {
-            money = new Intl.NumberFormat('de-DE', {}).format(money)
+        money = new Intl.NumberFormat('de-DE', {}).format(money)
         return money
-        } catch (error) {
-            console.error(error);
-        }  
     },
 
     /**
@@ -544,6 +719,16 @@ export default {
     },
   },
 }
+
+/**
+ * Focus vào bảng khi nhấn `
+ * NDDAT (15/09/2022)
+ */
+window.addEventListener('keydown', function(e) {
+    if(e.keyCode == Enum.KeyCode.SelectTable) {
+        document.getElementById(`table0`).focus()
+    }
+});
 </script>
 
 <style scoped>

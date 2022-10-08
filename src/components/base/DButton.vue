@@ -1,6 +1,6 @@
 <template>
-    <button class="button" :class="'button--' + type">
-        <div :id="id" :class="'icon-' + icon"></div>
+    <button :id="id" class="button" :class="'button--' + type">
+        <div :class="'icon-' + icon"></div>
         {{text}}
     </button>
 </template>

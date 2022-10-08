@@ -2,12 +2,12 @@
     <div class="dialog-container">
         <div class="dialog dialog--warning">
             <div class="dialog__content">
-                <div class="warning-icon"></div>
+                <div tabindex="201" ref="first" @keyup.enter="focusNext()" class="warning-icon"></div>
                 <div class="dialog__content-text" v-html="text"></div>
             </div>
             <div class="dialog__footer">
-                <DButton @click="closeNotify" text="Không" type="outline" class="mr-10"></DButton>
-                <DButton @click="confirmNotify" :text="textbtn"></DButton>
+                <DButton @click="closeNotify" tabindex="201" :id="'dialog2btn'" text="Không" type="outline" class="mr-10"></DButton>
+                <DButton @click="confirmNotify" tabindex="201" @keydown.tab="focusFirst()" :text="textbtn"></DButton>
             </div>
         </div>
     </div>
@@ -17,10 +17,9 @@
 import DButton from './DButton.vue';
 export default {
     props: ["text", "textbtn"],
-    data() {
-        return {
-            
-        };
+    components: { DButton },
+    mounted() {
+        this.focusFirst()
     },
     methods: {
         /**
@@ -37,9 +36,24 @@ export default {
          */
         confirmNotify() {
             this.$emit("confirmNotify")
-        }
+        },
+
+        /**
+         * Focus vào phần tử đầu tiên
+         * NDDAT (15/09/2022)
+         */
+        focusFirst() {
+            this.$refs.first.focus()
+        },
+
+        /**
+         * Chuyển focus lên đầu sau khi đến cuối
+         * NDDAT (15/09/2022)
+         */
+        focusNext() {
+            document.getElementById('dialog2btn').focus()
+        },
     },
-    components: { DButton }
 }
 </script>
 
