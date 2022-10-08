@@ -255,6 +255,7 @@ export default {
         title: String,
         assetCode: String,
     },
+    
     data() {
         return {
             asset: { // Lưu dữ liệu 1 tài sản
@@ -301,6 +302,7 @@ export default {
             shiftPressed: false, // Nút Shift có đang được bấm hay không
         }
     },
+
     watch: {
         asset: {
             deep: true,
@@ -309,6 +311,7 @@ export default {
             }
         }
     },
+
     created() {
         // Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
         this.updateAsset()   
@@ -319,12 +322,14 @@ export default {
             this.generateNextCode()
         }
     },
+
     mounted() {
         // Focus vào ô đầu của dialog
         this.focusFirst()
         // Đặt lại form là chưa sửa
         this.isEdited = false
     },
+
     updated() {
         // Xử lí để dữ liệu truyền vào form không được tính là đã sửa (isEdited)
         if(this.isEdited && this.firstTimeEdited && this.formMode != Enum.FormMode.Edit){
@@ -334,6 +339,7 @@ export default {
         // Cập nhật hao mòn năm
         this.updateValue()
     },
+
     validations() {
         return {
             // Các trường cần validate thiếu
@@ -352,6 +358,7 @@ export default {
             },
         }
     },
+
     methods: {
         /**
          * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
@@ -559,33 +566,9 @@ export default {
         btnSaveOnClick() {
             this.isSubmited = true
             try{
-                var method = Resource.Method.Post
-                var url = Resource.Url.Asset
-                if (this.validateData() && this.validateDataDuplicateCode()) {
-                    // Cất dữ liệu:
-                    if(this.formMode == Enum.FormMode.Edit) {
-                        method = Resource.Method.Put
-                        url = url + `/${this.asset.fixed_asset_id}`
-                    }
-                    fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
-                    .then(res => res.json())
-                    .then(res =>{
-                        var status = res.status
-                        switch(status) {
-                            case 400: 
-                                console.error(Resource.ErrorCode[400]);
-                                break
-                            case 500:                               
-                                console.error(Resource.ErrorCode[500]);
-                                break
-                            default: 
-                                this.$emit("hideDialogSuccess")
-                        }
-                    })
-                    .catch(res => {
-                        console.error(res);
-                    })
-                }
+                if(this.validateData()) {
+                    this.validateDuplicateAndSave()
+                }              
             } catch (error) {
                 console.error(error);
             }
@@ -627,10 +610,10 @@ export default {
         },
 
         /**
-         * Validate trùng mã tài sản
+         * Validate trùng mã tài sản và gọi hàm lưu
          * NDDAT (08/10/2022)
          */
-        validateDataDuplicateCode() {
+        validateDuplicateAndSave() {
             // Kiểm tra mã trùng nhau
             try{
                 // Gọi api lấy dữ liệu
@@ -641,9 +624,10 @@ export default {
                     if (this.formMode == Enum.FormMode.Edit ? (this.asset.fixed_asset_code == this.assetCode ? dup>1 : dup>0) : dup>0) {
                         this.errorMessage = Resource.ErrorMsg.ValidateDuplicateCode
                         this.validateShow = true
-                        return false;
                     }
-                    else return true;
+                    else {
+                        this.saveData()
+                    }
                 })
                 .catch(res => {
                     console.error(res);
@@ -651,6 +635,38 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+        },
+
+        /**
+         * Lưu tài sản
+         * NDDAT (08/10/2022)
+         */
+        saveData() {
+            // Cất dữ liệu:
+            var method = Resource.Method.Post
+            var url = Resource.Url.Asset
+            if(this.formMode == Enum.FormMode.Edit) {
+                method = Resource.Method.Put
+                url = url + `/${this.asset.fixed_asset_id}`
+            }
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
+            .then(res => res.json())
+            .then(res =>{
+                var status = res.status
+                switch(status) {
+                    case 400: 
+                        console.error(Resource.ErrorCode[400]);
+                        break
+                    case 500:                               
+                        console.error(Resource.ErrorCode[500]);
+                        break
+                    default: 
+                        this.$emit("hideDialogSuccess")
+                }
+            })
+            .catch(res => {
+                console.error(res);
+            })
         },
 
         /**

@@ -292,7 +292,7 @@ import DDialog1Button from '@/components/base/DDialog1Button.vue'
 export default {
   components: { DButton, DTooltip, AssetDetail, DCombobox, DDialog, DToast, DDialog1Button },
   name:"AssetList",
-  props: [],
+
   data() {
     return {
         assets:[], // Mảng lưu các tài sản đang hiện
@@ -328,22 +328,26 @@ export default {
         assetCode: "", // Mã tài sản lưu lại khi mở form
     }
   },
+
   created() {
     // Thực hiện gọi api lấy dữ liệu
     this.loadData()
     this.setUpCheckedAll()
   },
+
   mounted() {
     this.$nextTick(() => {
     //   document.getElementById(`table0`).focus()
     })
   },
+
   computed: {
     // Tạo api lấy tài sản
     api : function() {
         return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
     },
   },
+
   methods: {
     /**
      * Tạo text cho dialog cảnh báo xóa

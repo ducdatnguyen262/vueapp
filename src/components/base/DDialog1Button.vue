@@ -2,7 +2,7 @@
     <div class="dialog-container">
         <div class="dialog dialog--warning">
             <div class="dialog__content">
-                <div tabindex="201" ref="first" @keyup.enter="focusNext()" class="warning-icon"></div>
+                <div tabindex="201" ref="first" @keyup.enter="focusNext()" @keyup.delete="focusNext()" class="warning-icon"></div>
                 <div class="dialog__content-text">{{text}}</div>
             </div>
             <div class="dialog__footer">
