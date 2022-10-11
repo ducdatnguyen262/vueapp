@@ -6,7 +6,7 @@ export default {
         // Phím ESC
         ESC: 27,
         // Phím `
-        SelectTable: 192,
+        SelectTable: 115,
     },
 
     // Loại dialog chi tiết

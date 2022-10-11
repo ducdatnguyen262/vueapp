@@ -1,5 +1,5 @@
 <template>
-    <div class="combobox" @blur="close()">
+    <div class="combobox">
         <input 
             v-model=value 
             type="text" 
@@ -7,11 +7,12 @@
             :tabindex="tabindex" 
             :class="{'input--error': !value && isSubmited}"
             :placeholder="placeholder" 
-            @keydown.enter="open()" 
+            @click="toggle()"
             @keydown.esc="close()" 
             @keydown.down="open();focusFirstItem()" 
             @blur="close()" 
             @keyup="searchAll()"
+            @keyup.enter="selectWithKey()"
         >
         <d-tooltip-warning :text="tooptipText"></d-tooltip-warning>
         <button tabindex="-1" @click="toggle()" @blur="close()"></button>
@@ -21,12 +22,12 @@
                 :id="tabindex + index" 
                 :tabindex="tabindex" 
                 :class="{'combobox__item--selected': item[main]==value}" 
-                @focus="open();this.isFocus = index;" 
-                @blur="close();isFocus=-1;" 
+                @focus="open();isFocus = index;" 
+                @blur="close();isFocus=-1;"
                 @keydown.up="prevItem" 
                 @keydown.down="nextItem" 
                 @keydown.esc="focusInput()" 
-                @keydown.enter="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" 
+                @keydown.enter="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)"
                 @mousedown="selected(item[main], item[cb.id], item[cb.code], item[cb.name], item.depreciation_rate, item.life_time)" 
                 @mouseover="isHover = index" 
                 @mouseleave="isHover = -1"
@@ -159,6 +160,17 @@ export default {
          */
         toggle() {
             this.isOpen = !this.isOpen
+        },
+
+        /**
+         * Đóng combobox khi chọn bằng phím tắt
+         * NDDAT (10/10/2022)
+         */
+        selectWithKey(){
+            if(this.isOpen == true) {
+                this.keyword = "-11-";
+                this.loadData()
+            }
         },
 
         /**

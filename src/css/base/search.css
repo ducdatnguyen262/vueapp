@@ -21,15 +21,3 @@
     height: 36px;
     font-size: 14px;
 }
-
-.search__input:hover {
-    border-color: #0078d7;
-}
-
-.search__input:active {
-    border-color: #0078d7;
-}
-
-.search__input:focus {
-    border-color: #0f80d9;
-}

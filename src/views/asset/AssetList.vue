@@ -31,7 +31,7 @@
                     type="1" 
                     main="department_name" 
                     placeholder="Bộ phận sử dụng" 
-                    class="combobox-icon-padding"
+                    class="combobox-icon-padding mr-11"
                     :tabindex="'3'" 
                     @searchAll="searchAllDepartment" 
                     @comboboxSearch="departmentSearch"
@@ -52,6 +52,7 @@
                     icon="excel" 
                     type="small" 
                     class="mr-11"
+                    @click="btnExportOnClick" 
                 />
                 <d-tooltip text="Xuất"></d-tooltip>
             </div>
@@ -101,6 +102,7 @@
                     :id="'table'+index" 
                     :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}" 
                     @keydown.f2="rowEdit(asset)" 
+                    @keydown.insert="rowDuplicate(asset)" 
                     @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
                     @keydown.up="prevItem" @keydown.down="nextItem" 
                     @focus="rowFocus=index" @click="rowSelect(index)" 
@@ -350,6 +352,17 @@ export default {
 
   methods: {
     /**
+     * Nhấn button hiển thị dialog thêm tài sản
+     * NDDAT (15/09/2022)
+     */
+     btnAddOnClick() { 
+        this.assetSelected = {}
+        this.detailFormMode = Enum.FormMode.Add
+        this.title = Resource.DialogTitle.Add
+        this.dialogShow = true
+    },
+
+    /**
      * Tạo text cho dialog cảnh báo xóa
      * NDDAT (26/09/2022)
      */
@@ -366,17 +379,6 @@ export default {
                 }
             } 
         }
-    },
-
-    /**
-     * Nhấn button hiển thị dialog thêm tài sản
-     * NDDAT (15/09/2022)
-     */
-    btnAddOnClick() { 
-        this.assetSelected = {}
-        this.detailFormMode = Enum.FormMode.Add
-        this.title = Resource.DialogTitle.Add
-        this.dialogShow = true
     },
 
     /**
