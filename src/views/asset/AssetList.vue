@@ -52,7 +52,6 @@
                     icon="excel" 
                     type="small" 
                     class="mr-11"
-                    @click="btnExportOnClick" 
                 />
                 <d-tooltip text="Xuất"></d-tooltip>
             </div>
