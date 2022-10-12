@@ -61,6 +61,8 @@ export default {
     ErrorCode: {
         // Error 400
         400: "Dữ liệu đầu vào ko hợp lệ",
+        // Error 405
+        405: "Phương thức yêu cầu của bạn không hợp lệ hoặc không được cho phép tại server",
         // Error 500
         500: "Lỗi phía Server"
     },

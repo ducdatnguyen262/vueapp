@@ -2,11 +2,22 @@
     <div class="dialog-container">
         <div class="dialog dialog--warning">
             <div class="dialog__content">
-                <div tabindex="201" ref="first" @keyup.enter="focusNext()" @keyup.delete="focusNext()" class="warning-icon"></div>
+                <div 
+                    tabindex="201" 
+                    ref="first" 
+                    class="warning-icon"
+                    @keyup="focusNext()" 
+                />
                 <div class="dialog__content-text">{{text}}</div>
             </div>
             <div class="dialog__footer">
-                <DButton @click="closeNotify" tabindex="201" :id="'dialog1btn'" @keydown.tab="focusFirst()" text="Đóng"></DButton>
+                <DButton 
+                    tabindex="201" 
+                    text="Đóng"
+                    :id="'dialog1btn'" 
+                    @click="closeNotify" 
+                    @keydown.tab="focusFirst()" 
+                />
             </div>
         </div>
     </div>

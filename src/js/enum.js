@@ -5,6 +5,14 @@ export default {
         ENTER: 13,
         // Phím ESC
         ESC: 27,
+        // Phím Ctrl
+        Ctrl: 17,
+        // Phím F3
+        F3: 114,
+        // Phím F8
+        F8: 119,
+        // Phím F9
+        F9: 120,
         // Phím `
         SelectTable: 115,
     },

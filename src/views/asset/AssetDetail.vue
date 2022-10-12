@@ -1,10 +1,11 @@
 <template>
-    <div class="dialog-container">
+    <div class="dialog-container" v-on:keydown="keyboardEvent">
         <div class="dialog dialog--form">
             <div class="dialog__header">
                 <h2 class="dialog-title">{{title}}</h2>
-                <button ref="btnx" tabindex="100" class="dialog-x-container">
+                <button class="dialog-x-container">
                     <div 
+                        ref="btnx"
                         tabindex="100" 
                         class="dialog-x"
                         @keydown.enter="btnCloseOnClick()" 
@@ -19,6 +20,7 @@
                     <input 
                         v-model="asset.fixed_asset_code" 
                         tabindex="101" 
+                        maxlength="20"
                         ref="asset_code" 
                         class="dialog-input" 
                         type="text"
@@ -31,6 +33,7 @@
                     <input 
                         v-model="asset.fixed_asset_name" 
                         tabindex="102" 
+                        maxlength="255"
                         class="dialog-input dialog-input-big" 
                         type="text" 
                         placeholder="Nhập tên tài sản"
@@ -82,16 +85,18 @@
                 </div>
                 <div class="dialog-item">
                     <label>Số lượng <span style="color: red;">*</span></label>
-                    <input 
+                    <d-input-money 
                         v-model="asset.quantity" 
                         tabindex="105" 
-                        class="dialog-input" 
-                        type="number" 
-                        min="0" 
-                        oninput="validity.valid||(value='');"
                         :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" 
-                        @keyup="notNegative('quantity')" 
-                    >
+                        :options="{
+                            currency: 'EUR',
+                            currencyDisplay: 'hidden',
+                            valueRange: {min: 0},
+                            hideGroupingSeparatorOnFocus: false,
+                        }"
+                        @keyup="notNegative('quantity')"
+                    />
                     <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
@@ -192,41 +197,46 @@
             </div>
             <div class="dialog__footer">
                 <DButton 
-                    tabindex="113" 
+                    tabindex="114" 
                     text="Hủy" 
                     type="white" 
                     class="mr-10" 
                     :id="'close-asset-detail'"
                     @click="btnCloseOnClick" 
-                />
-                <DButton 
-                    tabindex="114" 
-                    text="Lưu" 
-                    @click="btnSaveOnClick" 
                     @keydown.shift="focusWithShift" 
                     @keydown.tab="focusBack"
+                />
+                <DButton 
+                    tabindex="113" 
+                    text="Lưu" 
+                    @click="btnSaveOnClick" 
                 />
             </div>
         </div>
     </div>
-    <d-dialog 
+    <d-dialog v-on:keydown="keyboardEvent"
         v-if="notifyShow" 
         textbtn="Hủy bỏ"
         :text="closeMsg" 
         @closeNotify="closeNotify" 
         @confirmNotify="confirmNotifyMethod" 
     />
-    <d-dialog-1-button 
+    <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="validateShow" 
         :text="errorMessage"
         @closeNotify="closeValidate" 
     />
-    <d-dialog-3-button 
+    <d-dialog-3-button v-on:keydown="keyboardEvent"
         v-if="validateProShow" 
         :text="closeEditedMsg"
         @closeNotify="closeProValidate" 
         @closeNotSaveNotify="confirmNotifyMethod"
         @confirmNotify="confirmSaveNotify" 
+    />
+    <d-dialog-1-button v-on:keydown="keyboardEvent"
+        v-if="backendError" 
+        :text="backendErrorMsg"
+        @closeNotify="closeBackendError"
     />
 </template>
 
@@ -300,6 +310,9 @@ export default {
             closeMsg: Resource.ErrorMsg.CloseMsg, // Văn bản khi đóng form
             closeEditedMsg: Resource.ErrorMsg.CloseEditedMsg, // Văn bản khi đóng form sau khi chỉnh sửa
             shiftPressed: false, // Nút Shift có đang được bấm hay không
+            ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
+            backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
+            backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
         }
     },
 
@@ -321,6 +334,13 @@ export default {
         if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
             this.generateNextCode()
         }
+
+        // Cài đặt keyboard shortcut
+        const component = this;
+        this.handler = function (e) {
+            component.$emit('keydown', e);
+        }
+        window.addEventListener('keydown', this.handler)
     },
 
     mounted() {
@@ -338,6 +358,10 @@ export default {
         }
         // Cập nhật hao mòn năm
         this.updateValue()
+    },
+
+    beforeUnmount() {
+        window.removeEventListener('keypress', this.handler);
     },
 
     validations() {
@@ -360,6 +384,35 @@ export default {
     },
 
     methods: {
+        /**
+         * Xử lí sự kiện keyboard shortcut
+         * NDDAT (12/10/2022)
+         */
+        keyboardEvent (e) {
+            if (e.which == Enum.KeyCode.ESC) {
+                if(this.notifyShow == true){
+                    this.closeNotify()
+                }
+                else if (this.validateShow == true) {
+                    this.closeValidate()
+                }
+                else if (this.validateProShow == true) {
+                    this.closeProValidate()
+                }
+            }
+            else if(e.which == Enum.KeyCode.Ctrl){
+                this.ctrlPressed = true
+            }
+            else if(e.which == Enum.KeyCode.F8 && this.ctrlPressed == true){
+                this.btnSaveOnClick()
+                this.ctrlPressed = false
+            }
+            else if(e.which == Enum.KeyCode.F9 && this.ctrlPressed == true){
+                this.btnCloseOnClick()
+                this.ctrlPressed = false
+            }
+        },
+
         /**
          * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
          * NDDAT (29/09/2022)
@@ -500,6 +553,15 @@ export default {
         },
 
         /**
+         * Xác nhận đóng cảnh báo lỗi từ backend
+         * NDDAT (12/10/2022)
+         */
+        closeBackendError() {
+            this.backendError = false
+            this.focusFirst()
+        },
+
+        /**
          * Xác nhận lưu khai báo
          * NDDAT (30/09/2022)
          */
@@ -516,6 +578,15 @@ export default {
             this.closeNotify()
             this.closeProValidate()
             this.$emit("hideDialog")
+        },
+
+        /**
+         * Hiện thị cảnh báo lỗi truyền từ BackEnd
+         * NDDAT (12/10/2022)
+         */
+        backEndErrorNotify(text) {
+            this.backendErrorMsg = text
+            this.backendError = true;
         },
 
         /**
@@ -567,8 +638,8 @@ export default {
             this.isSubmited = true
             try{
                 if(this.validateData()) {
-                    this.validateDuplicateAndSave()
-                }              
+                    this.saveData()
+                }         
             } catch (error) {
                 console.error(error);
             }
@@ -610,34 +681,6 @@ export default {
         },
 
         /**
-         * Validate trùng mã tài sản và gọi hàm lưu
-         * NDDAT (08/10/2022)
-         */
-        validateDuplicateAndSave() {
-            // Kiểm tra mã trùng nhau
-            try{
-                // Gọi api lấy dữ liệu
-                fetch(Resource.Url.Asset + `/duplicateCode/${this.asset.fixed_asset_code}`, {method: Resource.Method.Get})
-                .then(res => res.json())
-                .then(data => {
-                    let dup = Object.values(data)[0]
-                    if (this.formMode == Enum.FormMode.Edit ? (this.asset.fixed_asset_code == this.assetCode ? dup>1 : dup>0) : dup>0) {
-                        this.errorMessage = Resource.ErrorMsg.ValidateDuplicateCode
-                        this.validateShow = true
-                    }
-                    else {
-                        this.saveData()
-                    }
-                })
-                .catch(res => {
-                    console.error(res);
-                })
-            } catch (error) {
-                console.error(error);
-            }
-        },
-
-        /**
          * Lưu tài sản
          * NDDAT (08/10/2022)
          */
@@ -650,22 +693,28 @@ export default {
                 url = url + `/${this.asset.fixed_asset_id}`
             }
             fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
-            .then(res => res.json())
             .then(res =>{
                 var status = res.status
-                switch(status) {
-                    case 400: 
-                        console.error(Resource.ErrorCode[400]);
-                        break
-                    case 500:                               
-                        console.error(Resource.ErrorCode[500]);
-                        break
-                    default: 
-                        this.$emit("hideDialogSuccess")
-                }
+                res.json()
+                .then(data => {
+                    switch(status) {
+                        case 400: 
+                            if(Object.values(data)[3][0]) this.backEndErrorNotify(Object.values(data)[3][0])
+                            else this.backEndErrorNotify(Resource.ErrorCode[400])
+                            break
+                        case 405: 
+                            this.backEndErrorNotify(Resource.ErrorCode[405])
+                            break
+                        case 500: 
+                            this.backEndErrorNotify(Resource.ErrorCode[500])
+                            break
+                        default: 
+                            this.$emit("hideDialogSuccess")
+                    }
+                });
             })
             .catch(res => {
-                console.error(res);
+                console.error(res)
             })
         },
 

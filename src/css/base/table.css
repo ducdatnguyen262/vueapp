@@ -255,7 +255,7 @@
     box-shadow: 1px 1px 4px 1px #9d9d9d;
 }
 
-/* Đường chạy */
+/* Đường chạy của Scrollbar*/
 .table-container::-webkit-scrollbar-track {
     margin: 38px 0 40px 0;
 }

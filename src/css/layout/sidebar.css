@@ -2,7 +2,6 @@
     position: relative;
     height: 100vh;
     background-color: #1c3048;
-    /* color: rgba(255, 255, 255, 0.5); */
     color: #ffffff;
 }
 
@@ -26,7 +25,7 @@
 }
 
 .logo-title {
-    font-family: MISA Fonts Bold;
+    font-family: Roboto Bold;
     color: #ffffff;
     margin: 0 10px;
 }
@@ -43,7 +42,6 @@
 
 .sidebar-menu--selected {
     background-color: #1aa4c8;
-    /* color: #ffffff; */
     opacity: 1;
 }
 

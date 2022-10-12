@@ -2,12 +2,29 @@
     <div class="dialog-container">
         <div class="dialog dialog--warning">
             <div class="dialog__content">
-                <div tabindex="201" ref="first" @keyup.enter="focusNext()" @keyup.delete="focusNext()" class="warning-icon"></div>
+                <div 
+                    tabindex="201" 
+                    ref="first" 
+                    class="warning-icon"
+                    @keyup="focusNext()" 
+                />
                 <div class="dialog__content-text" v-html="text"></div>
             </div>
             <div class="dialog__footer">
-                <DButton @click="closeNotify" tabindex="201" :id="'dialog2btn'" text="Không" type="outline" class="mr-10"></DButton>
-                <DButton @click="confirmNotify" tabindex="201" @keydown.tab="focusFirst()" :text="textbtn"></DButton>
+                <DButton 
+                    tabindex="201" 
+                    text="Không" 
+                    type="outline" 
+                    class="mr-10"
+                    :id="'dialog2btn'" 
+                    @click="closeNotify" 
+                />
+                <DButton 
+                    tabindex="201" 
+                    :text="textbtn"
+                    @click="confirmNotify" 
+                    @keydown.tab="focusFirst()" 
+                />
             </div>
         </div>
     </div>

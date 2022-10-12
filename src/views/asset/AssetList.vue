@@ -7,6 +7,7 @@
                 <input 
                     v-model="search" 
                     tabindex="1" 
+                    id="searchInput"
                     class="search__input mr-11" 
                     type="text" 
                     placeholder="Tìm kiếm tài sản"
@@ -272,6 +273,12 @@
         @closeNotify="this.deleteSelectedNone = false" 
     />
 
+    <d-dialog-1-button v-on:keydown="keyboardEvent"
+        v-if="backendError" 
+        :text="backendErrorMsg"
+        @closeNotify="this.backendError = false"
+    />
+
     <!-- Toast thông báo thành công -->
     <transition name="toast">
         <d-toast v-show="toastShow"></d-toast>
@@ -327,6 +334,9 @@ export default {
         departmentId: "", // Mã phòng ban để tìm kiếm
         categoryId: "", // Mã loại tài sản để tìm kiếm
         assetCode: "", // Mã tài sản lưu lại khi mở form
+        ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
+        backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
+        backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
     }
   },
 
@@ -334,12 +344,20 @@ export default {
     // Thực hiện gọi api lấy dữ liệu
     this.loadData()
     this.setUpCheckedAll()
-  },
 
-  mounted() {
-    this.$nextTick(() => {
-    //   document.getElementById(`table0`).focus()
-    })
+    // Cài đặt keyboard shortcut
+    window.addEventListener('keydown', function(e) {
+        if(e.keyCode == Enum.KeyCode.SelectTable) {
+            document.getElementById(`table0`).focus()
+        }
+        else if(e.which == Enum.KeyCode.Ctrl){
+            this.ctrlPressed = true
+        }
+        else if(e.which == Enum.KeyCode.F3 && this.ctrlPressed == true){
+            document.getElementById(`searchInput`).focus()
+            this.ctrlPressed = false
+        }
+    });
   },
 
   computed: {
@@ -428,23 +446,25 @@ export default {
                 if(this.checked[0]) body = this.checked
                 else body = this.rowFocusDelete
                 fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
-                .then(res => res.json())
                 .then(res =>{
                     var status = res.status
-                        switch(status) {
-                            case 400: 
-                                console.error(Resource.ErrorCode[400]);
-                                break
-                            case 500: 
-                                console.error(Resource.ErrorCode[500]);
-                                break
-                            default: 
-                                this.closeDelete()
-                                this.loadData()
-                                this.rowFocusDelete = []
-                                this.checked = []
-                                this.setUpCheckedAll()
-                        }
+                    switch(status) {
+                        case 400: 
+                            this.backEndErrorNotify(Resource.ErrorCode[400])
+                            break
+                        case 405: 
+                            this.backEndErrorNotify(Resource.ErrorCode[405])
+                            break
+                        case 500: 
+                            this.backEndErrorNotify(Resource.ErrorCode[500])
+                            break
+                        default: 
+                            this.closeDelete()
+                            this.loadData()
+                            this.rowFocusDelete = []
+                            this.checked = []
+                            this.setUpCheckedAll()
+                    }
                 })
                 .catch(res => {
                     console.error(res);
@@ -685,6 +705,16 @@ export default {
     },
 
     /**
+     * Hiện thị cảnh báo lỗi truyền từ BackEnd
+     * NDDAT (12/10/2022)
+     * @param {string} text Thông điệp trong cảnh báo
+     */
+    backEndErrorNotify(text) {
+        this.backendErrorMsg = text
+        this.backendError = true;
+    },
+
+    /**
      * Định dạng tiền tệ
      * NDDAT (18/09/2022)
      * @param {double} money số tiền
@@ -724,16 +754,6 @@ export default {
     },
   },
 }
-
-/**
- * Focus vào bảng khi nhấn `
- * NDDAT (15/09/2022)
- */
-window.addEventListener('keydown', function(e) {
-    if(e.keyCode == Enum.KeyCode.SelectTable) {
-        document.getElementById(`table0`).focus()
-    }
-});
 </script>
 
 <style scoped>

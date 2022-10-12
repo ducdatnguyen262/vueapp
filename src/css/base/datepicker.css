@@ -1,9 +1,3 @@
-/* input[type="date"]::-webkit-calendar-picker-indicator {
-    background: #fff url('../../assets/icon/qlts-icon.png') no-repeat -285px -65px !important;
-    width: 18px !important;
-    height: 18px;
-} */
-
 .el-input__wrapper {
     height: 34px;
     border: 1px solid #afafaf;

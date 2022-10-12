@@ -21,6 +21,11 @@ input::placeholder {
     src: url('../assets/font/Roboto-Italic.ttf');
 }
 
+@font-face {
+    font-family: Roboto Bold;
+    src: url('../assets/font/Roboto-Bold.ttf');
+}
+
 label {
     display: block;
 }
