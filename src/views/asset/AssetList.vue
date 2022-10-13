@@ -384,14 +384,14 @@ export default {
      * NDDAT (26/09/2022)
      */
     deleteTextCreate() {
-        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> tài sản đã được chọn.Bạn có muốn xóa các tài sản này khỏi danh sách?"
+        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> tài sản đã được chọn. Bạn có muốn xóa các tài sản này khỏi danh sách?"
         else {
             var id
             if(this.checked.length == 1) id = this.checked[0];
             else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
             for (let index in this.assets) {
                 if (id == this.assets[index].fixed_asset_id){
-                    this.deleteText = "Bạn có muốn xóa tài sản <b>"+this.assets[index].fixed_asset_code+"</b> - <b>"+this.assets[index].fixed_asset_name+"</b> ?"
+                    this.deleteText = "Bạn có muốn xóa tài sản <b>"+this.assets[index].fixed_asset_code+"</b> - <b>"+this.assets[index].fixed_asset_name+"</b>?"
                     break;
                 }
             } 
