@@ -90,6 +90,7 @@
                         tabindex="105" 
                         :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" 
                         :options="{
+                            locale: 'vi-VN',
                             currency: 'EUR',
                             currencyDisplay: 'hidden',
                             valueRange: {min: 0},
@@ -106,6 +107,7 @@
                         tabindex="106" 
                         :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}"
                         :options="{
+                            locale: 'vi-VN',
                             currency: 'EUR',
                             currencyDisplay: 'hidden',
                             valueRange: {min: 0},
@@ -138,6 +140,7 @@
                         v-model="asset.purchase_date" 
                         tabindex="108" 
                         format="DD/MM/YYYY" 
+                        value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
                         :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
@@ -150,6 +153,7 @@
                         v-model="asset.production_date" 
                         tabindex="109" 
                         format="DD/MM/YYYY" 
+                        value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
                         :class="{'datepicker--error':!asset.production_date && this.isSubmited}" 
@@ -187,6 +191,7 @@
                         tabindex="112" 
                         :class="{'input--error':!asset.depreciation_year && asset.depreciation_year!='0' && this.isSubmited}"
                         :options="{
+                            locale: 'vi-VN',
                             currency: 'EUR',
                             currencyDisplay: 'hidden',
                             valueRange: {min: 0},
@@ -434,16 +439,6 @@ export default {
             } catch (error) {
                 console.error(error);
             }
-        },
-        
-        /**
-         * Định dạng tiền tệ
-         * NDDAT (18/09/2022)
-         * @param {double} money số tiền
-         */
-        formatMoney(money) {
-            money = new Intl.NumberFormat('de-DE', {}).format(money)
-            return money
         },
 
         /**

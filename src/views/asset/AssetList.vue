@@ -720,7 +720,7 @@ export default {
      * @param {double} money số tiền
      */
     formatMoney(money) {
-        money = new Intl.NumberFormat('de-DE', {}).format(money)
+        money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
         return money
     },
 

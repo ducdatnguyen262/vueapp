@@ -87,5 +87,13 @@ export default {
         Department: "https://localhost:7148/api/v1/Departments",
         // Url của loại tài sản
         Category: "https://localhost:7148/api/Categories"
+    },
+
+    // Mã ngôn ngữ
+    LanguageCode: {
+        // Việt Nam
+        VN: 'vi-VN',
+        // Hoa kỳ
+        US: 'en-US',
     }
 }
