@@ -48,12 +48,17 @@
                 @click="btnAddOnClick" 
             />
             <div class="position-relative">
-                <d-button 
-                    tabindex="5" 
-                    icon="excel" 
-                    type="small" 
-                    class="mr-11"
-                />
+                <vue-excel-xlsx
+                    tabindex="5"
+                    class="button button--small mr-11"
+                    :data="assets"
+                    :columns="columns"
+                    :file-name="'filename'"
+                    :file-type="'xlsx'"
+                    :sheet-name="'sheetname'"
+                    >
+                    <div class="icon-excel"></div>
+                </vue-excel-xlsx>
                 <d-tooltip text="Xuất"></d-tooltip>
             </div>
             <div class="position-relative">
@@ -346,6 +351,59 @@ export default {
         assetCode: "", // Mã tài sản lưu lại khi mở form
         backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+        columns : [
+                    {
+                        label: "Mã tài sản",
+                        field: "fixed_asset_code",
+                    },
+                    {
+                        label: "Tên tài sản",
+                        field: "fixed_asset_name",
+                    },
+                    {
+                        label: "Loại tài sản",
+                        field: "fixed_asset_category_name",
+                    },
+                    {
+                        label: "Bộ phận sử dụng",
+                        field: "department_name",
+                    },
+                    {
+                        label: "Số lượng",
+                        field: "quantity",
+                    },
+                    {
+                        label: "Nguyên giá",
+                        field: "cost",
+                        dataFormat: this.formatMoney
+                    },
+                    {
+                        label: "Ngày mua",
+                        field: "purchase_date",
+                        dataFormat: this.formatDate
+                    },
+                    {
+                        label: "Tỷ lệ hao mòn (%)",
+                        field: "depreciation_rate",
+                    },
+                    {
+                        label: "Năm bắt đầu theo dõi",
+                        field: "tracked_year",
+                    },
+                    {
+                        label: "Số năm sử dụng",
+                        field: "life_time",
+                    },
+                    {
+                        label: "Ngày bắt đầu sử dụng",
+                        field: "production_date",
+                        dataFormat: this.formatDate
+                    },
+                    {
+                        label: "Hao mòn năm",
+                        field: "depreciation_year",
+                    },
+                ],
     }
   },
 
@@ -363,6 +421,8 @@ export default {
             document.getElementById(`searchInput`).focus()
         }
     });
+
+    console.log(this.formatDate(new Date()));
   },
 
   computed: {
@@ -727,6 +787,20 @@ export default {
     formatMoney(money) {
         money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
         return money
+    },
+
+    /**
+     * Định dạng ngày tháng
+     * NDDAT (18/10/2022)
+     * @param {string} date số tiền
+     */
+    formatDate(date) {
+        const dateFormat = new Date(date)
+        dateFormat.toLocaleDateString()
+        // let day = dateFormat.getDate.toString().padStart(2, "0")
+        // let month = (dateFormat.getMonth + 1).toString().padStart(2, "0")
+        // let year = dateFormat.getFullYear
+        return dateFormat
     },
 
     /**
