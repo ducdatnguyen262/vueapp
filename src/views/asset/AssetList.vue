@@ -344,7 +344,6 @@ export default {
         departmentId: "", // Mã phòng ban để tìm kiếm
         categoryId: "", // Mã loại tài sản để tìm kiếm
         assetCode: "", // Mã tài sản lưu lại khi mở form
-        ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
         backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
     }
@@ -360,12 +359,8 @@ export default {
         if(e.keyCode == Enum.KeyCode.SelectTable) {
             document.getElementById(`table0`).focus()
         }
-        else if(e.which == Enum.KeyCode.Ctrl){
-            this.ctrlPressed = true
-        }
-        else if(e.which == Enum.KeyCode.F3 && this.ctrlPressed == true){
+        else if(e.which == Enum.KeyCode.F3 && e.ctrlKey == true){
             document.getElementById(`searchInput`).focus()
-            this.ctrlPressed = false
         }
     });
   },

@@ -5,6 +5,8 @@ export default {
         ENTER: 13,
         // Phím ESC
         ESC: 27,
+        // Phím Shift
+        Shift: 16,
         // Phím Ctrl
         Ctrl: 17,
         // Phím F3
