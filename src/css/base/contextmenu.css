@@ -1,0 +1,7 @@
+.v-contextmenu-item {
+    font-family: Roboto;
+}
+
+.v-contextmenu-item:hover {
+    background-color: #31b9e2;
+}

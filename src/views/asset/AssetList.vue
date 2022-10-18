@@ -101,6 +101,8 @@
                     tabindex="7" 
                     :id="'table'+index" 
                     :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}" 
+                    v-contextmenu:contextmenu
+                    @click.right="assetSelected = asset"
                     @keydown.f2="rowEdit(asset)" 
                     @keydown.insert="rowDuplicate(asset)" 
                     @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
@@ -241,6 +243,14 @@
             </tfoot>
         </table>
     </div>
+
+    <!-- Context Menu -->
+    <v-contextmenu ref="contextmenu">
+        <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
+        <v-contextmenu-item @click="rowEdit(assetSelected)">Sửa</v-contextmenu-item>
+        <v-contextmenu-item @click="deleteOnKey(assetSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
+        <v-contextmenu-item @click="rowDuplicate(assetSelected)">Nhân bản</v-contextmenu-item>
+    </v-contextmenu>
 
     <!-- Loading -->
     <div v-if="isLoading" class="loading">
@@ -765,4 +775,5 @@ export default {
     @import url('../../css/base/combobox.css');
     @import url('../../css/base/checkbox.css');
     @import url('../../css/base/toasttransition.css');
+    @import url('../../css/base/contextmenu.css');
 </style>

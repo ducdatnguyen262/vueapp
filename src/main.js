@@ -8,6 +8,8 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import vi from 'element-plus/es/locale/lang/vi'
 import {createRouter, createWebHistory } from 'vue-router'
+import contextmenu from "v-contextmenu";
+import "v-contextmenu/dist/themes/default.css";
 
 // B2: Định nghĩa các router
 const routers = [
@@ -26,6 +28,7 @@ const router = createRouter({
 // ROUTES
 // STORE
 const app = createApp(App)
+app.use(contextmenu)
 app.use(ElementPlus, {locale:vi})
 app.use(ElementPlus)
 app.use(router)
