@@ -421,8 +421,6 @@ export default {
             document.getElementById(`searchInput`).focus()
         }
     });
-
-    console.log(this.formatDate(new Date()));
   },
 
   computed: {

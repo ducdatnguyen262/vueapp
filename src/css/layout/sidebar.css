@@ -1,3 +1,8 @@
+a {
+    color: #fff;
+    text-decoration: none;
+}
+
 .sidebar {
     position: relative;
     height: 100vh;
@@ -13,7 +18,7 @@
     display: flex;
     align-items: center;
     height: 35px;
-    padding: 11px 15px 4px 15px;
+    padding: 11px 15px 3px 15px;
     margin-bottom: 15px;
     cursor: pointer;
 }
@@ -35,9 +40,10 @@
     align-items: center;
     height: 40px;
     cursor: pointer;
-    margin: 0 11px;
+    margin: 4px 11px 0 11px;
     border-radius: 6px;
     opacity: .54;
+    transition: background-color 0.5s;
 }
 
 .sidebar-menu--selected {
@@ -46,12 +52,8 @@
 }
 
 .sidebar-menu:hover {
-    background-color: rgba(26, 164, 200, .2);
-    opacity: 1;
-}
-
-.sidebar-menu--selected:hover {
     background-color: #1aa4c8;
+    opacity: 1;
 }
 
 .sidebar-menu__icon {
@@ -64,6 +66,7 @@
 	height: 24px;
 }
 
+.sidebar-menu:hover .sidebar-menu__icon--main,
 .sidebar-menu--selected .sidebar-menu__icon--main {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -22px -198px
 }
@@ -74,6 +77,7 @@
 	height: 24px;
 }
 
+.sidebar-menu:hover .sidebar-menu__icon--asset,
 .sidebar-menu--selected .sidebar-menu__icon--asset {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -65px -197px;
 }
@@ -84,6 +88,7 @@
 	height: 24px;
 }
 
+.sidebar-menu:hover .sidebar-menu__icon--asset-htdb,
 .sidebar-menu--selected .sidebar-menu__icon--asset-htdb {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -110px -197px
 }
@@ -94,6 +99,7 @@
 	height: 24px;
 }
 
+.sidebar-menu:hover .sidebar-menu__icon--tool,
 .sidebar-menu--selected .sidebar-menu__icon--tool {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -153px -197px
 }
@@ -104,6 +110,7 @@
 	height: 24px;
 }
 
+.sidebar-menu:hover .sidebar-menu__icon--menu,
 .sidebar-menu--selected .sidebar-menu__icon--menu {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -198px -200px
 }
@@ -114,6 +121,7 @@
 	height: 24px;
 }
  
+.sidebar-menu:hover .sidebar-menu__icon--search,
 .sidebar-menu--selected .sidebar-menu__icon--search {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -241px -197px
 }
@@ -124,8 +132,31 @@
 	height: 24px;
 }
 
+.sidebar-menu:hover .sidebar-menu__icon--report,
 .sidebar-menu--selected .sidebar-menu__icon--report {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -330px -198px
+}
+
+.sidebar-sub {
+    position: relative;
+    background-color: #33455b;
+    color: #ffffff;
+    margin: 3px 11px 0 11px;
+    border-radius: 4px;
+}
+
+.sidebar-sub .sidebar-menu {
+    margin: 0;
+}
+
+.sidebar-menu-sub {
+    padding-left: 44px;
+}
+
+.sidebar-menu-sub:hover,
+.sidebar-menu-sub--selected {
+    background-color: #48586c;
+    opacity: 1;
 }
 
 .sidebar-footer {
