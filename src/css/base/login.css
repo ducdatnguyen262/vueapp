@@ -1,0 +1,74 @@
+.login-background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url(../../assets/login-background.png) no-repeat;
+}
+
+.login {
+    width: 770px;
+    height: 560px;
+    display: flex;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 16px 30px rgb(0 0 0 / 16%);
+    overflow: hidden;
+    position: absolute;
+}
+
+.login-img {
+    background: url(../../assets/login-img.png) no-repeat;
+    width: 385px;
+    height: 560px;
+}
+
+.login-form {
+    width: 305px;
+    height: 560px;
+    margin: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-logo {
+    background: top/contain url(../../assets/Logo_MISA.png) no-repeat;
+    width: 100px;
+    height: 60px;
+}
+
+.login-title {
+    font-size: 15px;
+}
+
+.login ::-webkit-input-placeholder {
+    font-family: Roboto;
+}
+
+.login-form .el-input__wrapper {
+    height: 44px;
+}
+
+.login-btn {
+    width: 305px;
+    height: 44px !important;
+}
+
+.forgot-password {
+    font-size: 15px;
+    color: #1a73e8;
+    text-decoration: none;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.copy-right {
+    position: absolute;
+    bottom: 12px;
+    color: #fff;
+    font-size: 12px;
+}

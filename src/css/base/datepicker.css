@@ -2,6 +2,9 @@
     height: 34px;
     border: 1px solid #afafaf;
     box-shadow: none !important;
+}
+
+.date-picker .el-input__wrapper {
     background: #fff url('../../assets/icon/datepicker-icon.png') no-repeat 190px 10px !important;
 }
 
@@ -21,7 +24,7 @@
     display: none !important;
 }
 
-.el-input__suffix-inner {
+.date-picker .el-input__suffix-inner {
     display: none !important;
 }
 

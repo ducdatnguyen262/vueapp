@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import LoginView from './views/login/LoginView.vue'
+import MainView from './views/main/MainView.vue'
 import HomeList from './views/home/HomeList.vue'
 import OverviewList from './views/overview/OverviewList.vue'
 import AssetList from './views/asset/AssetList.vue'
@@ -14,10 +16,20 @@ import VueExcelXlsx from "vue-excel-xlsx";
 
 // B2: Định nghĩa các router
 const routers = [
-    {path:"/", redirect: "/tai-san" ,component:HomeList},
-    {path:"/tong-quan", component:OverviewList},
-    {path:"/tai-san", component:AssetList},
-    {path:"/bao-cao", component:ReportList}
+    {
+        path:"/login", 
+        component:LoginView
+    },
+    {
+        path:"/",
+        component:MainView,
+        children:[
+            {path:"", redirect:"tai-san", component:HomeList},
+            {path:"tong-quan", component:OverviewList},
+            {path:"tai-san", component:AssetList},
+            {path:"bao-cao", component:ReportList},
+        ]
+    },
 ]
 
 // B3: Khởi tạo router

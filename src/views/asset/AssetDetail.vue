@@ -134,7 +134,7 @@
                     >
                     <d-tooltip-warning text="Tỉ lệ hao mòn"></d-tooltip-warning>
                 </div>
-                <div class="dialog-item">
+                <div class="dialog-item date-picker">
                     <label>Ngày mua <span style="color: red;">*</span></label>
                     <el-date-picker 
                         v-model="asset.purchase_date" 
@@ -147,7 +147,7 @@
                     />
                     <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
                 </div>
-                <div class="dialog-item">
+                <div class="dialog-item date-picker">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
                     <el-date-picker 
                         v-model="asset.production_date" 
