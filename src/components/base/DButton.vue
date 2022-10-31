@@ -1,13 +1,15 @@
 <template>
     <button :id="id" class="button" :class="'button--' + type">
-        <div :class="'icon-' + icon"></div>
+        <div v-if="icon" :class="'icon-' + icon"></div>
+        <div :class="{'mr-11':icon2}"></div>
+        <div v-if="icon2" :class="'icon-' + icon2"></div>
         {{text}}
     </button>
 </template>
 
 <script>
 export default {
-    props:["text", "icon", "type", "id"],
+    props:["text", "icon", "icon2", "type", "id"],
 }
 </script>
 

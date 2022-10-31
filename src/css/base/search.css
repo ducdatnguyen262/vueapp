@@ -21,3 +21,7 @@
     height: 36px;
     font-size: 14px;
 }
+
+.search__input--long {
+    width: 300px;
+}

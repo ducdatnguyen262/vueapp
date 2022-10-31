@@ -182,17 +182,34 @@ export default {
         }
     },
     methods: {
+        /**
+         * Thu gọn Sidebar
+         * NDDAT (15/09/2022)
+         */
         sidebarClose() {
             this.isOpen = false
+            this.assetDropdown = false
         },
+
+        /**
+         * Mở rộng Sidebar
+         * NDDAT (15/09/2022)
+         */
         sidebarOpen() {
             this.isOpen = true
         },
+
+        /**
+         * Mở Dropdown trong Sidebar
+         * NDDAT (19/10/2022)
+         */
         openDropdown(number, data) {
-            if(this[data] == true && this.selected != number) {
-                this[data] = true
+            if(this.isOpen) {
+                if(this[data] == true && this.selected != number) {
+                    this[data] = true
+                }
+                else this[data] = !this[data]
             }
-            else this[data] = !this[data]
         }
     },
 }

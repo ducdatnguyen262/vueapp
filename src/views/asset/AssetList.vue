@@ -834,6 +834,7 @@ export default {
 </script>
 
 <style scoped>
+    @import url('../../css/layout/content.css');
     @import url('../../css/views/asset.css');
     @import url('../../css/base/search.css');
     @import url('../../css/base/table.css');
