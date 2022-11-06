@@ -5,7 +5,7 @@ import MainView from './views/main/MainView.vue'
 import HomeList from './views/home/HomeList.vue'
 import OverviewList from './views/overview/OverviewList.vue'
 import AssetList from './views/asset/AssetList.vue'
-import IncreaseList from './views/increase/IncreaseList.vue'
+import IncrementList from './views/increment/IncrementList.vue'
 import ReportList from './views/report/ReportList.vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -28,7 +28,7 @@ const routers = [
             {path:"", redirect:"tai-san", component:HomeList},
             {path:"tong-quan", component:OverviewList},
             {path:"tai-san", component:AssetList},
-            {path:"ghi-tang", component:IncreaseList},
+            {path:"ghi-tang", component:IncrementList},
             {path:"bao-cao", component:ReportList},
         ]
     },

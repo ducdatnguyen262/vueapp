@@ -59,6 +59,10 @@ margin-right: 10px;
     position: relative;
 }
 
+.background-white {
+    background-color: #ffffff;
+}
+
 .body {
     flex: 1; 
     background-color: #f4f7ff;

@@ -46,6 +46,10 @@ label {
     margin: 20px 16px;
 }
 
+.dialog-title--small {
+    margin: 8px 16px;
+}
+
 .dialog-x-container {
     background-color:#fff; 
     border: none; 
@@ -128,6 +132,10 @@ label {
 
 .dialog-input-big {
     width: 456px;
+}
+
+.dialog-input-bigger {
+    width: 692px;
 }
 
 .warning-icon {

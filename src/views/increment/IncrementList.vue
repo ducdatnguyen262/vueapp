@@ -304,7 +304,7 @@
     </div>
 
     <!-- Dialog chi tiết tài sản -->
-    <increase-detail
+    <increment-detail
         v-if="dialogShow" 
         :formMode="detailFormMode" 
         :assetSelected="assetSelected" 
@@ -344,7 +344,7 @@
 <script>
 import DButton from '../../components/base/DButton.vue'
 import DTooltip from '@/components/base/DTooltip.vue'
-import IncreaseDetail from './IncreaseDetail.vue'
+import IncrementDetail from './IncrementDetail.vue'
 import DDialog from '@/components/base/DDialog.vue'
 import DToast from '@/components/base/DToast.vue'
 import Enum from '../../js/enum.js'
@@ -353,8 +353,8 @@ import DDialog1Button from '@/components/base/DDialog1Button.vue'
 
 
 export default {
-  components: { DButton, DTooltip, IncreaseDetail, DDialog, DToast, DDialog1Button },
-  name:"IncreaseList",
+  components: { DButton, DTooltip, IncrementDetail, DDialog, DToast, DDialog1Button },
+  name:"IncrementList",
 
   data() {
     return {
@@ -362,7 +362,7 @@ export default {
         assetsAll:[], // Mảng lưu toàn bộ tài sản trong database
         search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
-        dialogShow: false, // Hiển thị dialog hay không
+        dialogShow: true, // Hiển thị dialog hay không
         assetSelected: {}, // Tài sản được chọn
         detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
         rowSelected: -1, // Dòng được chọn tạm thời (click)
@@ -472,10 +472,10 @@ export default {
 
   methods: {
     /**
-     * Nhấn button hiển thị dialog thêm tài sản
+     * Nhấn button hiển thị dialog thêm tài sản 1
      * NDDAT (15/09/2022)
      */
-     btnAddOnClick() { 
+    btnAddOnClick() { 
         this.assetSelected = {}
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Add
@@ -874,5 +874,5 @@ export default {
 </script>
 
 <style scoped>
-    @import url('../../css/views/increase.css');
+    @import url('../../css/views/increment.css');
 </style>
