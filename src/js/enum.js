@@ -34,6 +34,8 @@ export default {
         // Phòng ban
         Department: 1,
         // Loại tài sản
-        Category: 2
+        Category: 2,
+        // Ngân sách
+        Budget: 3
     },
 }

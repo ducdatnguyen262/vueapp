@@ -1,7 +1,6 @@
 .el-input__wrapper {
     height: 34px;
-    border: 1px solid #afafaf;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 1px #afafaf inset !important;
 }
 
 .date-picker .el-input__wrapper {
@@ -9,15 +8,15 @@
 }
 
 .el-input__wrapper:hover {
-    border:1px solid #53bad5 !important;
+    box-shadow: 0 0 0 1px #53bad5 inset !important;
 }
 
 .el-input__wrapper:focus {
-    border:1px solid #6fc6dc !important;
+    box-shadow: 0 0 0 1px #6fc6dc inset !important;
 }
 
 .el-input__wrapper:active {
-    border:1px solid #c3c3c3 !important;
+    box-shadow: 0 0 0 1px #c3c3c3 inset !important;
 }
 
 .el-input__prefix-inner {

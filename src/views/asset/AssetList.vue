@@ -138,11 +138,11 @@
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div @click="rowEdit(asset)" class="icon-edit"></div>
+                                <div @click="rowEdit(asset)" class="button--icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div @click="rowDuplicate(asset)" class="icon-duplicate"></div>
+                                <div @click="rowDuplicate(asset)" class="button--icon-duplicate"></div>
                                 <d-tooltip text="Nhân bản" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -239,10 +239,10 @@
                             </div>
                         </div>
                     </td>
-                    <td><b>{{totalQuantity}}</b></td>
-                    <td><b>{{formatMoney(totalCost)}}</b></td>
-                    <td><b>{{formatMoney(totalDepreciation)}}</b></td>
-                    <td><b>{{formatMoney(totalRemain)}}</b></td>
+                    <td class="plr-10"><b>{{totalQuantity}}</b></td>
+                    <td class="plr-10"><b>{{formatMoney(totalCost)}}</b></td>
+                    <td class="plr-10"><b>{{formatMoney(totalDepreciation)}}</b></td>
+                    <td class="plr-10"><b>{{formatMoney(totalRemain)}}</b></td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -435,7 +435,7 @@ export default {
      * Nhấn button hiển thị dialog thêm tài sản
      * NDDAT (15/09/2022)
      */
-     btnAddOnClick() { 
+    btnAddOnClick() { 
         this.assetSelected = {}
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Add

@@ -34,7 +34,9 @@ export default {
         // Phòng ban
         Department: "Department",
         // Loại tài sản
-        Category: "Category"
+        Category: "Category",
+        // Ngân sách
+        Budget: "Budget"
     },
 
     // Phòng ban
@@ -55,6 +57,14 @@ export default {
         Code: "fixed_asset_category_code",
         // Tên loại tài sản
         Name: "fixed_asset_category_name"
+    },
+
+    // Ngân sách
+    Budget: {
+        // Id ngân sách
+        Id: "budget_id",
+        // Tên ngân sách
+        Name: "budget_name"
     },
 
     // Mã lỗi
@@ -86,7 +96,9 @@ export default {
         // Url của phòng ban
         Department: "https://localhost:7148/api/v1/Departments",
         // Url của loại tài sản
-        Category: "https://localhost:7148/api/Categories"
+        Category: "https://localhost:7148/api/v1/Categories",
+        // Url của ngân sách
+        Budget: "https://localhost:7148/api/v1/Budgets",
     },
 
     // Mã ngôn ngữ

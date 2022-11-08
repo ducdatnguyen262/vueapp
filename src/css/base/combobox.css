@@ -50,7 +50,7 @@
 .combobox__item {
     display: block;
     height: 36px;
-    width: 220px;
+    width: calc(100% - 20px);
     line-height: 36px;
     outline: none;
     text-overflow: ellipsis;

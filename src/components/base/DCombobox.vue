@@ -97,8 +97,11 @@ export default {
         api: function () {
             if (this.type == Enum.ComboboxType.Department)
                 return Resource.Url.Department+"/filter?keyword="+this.keyword+"&type="+this.main;
-            else
+            else if (this.type == Enum.ComboboxType.Category)
                 return Resource.Url.Category+"/filter?keyword="+this.keyword+"&type="+this.main;
+            else if(this.type == Enum.ComboboxType.Budget)
+                return Resource.Url.Budget;
+            else return "";
         },
     },
     methods: {
@@ -198,6 +201,11 @@ export default {
                 this.cb.code = Resource.Category.Code;
                 this.cb.name = Resource.Category.Name;
             }
+            else if (this.type == Enum.ComboboxType.Budget) {
+                this.cb.id = Resource.Budget.Id;
+                this.cb.code = "";
+                this.cb.name = Resource.Budget.Name;
+            }
         },
 
         /**
@@ -229,7 +237,10 @@ export default {
                 fetch(this.api, { method: "GET" })
                     .then(res => res.json())
                     .then(data => {
-                    this.items = Object.values(data)[0];
+                    if(this.type == Enum.ComboboxType.Budget) this.items = Object.values(data);
+                    else this.items = Object.values(data)[0];
+                    console.log(this.items);
+                    console.log(this.main);
                 })
                     .catch(res => {
                     console.error(res);
@@ -237,7 +248,7 @@ export default {
             }
             catch (error) {
                 console.error(error);
-            }
+            }        
         },
     },
 }

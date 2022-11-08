@@ -25,7 +25,7 @@ const routers = [
         path:"/",
         component:MainView,
         children:[
-            {path:"", redirect:"tai-san", component:HomeList},
+            {path:"", redirect:"ghi-tang", component:HomeList},
             {path:"tong-quan", component:OverviewList},
             {path:"tai-san", component:AssetList},
             {path:"ghi-tang", component:IncrementList},

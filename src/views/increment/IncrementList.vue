@@ -58,19 +58,11 @@
                             <d-tooltip text="Số thứ tự"></d-tooltip>
                         </div>
                     </th>
-                    <th>Mã tài sản</th>
-                    <th>Tên tài sản</th>
-                    <th>Loại tài sản</th>
-                    <th>Bộ phận sử dụng</th>
-                    <th>Số lượng</th>
-                    <th>Nguyên giá</th>
-                    <th>                       
-                        <div class="position-relative">
-                            HM/KH lũy kế
-                            <d-tooltip text="Hao mòn khấu hao lũy kế"></d-tooltip>
-                        </div>
-                    </th>
-                    <th>Giá trị còn lại</th>
+                    <th>Mã chứng từ</th>
+                    <th>Ngày chứng từ</th>
+                    <th>Ngày ghi tăng</th>
+                    <th>Tổng nguyên giá</th>
+                    <th>Nội dung</th>
                     <th>Chức năng</th>
                 </tr>
             </thead>
@@ -101,22 +93,19 @@
                     </td>
                     <td>{{index + 1}}</td>
                     <td>{{asset.fixed_asset_code}}</td>
-                    <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
-                    <td :title="asset.fixed_asset_category_name">{{asset.fixed_asset_category_name}}</td>
-                    <td :title="asset.department_name">{{asset.department_name}}</td>
+                    <td :title="asset.fixed_asset_name">{{asset.purchase_date}}</td>
+                    <td :title="asset.fixed_asset_category_name">{{asset.purchase_date}}</td>
+                    <td :title="asset.department_name">{{asset.cost}}</td>
                     <td>{{asset.quantity}}</td>
-                    <td>{{formatMoney(asset.cost)}}</td>
-                    <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
-                    <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div @click="rowEdit(asset)" class="icon-edit"></div>
+                                <div @click="rowEdit(asset)" class="button--icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div @click="rowDuplicate(asset)" class="icon-duplicate"></div>
-                                <d-tooltip text="Nhân bản" class="tool-tip--left"></d-tooltip>
+                                <div @click="rowDuplicate(asset)" class="button--icon-delete"></div>
+                                <d-tooltip text="Xóa" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
                     </td>
@@ -127,9 +116,14 @@
                 description="Không có dữ liệu"
                 style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
             />
-            <tfoot class="tfoot">
+            <tfoot class="tfoot tfoot--big">
+                <tr class="total-line">
+                    <td colspan="5"></td>
+                    <td colspan="1" class="plr-10"><b>100.000.000</b></td>
+                    <td colspan="2"></td>
+                </tr>
                 <tr>
-                    <td colspan="6">
+                    <td colspan="8">
                         <div class="tfooter-left">
                             <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
                             <div class="tfooter-total">
@@ -212,18 +206,13 @@
                             </div>
                         </div>
                     </td>
-                    <td><b>{{totalQuantity}}</b></td>
-                    <td><b>{{formatMoney(totalCost)}}</b></td>
-                    <td><b>{{formatMoney(totalDepreciation)}}</b></td>
-                    <td><b>{{formatMoney(totalRemain)}}</b></td>
-                    <td></td>
                 </tr>
             </tfoot>
         </table>
     </div>
 
     <div class="content-menu content-menu-2--white">
-        <h3 style="margin: 0">Thông tin chi tiết</h3>
+        <h3 style="margin:10px 0">Thông tin chi tiết</h3>
         <div class="content-btns">
             <div class="position-relative">
                 <div class="button-no-border icon-square"></div>
@@ -314,6 +303,14 @@
         @hideDialog="hideDialogMethod" 
     />
 
+    <increment-choose-asset
+        v-if="false"
+    />
+
+    <increment-update-asset
+        v-if="false"
+    />
+
     <!-- Dialog cảnh báo khi xóa -->
     <d-dialog 
         v-if="deleteShow" 
@@ -350,10 +347,12 @@ import DToast from '@/components/base/DToast.vue'
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DDialog1Button from '@/components/base/DDialog1Button.vue'
+import IncrementChooseAsset from './IncrementChooseAsset.vue'
+import IncrementUpdateAsset from './IncrementUpdateAsset.vue'
 
 
 export default {
-  components: { DButton, DTooltip, IncrementDetail, DDialog, DToast, DDialog1Button },
+  components: { DButton, DTooltip, IncrementDetail, DDialog, DToast, DDialog1Button, IncrementChooseAsset, IncrementUpdateAsset },
   name:"IncrementList",
 
   data() {
@@ -362,7 +361,7 @@ export default {
         assetsAll:[], // Mảng lưu toàn bộ tài sản trong database
         search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
-        dialogShow: true, // Hiển thị dialog hay không
+        dialogShow: false, // Hiển thị dialog hay không
         assetSelected: {}, // Tài sản được chọn
         detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
         rowSelected: -1, // Dòng được chọn tạm thời (click)
