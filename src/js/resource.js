@@ -99,6 +99,8 @@ export default {
         Category: "https://localhost:7148/api/v1/Categories",
         // Url của ngân sách
         Budget: "https://localhost:7148/api/v1/Budgets",
+        // Url của ghi tăng
+        Voucher: "https://localhost:7148/api/v1/Vouchers",
     },
 
     // Mã ngôn ngữ

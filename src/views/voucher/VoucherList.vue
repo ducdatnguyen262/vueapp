@@ -67,44 +67,44 @@
                 </tr>
             </thead>
             <tbody class="tbody">
-                <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
+                <tr v-for="(voucher, index) in vouchers" :key="voucher.voucher_id" 
                     tabindex="7" 
                     :id="'table'+index" 
-                    :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}" 
+                    :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == voucher.voucher_id) || checkedAll || rowFocus == index}" 
                     v-contextmenu:contextmenu
-                    @click.right="assetSelected = asset"
-                    @keydown.f2="rowEdit(asset)" 
-                    @keydown.insert="rowDuplicate(asset)" 
-                    @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
+                    @click.right="voucherSelected = voucher"
+                    @keydown.f2="rowEdit(voucher)" 
+                    @keydown.insert="rowDuplicate(voucher)" 
+                    @keydown.delete="deleteOnKey(voucher.voucher_id)" 
                     @keydown.up="prevItem" @keydown.down="nextItem" 
                     @focus="rowFocus=index" @click="rowSelect(index)" 
-                    @dblclick="rowEdit(asset)" 
+                    @dblclick="rowEdit(voucher)" 
                     @mouseover="rowHover = index" 
                     @mouseleave="rowHover = -1"
                 >
                     <td class="ms-table-right ms-table-fit">
                         <input 
                             v-model="checked" 
-                            :value="asset.fixed_asset_id" 
+                            :value="voucher.voucher_id" 
                             type="checkbox"
                             @click.stop 
-                            @change="checkedMethod(index, asset.fixed_asset_id)" 
+                            @change="checkedMethod(index, voucher.voucher_id)" 
                         >
                     </td>
                     <td>{{index + 1}}</td>
-                    <td>{{asset.fixed_asset_code}}</td>
-                    <td :title="asset.fixed_asset_name">{{asset.purchase_date}}</td>
-                    <td :title="asset.fixed_asset_category_name">{{asset.purchase_date}}</td>
-                    <td :title="asset.department_name">{{asset.cost}}</td>
-                    <td>{{asset.quantity}}</td>
+                    <td>{{voucher.voucher_code}}</td>
+                    <td>{{formatDate(voucher.voucher_date)}}</td>
+                    <td>{{formatDate(voucher.increment_date)}}</td>
+                    <td>{{formatMoney(voucher.cost)}}</td>
+                    <td>{{voucher.description}}</td>
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
-                                <div @click="rowEdit(asset)" class="button--icon-edit"></div>
+                                <div @click="rowEdit(voucher)" class="button--icon-edit"></div>
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div @click="rowDuplicate(asset)" class="button--icon-delete"></div>
+                                <div @click="rowDuplicate(voucher)" class="button--icon-delete"></div>
                                 <d-tooltip text="Xóa" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -293,7 +293,7 @@
     </div>
 
     <!-- Dialog chi tiết tài sản -->
-    <increment-detail
+    <voucher-detail
         v-if="dialogShow" 
         :formMode="detailFormMode" 
         :assetSelected="assetSelected" 
@@ -303,11 +303,11 @@
         @hideDialog="hideDialogMethod" 
     />
 
-    <increment-choose-asset
+    <voucher-choose-asset
         v-if="false"
     />
 
-    <increment-update-asset
+    <voucher-update-asset
         v-if="false"
     />
 
@@ -341,24 +341,25 @@
 <script>
 import DButton from '../../components/base/DButton.vue'
 import DTooltip from '@/components/base/DTooltip.vue'
-import IncrementDetail from './IncrementDetail.vue'
+import VoucherDetail from './VoucherDetail.vue'
 import DDialog from '@/components/base/DDialog.vue'
 import DToast from '@/components/base/DToast.vue'
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DDialog1Button from '@/components/base/DDialog1Button.vue'
-import IncrementChooseAsset from './IncrementChooseAsset.vue'
-import IncrementUpdateAsset from './IncrementUpdateAsset.vue'
+import VoucherChooseAsset from './VoucherChooseAsset.vue'
+import VoucherUpdateAsset from './VoucherUpdateAsset.vue'
 
 
 export default {
-  components: { DButton, DTooltip, IncrementDetail, DDialog, DToast, DDialog1Button, IncrementChooseAsset, IncrementUpdateAsset },
-  name:"IncrementList",
+  components: { DButton, DTooltip, VoucherDetail, DDialog, DToast, DDialog1Button, VoucherChooseAsset, VoucherUpdateAsset },
+  name:"voucherList",
 
   data() {
     return {
         assets:[], // Mảng lưu các tài sản đang hiện
-        assetsAll:[], // Mảng lưu toàn bộ tài sản trong database
+        vouchers:[], // Mảng lưu các ghi tăng đang hiện
+        voucherSelected: {}, // Ghi tăng được chọn
         search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
         dialogShow: false, // Hiển thị dialog hay không
@@ -449,7 +450,6 @@ export default {
   created() {
     // Thực hiện gọi api lấy dữ liệu
     this.loadData()
-    this.setUpCheckedAll()
 
     // Cài đặt keyboard shortcut
     window.addEventListener('keydown', function(e) {
@@ -464,8 +464,13 @@ export default {
 
   computed: {
     // Tạo api lấy tài sản
+    // api : function() {
+    //     return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
+    // },
+
+    // Tạo api lấy ghi tăng
     api : function() {
-        return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
+        return Resource.Url.Voucher+"/filters?keyword="+this.keyword+"&limit="+this.tableView+"&page="+this.page
     },
   },
 
@@ -565,7 +570,6 @@ export default {
                             this.loadData()
                             this.rowFocusDelete = []
                             this.checked = []
-                            this.setUpCheckedAll()
                     }
                 })
                 .catch(res => {
@@ -597,7 +601,6 @@ export default {
         this.hideDialogMethod()
         this.toastShow = true
         setTimeout(() => this.toastShow = false, 3000)
-        this.setUpCheckedAll()
     },
 
     /**
@@ -692,39 +695,37 @@ export default {
     },
 
     /**
-     * Hàm lấy toàn bộ dữ liệu database
-     * NDDAT (15/09/2022)
-     */
-    setUpCheckedAll() {
-        try{
-            // Gọi api lấy toàn bộ dữ liệu
-            this.isLoading = true
-            fetch(Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+"-1"+"&page="+this.page, {method: Resource.Method.Get})
-            .then(res => res.json())
-            .then(data => {
-                this.assetsAll = Object.values(data)[0]
-                this.isLoading = false
-            })
-            .catch(res => {
-                console.error(res);
-                this.isLoading = false
-            })
-        } catch (error) {
-            console.error(error);
-        }
-    },
-
-    /**
      * Click vào checkbox đầu bảng để chọn toàn bộ bảng
      * NDDAT (15/09/2022)
      */
     checkedAllMethod() {
         this.resetChecked()
-            if (!this.checkedAll) {
-                for (let index in this.assetsAll) {
-                    this.checked.push(this.assetsAll[index].fixed_asset_id)
+        if (!this.checkedAll) {
+            for (let asset of this.assets) {
+                this.checked.push(asset.fixed_asset_id)
+            }
+        }
+    },
+
+    /**
+     * Kiểm tra có cần checkbox toàn bộ không
+     * NDDAT (09/11/2022)
+     */
+    checkedAllInspect() {
+        let checkall = true
+        for (let voucher of this.vouchers) {
+            let match = false
+            for (let check of this.checked) {
+                if(match == true) break
+                if(voucher.voucher_id == check){
+                    match = true
+                    break
                 }
             }
+            if(match == false) checkall = false
+        }
+        if(checkall) this.checkedAll = true
+        else this.checkedAll = false
     },
 
     /**
@@ -742,6 +743,7 @@ export default {
                 }
             }
         }
+        this.checkedAllInspect()
     },
 
     /**
@@ -834,10 +836,10 @@ export default {
     formatDate(date) {
         const dateFormat = new Date(date)
         dateFormat.toLocaleDateString()
-        // let day = dateFormat.getDate.toString().padStart(2, "0")
-        // let month = (dateFormat.getMonth + 1).toString().padStart(2, "0")
-        // let year = dateFormat.getFullYear
-        return dateFormat
+        let day = dateFormat.getDate().toString().padStart(2, "0")
+        let month = (dateFormat.getMonth() + 1).toString().padStart(2, "0")
+        let year = dateFormat.getFullYear()
+        return day + '/' + month + '/' + year
     },
 
     /**
@@ -851,13 +853,15 @@ export default {
             fetch(this.api, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
-                this.assets = Object.values(data)[0]
+                // this.assets = Object.values(data)[0]
+                this.vouchers = Object.values(data)[0]
                 this.totalCount = Object.values(data)[1]
                 this.totalQuantity = Object.values(data)[2]
                 this.totalCost = Object.values(data)[3]
                 this.totalDepreciation = Object.values(data)[4]
                 this.totalRemain = Object.values(data)[5]
                 this.totalPageMethod()
+                this.checkedAllInspect()
                 this.isLoading = false
             })
             .catch(res => {
@@ -873,5 +877,5 @@ export default {
 </script>
 
 <style scoped>
-    @import url('../../css/views/increment.css');
+    @import url('../../css/views/voucher.css');
 </style>

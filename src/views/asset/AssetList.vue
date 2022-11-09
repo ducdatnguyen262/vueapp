@@ -319,7 +319,6 @@ export default {
   data() {
     return {
         assets:[], // Mảng lưu các tài sản đang hiện
-        assetsAll:[], // Mảng lưu toàn bộ tài sản trong database
         search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
         dialogShow: false, // Hiển thị dialog hay không
@@ -410,7 +409,6 @@ export default {
   created() {
     // Thực hiện gọi api lấy dữ liệu
     this.loadData()
-    this.setUpCheckedAll()
 
     // Cài đặt keyboard shortcut
     window.addEventListener('keydown', function(e) {
@@ -526,7 +524,6 @@ export default {
                             this.loadData()
                             this.rowFocusDelete = []
                             this.checked = []
-                            this.setUpCheckedAll()
                     }
                 })
                 .catch(res => {
@@ -558,7 +555,6 @@ export default {
         this.hideDialogMethod()
         this.toastShow = true
         setTimeout(() => this.toastShow = false, 3000)
-        this.setUpCheckedAll()
     },
 
     /**
@@ -653,39 +649,37 @@ export default {
     },
 
     /**
-     * Hàm lấy toàn bộ dữ liệu database
-     * NDDAT (15/09/2022)
-     */
-    setUpCheckedAll() {
-        try{
-            // Gọi api lấy toàn bộ dữ liệu
-            this.isLoading = true
-            fetch(Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+"-1"+"&page="+this.page, {method: Resource.Method.Get})
-            .then(res => res.json())
-            .then(data => {
-                this.assetsAll = Object.values(data)[0]
-                this.isLoading = false
-            })
-            .catch(res => {
-                console.error(res);
-                this.isLoading = false
-            })
-        } catch (error) {
-            console.error(error);
-        }
-    },
-
-    /**
      * Click vào checkbox đầu bảng để chọn toàn bộ bảng
      * NDDAT (15/09/2022)
      */
     checkedAllMethod() {
         this.resetChecked()
-            if (!this.checkedAll) {
-                for (let index in this.assetsAll) {
-                    this.checked.push(this.assetsAll[index].fixed_asset_id)
+        if (!this.checkedAll) {
+            for (let asset of this.assets) {
+                this.checked.push(asset.fixed_asset_id)
+            }
+        }
+    },
+
+    /**
+     * Kiểm tra có cần checkbox toàn bộ không
+     * NDDAT (09/11/2022)
+     */
+    checkedAllInspect() {
+        let checkall = true
+        for (let asset of this.assets) {
+            let match = false
+            for (let check of this.checked) {
+                if(match == true) break
+                if(asset.fixed_asset_id == check){
+                    match = true
+                    break
                 }
             }
+            if(match == false) checkall = false
+        }
+        if(checkall) this.checkedAll = true
+        else this.checkedAll = false
     },
 
     /**
@@ -703,6 +697,7 @@ export default {
                 }
             }
         }
+        this.checkedAllInspect()
     },
 
     /**
@@ -795,10 +790,10 @@ export default {
     formatDate(date) {
         const dateFormat = new Date(date)
         dateFormat.toLocaleDateString()
-        // let day = dateFormat.getDate.toString().padStart(2, "0")
-        // let month = (dateFormat.getMonth + 1).toString().padStart(2, "0")
-        // let year = dateFormat.getFullYear
-        return dateFormat
+        let day = dateFormat.getDate().toString().padStart(2, "0")
+        let month = (dateFormat.getMonth() + 1).toString().padStart(2, "0")
+        let year = dateFormat.getFullYear()
+        return day + '/' + month + '/' + year
     },
 
     /**
@@ -819,6 +814,7 @@ export default {
                 this.totalDepreciation = Object.values(data)[4]
                 this.totalRemain = Object.values(data)[5]
                 this.totalPageMethod()
+                this.checkedAllInspect()
                 this.isLoading = false
             })
             .catch(res => {

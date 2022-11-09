@@ -1,9 +1,9 @@
 <template>
     <div class="dialog-container" v-on:keydown="keyboardEvent">
-        <div class="dialog dialog-increment">
+        <div class="dialog dialog--form">
             <div class="dialog__header background-white">
                 <!-- <h2 class="dialog-title">{{title}}</h2> -->
-                <h2 class="dialog-title">Thêm chứng từ ghi tăng</h2>
+                <h2 class="dialog-title">Sửa tài sản ...</h2>
                 <button class="dialog-x-container">
                     <div 
                         ref="btnx"
@@ -15,220 +15,61 @@
                     </div>
                 </button>
             </div>
-            
-            <h3 class="dialog-title--small">Thông tin chứng từ</h3>
-            <div class="dialog__content dialog-increment-voucher">
-                <div class="dialog-item">
-                    <label>Mã chứng từ <span style="color: red;">*</span></label>
-                    <input 
-                        v-model="asset.fixed_asset_code" 
-                        tabindex="101" 
-                        maxlength="20"
-                        ref="asset_code" 
-                        class="dialog-input" 
-                        type="text"
-                        :class="{'input--error':!asset.fixed_asset_code && this.isSubmited}" 
-                    >
-                    <d-tooltip-warning text="Mã tài sản"></d-tooltip-warning>
-                </div>
-                <div class="dialog-item date-picker">
-                    <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
-                    <el-date-picker 
-                        v-model="asset.purchase_date" 
-                        tabindex="108" 
-                        format="DD/MM/YYYY" 
-                        value-format="YYYY-MM-DDTHH:mm:ss"
-                        type="date" 
-                        placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
-                    />
-                    <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
-                </div>
-                <div class="dialog-item date-picker">
-                    <label>Ngày ghi tăng <span style="color: red;">*</span></label>
-                    <el-date-picker 
-                        v-model="asset.purchase_date" 
-                        tabindex="108" 
-                        format="DD/MM/YYYY" 
-                        value-format="YYYY-MM-DDTHH:mm:ss"
-                        type="date" 
-                        placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
-                    />
-                    <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
-                </div>
-                <div class="dialog-item">
-                    <label>Ghi chú</label>
-                    <input 
-                        v-model="asset.fixed_asset_name" 
-                        tabindex="102" 
-                        maxlength="255"
-                        class="dialog-input dialog-input-bigger"
-                        type="text" 
-                        :class="{'input--error':!asset.fixed_asset_name && this.isSubmited}"
-                    >
-                </div>
-            </div>
 
-            <h3 class="dialog-title--small">Thông tin chi tiết</h3>
-            <div class="content-menu content-menu--white">
-                <div class="content-search">
-                    <div class="search">
-                        <div class="search__icon"></div>
-                        <input 
-                            v-model="search" 
-                            tabindex="1" 
-                            id="searchInput"
-                            class="search__input search__input--long mr-11" 
-                            type="text" 
-                            placeholder="Tìm kiếm theo mã, tên tài sản"
-                            @keypress.enter="searchMethod(search)"
-                        >
+            <div class="dialog__content dialog-update-asset">
+                <div class="dialog-item">
+                    <label>Bộ phận sử dụng</label>
+                    <input v-model="asset.department_name" class="dialog-input dialog-input-big" type="text" disabled>
+                </div>
+
+                <h4 style="margin:0 0 10px">Nguyên giá</h4>
+                <p>Nguồn hình thành <span style="margin-left:202px">Giá trị</span></p>
+                <div class="dialog-update-asset">
+                    <div v-for="(source, index) in sources" :key="source.id" class="source-item">
+                        <div class="mb-20">
+                            <d-combobox 
+                                v-model="source.source"
+                                type="3" 
+                                main="budget_name" 
+                                class="source-item-cbb mr-11"
+                                :tabindex="'103'" 
+                                @searchAll="searchAllCategory" 
+                                @comboboxSearch="categorySearch" 
+                            />
+                        </div>
+                        <div class="mb-20">
+                            <d-input-money 
+                                tabindex="105" 
+                                class="source-item-input mr-10"
+                                :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" 
+                                :options="{
+                                    locale: 'vi-VN',
+                                    currency: 'EUR',
+                                    currencyDisplay: 'hidden',
+                                    valueRange: {min: 0},
+                                    hideGroupingSeparatorOnFocus: false,
+                                }"
+                                @keyup="notNegative('quantity')"
+                            />
+                        </div>
+                        <div class="position-relative mt-10 mb-20">
+                            <div @click="addField(source, sources)" class="button-no-border icon-add-border"></div>
+                            <d-tooltip text="Thêm"></d-tooltip>
+                        </div>
+                        <div v-show="sources.length > 1" class="position-relative mt-10 mb-20">
+                            <div @click="removeField(index, sources)" class="button-no-border icon-minus-border"></div>
+                            <d-tooltip text="Xóa"></d-tooltip>
+                        </div>
                     </div>
                 </div>
-                <div class="content-btns">
-                    <d-button 
-                        tabindex="114" 
-                        text="Chọn tài sản" 
-                        type="outline" 
-                    />
+                <div class="source-item">
+                    <div class="mb-20">
+                        <input class="input source-item-cbb mr-10" placeholder="Tổng" disabled>
+                    </div>
+                    <div class="mb-20">
+                        <input type="number" class="input source-item-input mr-10" placeholder="100.000" disabled>
+                    </div>
                 </div>
-            </div>
-            <div class="table-container table-2 mb-20">
-                <table class="table">
-                    <thead class="thead">
-                        <tr>
-                            <th>
-                                <div class="position-relative">
-                                    STT
-                                    <d-tooltip text="Số thứ tự"></d-tooltip>
-                                </div>
-                            </th>
-                            <th>Mã tài sản</th>
-                            <th>Tên tài sản</th>
-                            <th>Bộ phận sử dụng</th>
-                            <th>Nguyên giá</th>
-                            <th>Hao mòn năm</th>
-                            <th>Giá trị còn lại</th>
-                        </tr>
-                    </thead>
-                    <tbody class="tbody">
-                        <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
-                            tabindex="7" 
-                            :id="'table'+index" 
-                            :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}" 
-                            v-contextmenu:contextmenu
-                            @keydown.f2="rowEdit(asset)" 
-                            @keydown.insert="rowDuplicate(asset)" 
-                            @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
-                            @keydown.up="prevItem" @keydown.down="nextItem" 
-                            @focus="rowFocus=index" @click="rowSelect(index)" 
-                            @dblclick="rowEdit(asset)" 
-                            @mouseover="rowHover = index" 
-                            @mouseleave="rowHover = -1"
-                        >
-                            <td>{{index + 1}}</td>
-                            <td>{{asset.fixed_asset_code}}</td>
-                            <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
-                            <td :title="asset.department_name">{{asset.department_name}}</td>
-                            <td>{{formatMoney(asset.cost)}}</td>
-                            <td>{{formatMoney(asset.depreciation_year)}}</td>
-                            <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
-                        </tr>
-                        <tr style="height:auto;"></tr>
-                    </tbody>
-                    <el-empty v-if="totalCount==0" 
-                        description="Không có dữ liệu"
-                        style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
-                    />
-                    <tfoot class="tfoot">
-                        <tr>
-                            <td colspan="6">
-                                <div class="tfooter-left">
-                                    <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
-                                    <div class="tfooter-total">
-                                        <select @change="page=1;loadData()" v-model="tableView">
-                                            <option value="20" selected>20</option>
-                                            <option value="50">50</option>
-                                            <option value="100">100</option>
-                                            <option value="200">200</option>
-                                        </select>
-                                    </div>
-                                    <div @click="prevPage()" class="tfooter-prev position-relative">
-                                        <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
-                                    </div>
-                                    <div 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == 1}" 
-                                        @click="toPage(1)" 
-                                    >
-                                        1
-                                    </div>
-                                    <div 
-                                        v-show="page>=3 && totalPage>5 && totalPage!=1" 
-                                        class="tfooter-page"
-                                    >
-                                        ...
-                                    </div>
-                                    <div 
-                                        v-show="(page<3 || totalPage==5 || totalPage==3) && totalPage>=3 " 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == 2}" 
-                                        @click="toPage(2)" 
-                                    >
-                                        2
-                                    </div>
-                                    <div 
-                                        v-show="page<3 && totalPage!=1 && totalPage>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == 3}" 
-                                        @click="toPage(3)" 
-                                    >
-                                        3
-                                    </div>
-                                    <div 
-                                        v-show="page>=3 && page<totalPage-1 && totalPage!=1" 
-                                        class="tfooter-page tfooter-page--selected"
-                                    >
-                                        {{page}}
-                                    </div>
-                                    <div 
-                                        v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" 
-                                        class="tfooter-page"
-                                    >
-                                        ...
-                                    </div>
-                                    <div 
-                                        v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == totalPage-2}" 
-                                        @click="toPage(totalPage-2)" 
-                                    >
-                                        {{totalPage-2}}
-                                    </div>
-                                    <div 
-                                        v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == totalPage-1}" 
-                                        @click="toPage(totalPage-1)" 
-                                    >
-                                        {{totalPage-1}}
-                                    </div>
-                                    <div 
-                                        v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" 
-                                        class="tfooter-page"
-                                        @click="toPage(totalPage)" 
-                                    >
-                                        {{totalPage}}
-                                    </div>
-                                    <div @click="nextPage()" class="tfooter-next position-relative">
-                                        <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
             </div>
 
             <div class="dialog__footer">
@@ -284,12 +125,14 @@ import DDialog from '@/components/base/DDialog.vue';
 import DDialog1Button from '../../components/base/DDialog1Button.vue';
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
-import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
+import DInputMoney from '@/components/base/DInputMoney.vue';
+import DTooltip from '@/components/base/DTooltip.vue';
+import DCombobox from '@/components/base/DCombobox.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button },
+    components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DCombobox },
     props: {
         assetSelected: Function, // Tài sản được chọn
         formMode: {
@@ -347,6 +190,9 @@ export default {
             ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+            firstMinus: true,
+            sources: [{id:1, source: ""}],
+            costs: [{ cost: ""}]
         }
     },
 
@@ -418,6 +264,14 @@ export default {
     },
 
     methods: {
+        addField(value, type) {
+            console.log(type.at(-1).id+1);
+            type.push({id: type.at(-1).id+1, value: ""});
+        },
+        removeField(index, type) {
+            type.splice(index, 1)
+        },
+
         /**
          * Xử lí sự kiện keyboard shortcut
          * NDDAT (12/10/2022)
@@ -618,7 +472,7 @@ export default {
          * NDDAT (15/09/2022)
          */
         focusFirst() {
-            this.$refs.asset_code.focus()
+            // this.$refs.asset_code.focus()
         },
 
         /**

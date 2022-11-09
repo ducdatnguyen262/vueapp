@@ -94,12 +94,12 @@
     text-align: right;
 }
 
-.dialog-increment {
+.dialog-voucher {
     width: 756px;
     background-color: #f4f7ff;
 }
 
-.dialog-increment-voucher {
+.dialog-voucher-info {
     background-color: #fff;
     margin: 16px;
     padding: 16px 0 16px 16px;
@@ -112,24 +112,24 @@
     flex-wrap: nowrap;
 }
 
-.origin-item {
+.source-item {
     display: flex;
 }
 
-.origin-item-cbb {
+.source-item-cbb {
     width: 297px;
 }
 
-.origin-item input::placeholder {
+.source-item input::placeholder {
     font-family: Roboto;
     color: #000;
 }
 
-.origin-item-input {
+.source-item-input {
     width: 149px;
     height: 36px;
 }
 
-.origin-item input {
+.source-item input {
     box-shadow: none !important;
 }

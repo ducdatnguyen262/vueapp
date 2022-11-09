@@ -239,8 +239,6 @@ export default {
                     .then(data => {
                     if(this.type == Enum.ComboboxType.Budget) this.items = Object.values(data);
                     else this.items = Object.values(data)[0];
-                    console.log(this.items);
-                    console.log(this.main);
                 })
                     .catch(res => {
                     console.error(res);

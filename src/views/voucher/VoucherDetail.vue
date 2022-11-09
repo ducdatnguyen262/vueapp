@@ -1,9 +1,9 @@
 <template>
     <div class="dialog-container" v-on:keydown="keyboardEvent">
-        <div class="dialog dialog-increment">
+        <div class="dialog dialog-voucher">
             <div class="dialog__header background-white">
                 <!-- <h2 class="dialog-title">{{title}}</h2> -->
-                <h2 class="dialog-title">Chọn tài sản ghi tăng</h2>
+                <h2 class="dialog-title">Thêm chứng từ ghi tăng</h2>
                 <button class="dialog-x-container">
                     <div 
                         ref="btnx"
@@ -16,7 +16,62 @@
                 </button>
             </div>
             
-            <div class="content-menu content-menu--white" style="margin:0; border-top:1px solid #d2d2d2">
+            <h3 class="dialog-title--small">Thông tin chứng từ</h3>
+            <div class="dialog__content dialog-voucher-info">
+                <div class="dialog-item">
+                    <label>Mã chứng từ <span style="color: red;">*</span></label>
+                    <input 
+                        v-model="asset.fixed_asset_code" 
+                        tabindex="101" 
+                        maxlength="20"
+                        ref="asset_code" 
+                        class="dialog-input" 
+                        type="text"
+                        :class="{'input--error':!asset.fixed_asset_code && this.isSubmited}" 
+                    >
+                    <d-tooltip-warning text="Mã tài sản"></d-tooltip-warning>
+                </div>
+                <div class="dialog-item date-picker">
+                    <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
+                    <el-date-picker 
+                        v-model="asset.purchase_date" 
+                        tabindex="108" 
+                        format="DD/MM/YYYY" 
+                        value-format="YYYY-MM-DDTHH:mm:ss"
+                        type="date" 
+                        placeholder="Chọn ngày"
+                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
+                    />
+                    <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
+                </div>
+                <div class="dialog-item date-picker">
+                    <label>Ngày ghi tăng <span style="color: red;">*</span></label>
+                    <el-date-picker 
+                        v-model="asset.purchase_date" 
+                        tabindex="108" 
+                        format="DD/MM/YYYY" 
+                        value-format="YYYY-MM-DDTHH:mm:ss"
+                        type="date" 
+                        placeholder="Chọn ngày"
+                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
+                    />
+                    <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
+                </div>
+                <div class="dialog-item">
+                    <label>Ghi chú</label>
+                    <input 
+                        v-model="asset.fixed_asset_name" 
+                        tabindex="102" 
+                        maxlength="255"
+                        class="dialog-input dialog-input-bigger"
+                        type="text" 
+                        :class="{'input--error':!asset.fixed_asset_name && this.isSubmited}"
+                    >
+                </div>
+            </div>
+
+            <h3 class="dialog-title--small">Thông tin chi tiết</h3>
+            <div class="content-menu content-menu--white">
                 <div class="content-search">
                     <div class="search">
                         <div class="search__icon"></div>
@@ -31,8 +86,15 @@
                         >
                     </div>
                 </div>
+                <div class="content-btns">
+                    <d-button 
+                        tabindex="114" 
+                        text="Chọn tài sản" 
+                        type="outline" 
+                    />
+                </div>
             </div>
-            <div class="table-container table-2" style="height:480px; margin:0">
+            <div class="table-container table-2 mb-20">
                 <table class="table">
                     <thead class="thead">
                         <tr>
@@ -222,11 +284,12 @@ import DDialog from '@/components/base/DDialog.vue';
 import DDialog1Button from '../../components/base/DDialog1Button.vue';
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
+import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DDialog3Button },
+    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button },
     props: {
         assetSelected: Function, // Tài sản được chọn
         formMode: {
@@ -555,7 +618,7 @@ export default {
          * NDDAT (15/09/2022)
          */
         focusFirst() {
-            // this.$refs.asset_code.focus()
+            this.$refs.asset_code.focus()
         },
 
         /**
