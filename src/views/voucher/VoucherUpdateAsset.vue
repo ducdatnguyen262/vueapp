@@ -32,7 +32,7 @@
                                 type="3" 
                                 main="budget_name" 
                                 class="source-item-cbb mr-11"
-                                :tabindex="'103'" 
+                                :tabindex="`10${index}`" 
                                 @searchAll="searchAllCategory" 
                                 @comboboxSearch="categorySearch" 
                             />
@@ -53,7 +53,7 @@
                             />
                         </div>
                         <div class="position-relative mt-10 mb-20">
-                            <div @click="addField(source, sources)" class="button-no-border icon-add-border"></div>
+                            <div @click="addField(sources)" class="button-no-border icon-add-border"></div>
                             <d-tooltip text="Thêm"></d-tooltip>
                         </div>
                         <div v-show="sources.length > 1" class="position-relative mt-10 mb-20">
@@ -264,12 +264,20 @@ export default {
     },
 
     methods: {
-        addField(value, type) {
-            console.log(type.at(-1).id+1);
-            type.push({id: type.at(-1).id+1, value: ""});
+        /**
+         * Thêm một nguồn hình thành
+         * NDDAT (09/11/2022)
+         */
+        addField(list) {
+            list.push({id: list.at(-1).id+1, value: ""});
         },
-        removeField(index, type) {
-            type.splice(index, 1)
+
+        /**
+         * Xóa một nguồn hình thành
+         * NDDAT (09/11/2022)
+         */
+        removeField(index, list) {
+            list.splice(index, 1)
         },
 
         /**

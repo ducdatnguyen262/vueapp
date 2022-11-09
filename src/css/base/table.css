@@ -142,3 +142,8 @@
 .table-container::-webkit-scrollbar-track {
     margin: 38px 0 40px 0;
 }
+
+/* Empty của Element Plus */
+.el-empty {
+    padding: 0 !important;
+}

@@ -272,7 +272,88 @@
             />
             <tfoot class="tfoot">
                 <tr>
-                    <td colspan="10">
+                    <td colspan="6">
+                        <div class="tfooter-left">
+                            <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
+                            <div class="tfooter-total">
+                                <select @change="page=1;loadData()" v-model="tableView">
+                                    <option value="20" selected>20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                </select>
+                            </div>
+                            <div @click="prevPage()" class="tfooter-prev position-relative">
+                                <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
+                            </div>
+                            <div 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == 1}" 
+                                @click="toPage(1)" 
+                            >
+                                1
+                            </div>
+                            <div 
+                                v-show="page>=3 && totalPage>5 && totalPage!=1" 
+                                class="tfooter-page"
+                            >
+                                ...
+                            </div>
+                            <div 
+                                v-show="(page<3 || totalPage==5 || totalPage==3) && totalPage>=3 " 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == 2}" 
+                                @click="toPage(2)" 
+                            >
+                                2
+                            </div>
+                            <div 
+                                v-show="page<3 && totalPage!=1 && totalPage>3" 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == 3}" 
+                                @click="toPage(3)" 
+                            >
+                                3
+                            </div>
+                            <div 
+                                v-show="page>=3 && page<totalPage-1 && totalPage!=1" 
+                                class="tfooter-page tfooter-page--selected"
+                            >
+                                {{page}}
+                            </div>
+                            <div 
+                                v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" 
+                                class="tfooter-page"
+                            >
+                                ...
+                            </div>
+                            <div 
+                                v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == totalPage-2}" 
+                                @click="toPage(totalPage-2)" 
+                            >
+                                {{totalPage-2}}
+                            </div>
+                            <div 
+                                v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" 
+                                class="tfooter-page"
+                                :class="{'tfooter-page--selected':page == totalPage-1}" 
+                                @click="toPage(totalPage-1)" 
+                            >
+                                {{totalPage-1}}
+                            </div>
+                            <div 
+                                v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" 
+                                class="tfooter-page"
+                                @click="toPage(totalPage)" 
+                            >
+                                {{totalPage}}
+                            </div>
+                            <div @click="nextPage()" class="tfooter-next position-relative">
+                                <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             </tfoot>
