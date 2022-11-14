@@ -666,19 +666,22 @@ export default {
      * NDDAT (09/11/2022)
      */
     checkedAllInspect() {
-        let checkall = true
-        for (let asset of this.assets) {
-            let match = false
-            for (let check of this.checked) {
-                if(match == true) break
-                if(asset.fixed_asset_id == check){
-                    match = true
-                    break
+        if(this.assets.length > 0) {
+            let checkall = true
+            for (let asset of this.assets) {
+                let match = false
+                for (let check of this.checked) {
+                    if(match == true) break
+                    if(asset.fixed_asset_id == check){
+                        match = true
+                        break
+                    }
                 }
+                if(match == false) checkall = false
             }
-            if(match == false) checkall = false
+            if(checkall) this.checkedAll = true
+            else this.checkedAll = false
         }
-        if(checkall) this.checkedAll = true
         else this.checkedAll = false
     },
 
