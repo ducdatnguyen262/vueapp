@@ -77,7 +77,7 @@
                     @keydown.insert="rowDuplicate(voucher)" 
                     @keydown.delete="deleteOnKey(voucher.voucher_id)" 
                     @keydown.up="prevItem" @keydown.down="nextItem" 
-                    @focus="rowFocus=index" @click="rowSelected = index" 
+                    @focus="rowFocus=index;voucherSelected=voucher" @click="rowSelected = index" 
                     @dblclick="rowEdit(voucher)"
                     @mouseover="rowHover = index" 
                     @mouseleave="rowHover = -1"
@@ -195,7 +195,7 @@
                                 {{totalPage-1}}
                             </div>
                             <div 
-                                v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" 
+                                v-show="totalPage>1" :class="{'tfooter-page--selected':page == totalPage}" 
                                 class="tfooter-page"
                                 @click="toPage(totalPage)" 
                             >
@@ -344,11 +344,11 @@
                                 {{totalPage2-1}}
                             </div>
                             <div 
-                                v-show="totalPage2!=1" :class="{'tfooter-page--selected':page2 == totalPage2}" 
+                                v-show="totalPage2>1" :class="{'tfooter-page--selected':page2 == totalPage2}" 
                                 class="tfooter-page"
                                 @click="toPage2(totalPage2)" 
                             >
-                                {{totalPage}}
+                                {{totalPage2}}
                             </div>
                             <div @click="nextPage2()" class="tfooter-next position-relative">
                                 <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
@@ -363,9 +363,9 @@
     <!-- Context Menu -->
     <v-contextmenu ref="contextmenu">
         <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
-        <v-contextmenu-item @click="rowEdit(assetSelected)">Sửa</v-contextmenu-item>
-        <v-contextmenu-item @click="deleteOnKey(assetSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
-        <v-contextmenu-item @click="rowDuplicate(assetSelected)">Nhân bản</v-contextmenu-item>
+        <v-contextmenu-item @click="rowEdit(voucherSelected)">Sửa</v-contextmenu-item>
+        <v-contextmenu-item @click="deleteOnKey(voucherSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
+        <v-contextmenu-item @click="rowDuplicate(voucherSelected)">Nhân bản</v-contextmenu-item>
     </v-contextmenu>
 
     <!-- Loading -->
@@ -373,23 +373,15 @@
         <div class="loader"></div>
     </div>
 
-    <!-- Dialog chi tiết tài sản -->
+    <!-- Dialog chi tiết chứng từ -->
     <voucher-detail
         v-if="dialogShow" 
         :formMode="detailFormMode" 
-        :assetSelected="assetSelected" 
+        :voucherSelected="voucherSelected" 
         :assetCode="assetCode" 
         :title="title"
         @hideDialogSuccess="hideDialogSuccessMethod" 
         @hideDialog="hideDialogMethod" 
-    />
-
-    <voucher-choose-asset
-        v-if="false"
-    />
-
-    <voucher-update-asset
-        v-if="false"
     />
 
     <!-- Dialog cảnh báo khi xóa -->
@@ -428,12 +420,10 @@ import DToast from '@/components/base/DToast.vue'
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DDialog1Button from '@/components/base/DDialog1Button.vue'
-import VoucherChooseAsset from './VoucherChooseAsset.vue'
-import VoucherUpdateAsset from './VoucherUpdateAsset.vue'
 
 
 export default {
-  components: { DButton, DTooltip, VoucherDetail, DDialog, DToast, DDialog1Button, VoucherChooseAsset, VoucherUpdateAsset },
+  components: { DButton, DTooltip, VoucherDetail, DDialog, DToast, DDialog1Button },
   name:"voucherList",
 
   data() {
@@ -445,7 +435,7 @@ export default {
         assetSelected: {}, // Tài sản được chọn
         search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
-        dialogShow: false, // Hiển thị dialog hay không
+        dialogShow: true, // Hiển thị dialog hay không
         detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
         rowSelected: -1, // Dòng được chọn tạm thời (click) ở table 1
         rowSelected2: -1, // Dòng được chọn tạm thời (click) ở table 2
@@ -573,7 +563,7 @@ export default {
      * NDDAT (15/09/2022)
      */
     btnAddOnClick() { 
-        this.assetSelected = {}
+        this.voucherSelected = {}
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Add
         this.dialogShow = true

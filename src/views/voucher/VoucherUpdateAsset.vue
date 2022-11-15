@@ -173,7 +173,6 @@ export default {
                 modified_by:"",
                 modified_date:"",
             },
-            assetMid: {}, // Lưu dữ liệu tài sản được truyền vào
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate

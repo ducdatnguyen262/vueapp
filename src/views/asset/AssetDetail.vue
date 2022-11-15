@@ -301,7 +301,6 @@ export default {
                 modified_by:"",
                 modified_date:"",
             },
-            assetMid: {}, // Lưu dữ liệu tài sản được truyền vào
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -483,8 +482,8 @@ export default {
          * NDDAT (19/09/2022)
          */        
         defaultValue() {
-            if (this.asset.purchase_date == null) this.asset.purchase_date = new Date()
-            if (this.asset.production_date == null) this.asset.production_date = new Date()
+            if (this.asset.purchase_date == null) this.asset.purchase_date = new Date().toISOString()
+            if (this.asset.production_date == null) this.asset.production_date = new Date().toISOString()
             if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
             if (this.asset.cost == null) this.asset.cost = 0
         },

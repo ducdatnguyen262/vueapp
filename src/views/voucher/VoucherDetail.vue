@@ -1,5 +1,5 @@
 <template>
-    <div class="dialog-container" v-on:keydown="keyboardEvent">
+    <div class="dialog-container" v-on:keydown="keyboardEvent" v-show="thisShow">
         <div class="dialog dialog-voucher">
             <div class="dialog__header background-white">
                 <!-- <h2 class="dialog-title">{{title}}</h2> -->
@@ -21,51 +21,50 @@
                 <div class="dialog-item">
                     <label>Mã chứng từ <span style="color: red;">*</span></label>
                     <input 
-                        v-model="asset.fixed_asset_code" 
+                        v-model="voucher.voucher_code" 
                         tabindex="101" 
                         maxlength="20"
                         ref="asset_code" 
                         class="dialog-input" 
                         type="text"
-                        :class="{'input--error':!asset.fixed_asset_code && this.isSubmited}" 
+                        :class="{'input--error':!voucher.voucher_code && this.isSubmited}" 
                     >
                     <d-tooltip-warning text="Mã tài sản"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item date-picker">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
                     <el-date-picker 
-                        v-model="asset.purchase_date" 
+                        v-model="voucher.voucher_date" 
                         tabindex="108" 
                         format="DD/MM/YYYY" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
+                        :class="{'datepicker--error':!voucher.voucher_date && this.isSubmited}" 
                     />
                     <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item date-picker">
                     <label>Ngày ghi tăng <span style="color: red;">*</span></label>
                     <el-date-picker 
-                        v-model="asset.purchase_date" 
+                        v-model="voucher.increment_date" 
                         tabindex="108" 
                         format="DD/MM/YYYY" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
+                        :class="{'datepicker--error':!voucher.increment_date && this.isSubmited}" 
                     />
                     <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
-                    <label>Ghi chú</label>
+                    <label>Nội dung</label>
                     <input 
-                        v-model="asset.fixed_asset_name" 
+                        v-model="voucher.description" 
                         tabindex="102" 
                         maxlength="255"
                         class="dialog-input dialog-input-bigger"
-                        type="text" 
-                        :class="{'input--error':!asset.fixed_asset_name && this.isSubmited}"
+                        type="text"
                     >
                 </div>
             </div>
@@ -90,7 +89,8 @@
                     <d-button 
                         tabindex="114" 
                         text="Chọn tài sản" 
-                        type="outline" 
+                        type="outline"
+                        @click="chooseAssetShow=true;thisShow=false" 
                     />
                 </div>
             </div>
@@ -128,7 +128,7 @@
                             @mouseleave="rowHover = -1"
                         >
                             <td>{{index + 1}}</td>
-                            <td>{{asset.fixed_asset_code}}</td>
+                            <td>{{voucher.voucher_code}}</td>
                             <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
                             <td :title="asset.department_name">{{asset.department_name}}</td>
                             <td>{{formatMoney(asset.cost)}}</td>
@@ -215,7 +215,7 @@
                                         {{totalPage-1}}
                                     </div>
                                     <div 
-                                        v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" 
+                                        v-show="totalPage>1" :class="{'tfooter-page--selected':page == totalPage}" 
                                         class="tfooter-page"
                                         @click="toPage(totalPage)" 
                                     >
@@ -274,6 +274,15 @@
         :text="backendErrorMsg"
         @closeNotify="closeBackendError"
     />
+
+    <voucher-choose-asset
+        v-if="chooseAssetShow"
+        @hideDialog="chooseAssetShow=false;thisShow=true" 
+    />
+
+    <voucher-update-asset
+        v-if="false"
+    />
 </template>
 
 <script>
@@ -286,11 +295,14 @@ import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
+import VoucherChooseAsset from './VoucherChooseAsset.vue'
+import VoucherUpdateAsset from './VoucherUpdateAsset.vue'
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button },
+    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, VoucherChooseAsset, VoucherUpdateAsset },
     props: {
+        voucherSelected: Function, // Chứng từ được chọn
         assetSelected: Function, // Tài sản được chọn
         formMode: {
             type: Number,
@@ -302,6 +314,18 @@ export default {
     
     data() {
         return {
+            voucher: { // Lưu dữ liệu 1 tài sản
+                voucher_id:"",
+                voucher_code:"",
+                voucher_date:"",
+                increment_date:"",
+                cost:"",
+                description:"",
+                created_by:"",
+                created_date:"",
+                modified_by:"",
+                modified_date:"",
+            },
             asset: { // Lưu dữ liệu 1 tài sản
                 fixed_asset_id:"",
                 fixed_asset_code:"",
@@ -330,7 +354,6 @@ export default {
                 modified_by:"",
                 modified_date:"",
             },
-            assetMid: {}, // Lưu dữ liệu tài sản được truyền vào
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -347,6 +370,8 @@ export default {
             ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+            chooseAssetShow: false,
+            thisShow: true
         }
     },
 
@@ -361,6 +386,7 @@ export default {
 
     created() {
         // Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
+        this.updateVoucher()
         // this.updateAsset()   
         // Truyền vào các giá trị mặc định
         this.defaultValue()
@@ -455,10 +481,10 @@ export default {
             try{
                 // Gọi api lấy dữ liệu
                 this.isLoading = true
-                fetch(Resource.Url.Asset + `/nextCode`, {method: Resource.Method.Get})
+                fetch(Resource.Url.Voucher + `/nextCode`, {method: Resource.Method.Get})
                 .then(res => res.json())
                 .then(data => {
-                    this.asset.fixed_asset_code = Object.values(data)[0]
+                    this.voucher.voucher_code = Object.values(data)[0]
                     this.isLoading = false
                 })
                 .catch(res => {
@@ -512,8 +538,12 @@ export default {
          * NDDAT (19/09/2022)
          */        
         defaultValue() {
-            if (this.asset.purchase_date == null) this.asset.purchase_date = new Date()
-            if (this.asset.production_date == null) this.asset.production_date = new Date()
+            // voucher
+            if (this.voucher.voucher_date == null) this.voucher.voucher_date = new Date().toISOString()
+            if (this.voucher.increment_date == null) this.voucher.increment_date = new Date().toISOString()
+
+            if (this.asset.purchase_date == null) this.asset.purchase_date = new Date().toISOString()
+            if (this.asset.production_date == null) this.asset.production_date = new Date().toISOString()
             if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
             if (this.asset.cost == null) this.asset.cost = 0
         },
@@ -741,6 +771,23 @@ export default {
                 console.error(res)
             })
         },
+
+        /**
+         * Cập nhật giá trị mảng voucher thành giá trị chứng từ truyền vào
+         * NDDAT (14/11/2022)
+         */
+        updateVoucher() {
+            this.voucher.voucher_id = this.voucherSelected.voucher_id
+            this.voucher.voucher_code = this.voucherSelected.voucher_code
+            this.voucher.voucher_date = this.voucherSelected.voucher_date
+            this.voucher.increment_date = this.voucherSelected.increment_date
+            this.voucher.cost = this.voucherSelected.cost
+            this.voucher.description = this.voucherSelected.description
+            this.voucher.created_by = this.voucherSelected.created_by
+            this.voucher.created_date = this.voucherSelected.created_date
+            this.voucher.modified_by = this.voucherSelected.modified_by
+            this.voucher.modified_date = this.voucherSelected.modified_date    
+        }
 
         /**
          * Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào

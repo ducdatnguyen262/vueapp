@@ -228,7 +228,7 @@
                                 {{totalPage-1}}
                             </div>
                             <div 
-                                v-show="totalPage!=1" :class="{'tfooter-page--selected':page == totalPage}" 
+                                v-show="totalPage>1" :class="{'tfooter-page--selected':page == totalPage}" 
                                 class="tfooter-page"
                                 @click="toPage(totalPage)" 
                             >
