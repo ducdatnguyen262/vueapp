@@ -807,7 +807,7 @@ export default {
         try{
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.api, {method: Resource.Method.Get})
+            fetch(this.api, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]

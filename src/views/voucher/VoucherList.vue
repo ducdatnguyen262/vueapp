@@ -378,7 +378,7 @@
         v-if="dialogShow" 
         :formMode="detailFormMode" 
         :voucherSelected="voucherSelected" 
-        :assetCode="assetCode" 
+        :assetsSelected ="assets"
         :title="title"
         @hideDialogSuccess="hideDialogSuccessMethod" 
         @hideDialog="hideDialogMethod" 
@@ -435,7 +435,7 @@ export default {
         assetSelected: {}, // Tài sản được chọn
         search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
-        dialogShow: true, // Hiển thị dialog hay không
+        dialogShow: false, // Hiển thị dialog hay không
         detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
         rowSelected: -1, // Dòng được chọn tạm thời (click) ở table 1
         rowSelected2: -1, // Dòng được chọn tạm thời (click) ở table 2
@@ -564,6 +564,7 @@ export default {
      */
     btnAddOnClick() { 
         this.voucherSelected = {}
+        this.assets = []
         this.detailFormMode = Enum.FormMode.Add
         this.title = Resource.DialogTitle.Add
         this.dialogShow = true

@@ -182,7 +182,7 @@
             <div class="dialog__footer">
                 <d-button 
                     tabindex="114" 
-                    text="Hủy" 
+                    text="Hủy bỏ" 
                     type="white" 
                     class="mr-10" 
                     :id="'close-asset-detail'"
@@ -192,8 +192,8 @@
                 />
                 <d-button 
                     tabindex="113" 
-                    text="Lưu" 
-                    @click="btnSaveOnClick" 
+                    text="Đồng ý" 
+                    @click="btnSelectOnClick" 
                 />
             </div>
         </div>
@@ -248,6 +248,7 @@ export default {
     data() {
         return {
             assets:[], // Mảng lưu các tài sản đang hiện
+            assetsSelected:[], // Mảng lưu các tài sản được chọn
             search:"", // Lưu giá trị input tìm kiếm
             isLoading: false, // Có đang loading hay không
             dialogShow: false, // Hiển thị dialog hay không
@@ -763,14 +764,14 @@ export default {
     },
 
     /**
-     * Gọi api lấy dữ liệu rồi reload lại trang
+     * Gọi api lấy dữ liệu
      * NDDAT (15/09/2022)
      */
     loadData() {
         try{
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.api, {method: Resource.Method.Get})
+            fetch(this.api, {method: Resource.Method.Post, headers:{'Content-Type': 'application/json'}})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]
@@ -812,7 +813,7 @@ export default {
             this.ctrlPressed = true
         }
         else if(e.which == Enum.KeyCode.F8 && this.ctrlPressed == true){
-            this.btnSaveOnClick()
+            this.btnSelectOnClick()
             this.ctrlPressed = false
         }
         else if(e.which == Enum.KeyCode.F9 && this.ctrlPressed == true){
@@ -969,7 +970,7 @@ export default {
      */
     confirmSaveNotify() {
         this.closeProValidate()
-        this.btnSaveOnClick()
+        this.btnSelectOnClick()
     },
 
     /**
@@ -1025,13 +1026,9 @@ export default {
      * Click vào button để lưu tài sản
      * NDDAT (15/09/2022)
      */
-    btnSaveOnClick() {
-        try{
-            this.btnCloseOnClick()    
-               
-        } catch (error) {
-            console.error(error);
-        }
+    btnSelectOnClick() {
+        this.btnCloseOnClick()    
+        this.$$emit("selectAssets", this.assetsSelected)
     },
 
     /**

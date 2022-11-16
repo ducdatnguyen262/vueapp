@@ -90,7 +90,7 @@
                         tabindex="114" 
                         text="Chọn tài sản" 
                         type="outline"
-                        @click="chooseAssetShow=true;thisShow=false" 
+                        @click="selectAssetsShow=true;thisShow=false" 
                     />
                 </div>
             </div>
@@ -113,22 +113,23 @@
                         </tr>
                     </thead>
                     <tbody class="tbody">
-                        <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
+                        <tr v-for="(asset, index) in assetsSelected" :key="asset.fixed_asset_id" 
                             tabindex="7" 
                             :id="'table'+index" 
-                            :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}" 
+                            :class="{'row--selected':(rowSelected == index), 'checkbox--selected':rowFocus2 == index}" 
                             v-contextmenu:contextmenu
+                            @click.right="assetSelected = asset"
                             @keydown.f2="rowEdit(asset)" 
                             @keydown.insert="rowDuplicate(asset)" 
                             @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
                             @keydown.up="prevItem" @keydown.down="nextItem" 
-                            @focus="rowFocus=index" @click="rowSelect(index)" 
+                            @focus="rowFocus2=index" @click="rowSelected = index"
                             @dblclick="rowEdit(asset)" 
                             @mouseover="rowHover = index" 
                             @mouseleave="rowHover = -1"
                         >
                             <td>{{index + 1}}</td>
-                            <td>{{voucher.voucher_code}}</td>
+                            <td>{{asset.fixed_asset_code}}</td>
                             <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
                             <td :title="asset.department_name">{{asset.department_name}}</td>
                             <td>{{formatMoney(asset.cost)}}</td>
@@ -275,14 +276,23 @@
         @closeNotify="closeBackendError"
     />
 
-    <voucher-choose-asset
-        v-if="chooseAssetShow"
-        @hideDialog="chooseAssetShow=false;thisShow=true" 
+    <voucher-select-assets
+        v-if="selectAssetsShow"
+        @hideDialog="selectAssetsShow=false;thisShow=true"
+        @selectAssets="selectAssets"
     />
 
     <voucher-update-asset
         v-if="false"
     />
+
+    <!-- Context Menu -->
+    <v-contextmenu ref="contextmenu">
+        <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
+        <v-contextmenu-item @click="rowEdit(voucherSelected)">Sửa</v-contextmenu-item>
+        <v-contextmenu-item @click="deleteOnKey(voucherSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
+        <v-contextmenu-item @click="rowDuplicate(voucherSelected)">Nhân bản</v-contextmenu-item>
+    </v-contextmenu>
 </template>
 
 <script>
@@ -295,15 +305,19 @@ import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
-import VoucherChooseAsset from './VoucherChooseAsset.vue'
+import VoucherSelectAssets from './VoucherSelectAssets.vue'
 import VoucherUpdateAsset from './VoucherUpdateAsset.vue'
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, VoucherChooseAsset, VoucherUpdateAsset },
+    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, VoucherSelectAssets, VoucherUpdateAsset },
     props: {
         voucherSelected: Function, // Chứng từ được chọn
-        assetSelected: Function, // Tài sản được chọn
+        //assetSelected: Function, // Tài sản được chọn
+        assetsSelected: {
+            type: Array,
+            required: true
+        },
         formMode: {
             type: Number,
             default: Enum.FormMode.Add
@@ -326,34 +340,35 @@ export default {
                 modified_by:"",
                 modified_date:"",
             },
-            asset: { // Lưu dữ liệu 1 tài sản
-                fixed_asset_id:"",
-                fixed_asset_code:"",
-                fixed_asset_name:"",
-                organization_id:"",
-                organization_code:"",
-                organization_name:"",
-                department_id:"",
-                department_code:"",
-                department_name:"",
-                fixed_asset_category_id:"",
-                fixed_asset_category_code:"",
-                fixed_asset_category_name:"",
-                quantity:"",
-                cost:"",
-                depreciation_rate:"",
-                purchase_date:"",
-                production_year:"",
-                production_date:"",
-                tracked_year:"",
-                life_time:"",
-                active:"",
-                depreciation_year:"",
-                created_by:"",
-                created_date:"",
-                modified_by:"",
-                modified_date:"",
-            },
+            // asset: { // Lưu dữ liệu 1 tài sản
+            //     fixed_asset_id:"",
+            //     fixed_asset_code:"",
+            //     fixed_asset_name:"",
+            //     organization_id:"",
+            //     organization_code:"",
+            //     organization_name:"",
+            //     department_id:"",
+            //     department_code:"",
+            //     department_name:"",
+            //     fixed_asset_category_id:"",
+            //     fixed_asset_category_code:"",
+            //     fixed_asset_category_name:"",
+            //     quantity:"",
+            //     cost:"",
+            //     depreciation_rate:"",
+            //     purchase_date:"",
+            //     production_year:"",
+            //     production_date:"",
+            //     tracked_year:"",
+            //     life_time:"",
+            //     active:"",
+            //     depreciation_year:"",
+            //     created_by:"",
+            //     created_date:"",
+            //     modified_by:"",
+            //     modified_date:"",
+            // },
+            //assetsSelected:[], // Mảng lưu các tài sản được chọn
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -370,13 +385,14 @@ export default {
             ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
-            chooseAssetShow: false,
-            thisShow: true
+            selectAssetsShow: false,
+            thisShow: true,
+            rowSelected:-1,
         }
     },
 
     watch: {
-        asset: {
+        voucher: {
             deep: true,
             handler() {
                 this.isEdited = true
@@ -394,6 +410,11 @@ export default {
         if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
             this.generateNextCode()
         }
+
+        console.log("se: ");
+        console.log(this.assetsSelected)
+        this.assets = this.assetsSelected
+        console.log(this.assets)
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -416,8 +437,10 @@ export default {
             this.isEdited = false
             this.firstTimeEdited = false
         }
-        // Cập nhật hao mòn năm
-        this.updateValue()
+
+        console.log(this.isEdited);
+        // // Cập nhật hao mòn năm
+        // this.updateValue()
     },
 
     beforeUnmount() {
@@ -444,6 +467,23 @@ export default {
     },
 
     methods: {
+        /**
+         * 
+         */
+        // selectAssets(assetsSelected) {
+        //     this.assetsSelected = assetsSelected
+        // },
+
+        /**
+         * Định dạng tiền tệ
+         * NDDAT (18/09/2022)
+         * @param {double} money số tiền
+         */
+        formatMoney(money) {
+            money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
+            return money
+        },
+
         /**
          * Xử lí sự kiện keyboard shortcut
          * NDDAT (12/10/2022)
@@ -542,10 +582,10 @@ export default {
             if (this.voucher.voucher_date == null) this.voucher.voucher_date = new Date().toISOString()
             if (this.voucher.increment_date == null) this.voucher.increment_date = new Date().toISOString()
 
-            if (this.asset.purchase_date == null) this.asset.purchase_date = new Date().toISOString()
-            if (this.asset.production_date == null) this.asset.production_date = new Date().toISOString()
-            if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
-            if (this.asset.cost == null) this.asset.cost = 0
+            // if (this.asset.purchase_date == null) this.asset.purchase_date = new Date().toISOString()
+            // if (this.asset.production_date == null) this.asset.production_date = new Date().toISOString()
+            // if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
+            // if (this.asset.cost == null) this.asset.cost = 0
         },
 
         /**
