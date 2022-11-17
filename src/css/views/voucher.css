@@ -62,6 +62,12 @@
     text-align: left;
 }
 
+.table-2 .tbody td:nth-last-child(6) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 .table-2 .thead th:nth-last-child(5),
 .table-2 .tbody td:nth-last-child(5) {
     width: 16%;
@@ -78,12 +84,6 @@
 .table-2 .tbody td:nth-last-child(4) {
     width: 20%;
     text-align: left;
-}
-
-.table-2 .tbody td:nth-last-child(4) {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
 }
 
 .table-2 .thead th:nth-last-child(3) {

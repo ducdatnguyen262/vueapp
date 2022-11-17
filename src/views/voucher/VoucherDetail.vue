@@ -113,7 +113,7 @@
                         </tr>
                     </thead>
                     <tbody class="tbody">
-                        <tr v-for="(asset, index) in assetsSelected" :key="asset.fixed_asset_id" 
+                        <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
                             tabindex="7" 
                             :id="'table'+index" 
                             :class="{'row--selected':(rowSelected == index), 'checkbox--selected':rowFocus2 == index}" 
@@ -125,7 +125,7 @@
                             @keydown.up="prevItem" @keydown.down="nextItem" 
                             @focus="rowFocus2=index" @click="rowSelected = index"
                             @dblclick="rowEdit(asset)" 
-                            @mouseover="rowHover = index" 
+                            @mouseenter="rowHover = index" 
                             @mouseleave="rowHover = -1"
                         >
                             <td>{{index + 1}}</td>
@@ -134,7 +134,21 @@
                             <td :title="asset.department_name">{{asset.department_name}}</td>
                             <td>{{formatMoney(asset.cost)}}</td>
                             <td>{{formatMoney(asset.depreciation_year)}}</td>
-                            <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
+                            <td>
+                                <div v-show="rowHover != index">
+                                    {{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}
+                                </div>
+                                <div v-show="rowHover == index" class="table-function" style="justify-content: flex-end;">
+                                    <div class="position-relative mr-10">
+                                        <div @click="rowEdit(asset)" class="button--icon-edit"></div>
+                                        <d-tooltip text="Sửa"></d-tooltip>
+                                    </div>
+                                    <div class="position-relative">
+                                        <div @click="deleteOnKey(asset.fixed_asset_id)" class="button--icon-delete"></div>
+                                        <d-tooltip text="Xóa" class="tool-tip--left"></d-tooltip>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         <tr style="height:auto;"></tr>
                     </tbody>
@@ -144,7 +158,7 @@
                     />
                     <tfoot class="tfoot">
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
                                 <div class="tfooter-left">
                                     <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
                                     <div class="tfooter-total">
@@ -280,18 +294,20 @@
         v-if="selectAssetsShow"
         @hideDialog="selectAssetsShow=false;thisShow=true"
         @selectAssets="selectAssets"
+        :assetsNoDisplay="assets"
     />
 
     <voucher-update-asset
-        v-if="false"
+        v-if="updateAssetShow"
+        @hideDialog="updateAssetShow=false;thisShow=true"
+        :assetSelected="assetSelected"
     />
 
     <!-- Context Menu -->
     <v-contextmenu ref="contextmenu">
-        <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
+        <v-contextmenu-item @click="selectAssetsShow=true;thisShow=false">Thêm</v-contextmenu-item>
         <v-contextmenu-item @click="rowEdit(voucherSelected)">Sửa</v-contextmenu-item>
         <v-contextmenu-item @click="deleteOnKey(voucherSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
-        <v-contextmenu-item @click="rowDuplicate(voucherSelected)">Nhân bản</v-contextmenu-item>
     </v-contextmenu>
 </template>
 
@@ -315,8 +331,7 @@ export default {
         voucherSelected: Function, // Chứng từ được chọn
         //assetSelected: Function, // Tài sản được chọn
         assetsSelected: {
-            type: Array,
-            required: true
+            type: Array
         },
         formMode: {
             type: Number,
@@ -369,6 +384,8 @@ export default {
             //     modified_date:"",
             // },
             //assetsSelected:[], // Mảng lưu các tài sản được chọn
+            assets:[], // Mảng lưu các tài sản hiển thị
+            assetSelected: {}, // Tài sản được chọn
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -386,8 +403,10 @@ export default {
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             selectAssetsShow: false,
+            updateAssetShow: false,
             thisShow: true,
             rowSelected:-1,
+            rowHover: -1,
         }
     },
 
@@ -410,11 +429,8 @@ export default {
         if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
             this.generateNextCode()
         }
-
-        console.log("se: ");
-        console.log(this.assetsSelected)
+        // Truyền vào các tài sản được chọn
         this.assets = this.assetsSelected
-        console.log(this.assets)
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -438,7 +454,6 @@ export default {
             this.firstTimeEdited = false
         }
 
-        console.log(this.isEdited);
         // // Cập nhật hao mòn năm
         // this.updateValue()
     },
@@ -468,11 +483,26 @@ export default {
 
     methods: {
         /**
-         * 
+         * Truyền vào các tài sản đã chọn trong giao diện chọn tài sản
+         * NDDAT (18/09/2022)
+         * @param {array} assetsSelected các tài sản được chọn
          */
-        // selectAssets(assetsSelected) {
-        //     this.assetsSelected = assetsSelected
-        // },
+        selectAssets(assetsSelected) {
+            for(let asset of assetsSelected) {
+                if(asset!=null) this.assets.push(asset)
+            }
+        },
+
+        /**
+         * Hiển thị dialog sửa tài sản
+         * NDDAT (17/11/2022)
+         * @param {Asset} asset tài sản đang chọn
+         */
+        rowEdit(asset) {
+            this.assetSelected = asset
+            this.updateAssetShow = true;
+            this.thisShow = false
+        },
 
         /**
          * Định dạng tiền tệ

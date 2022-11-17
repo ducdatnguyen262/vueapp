@@ -3,7 +3,7 @@
         <div class="dialog dialog--form">
             <div class="dialog__header background-white">
                 <!-- <h2 class="dialog-title">{{title}}</h2> -->
-                <h2 class="dialog-title">Sửa tài sản ...</h2>
+                <h2 class="dialog-title">Sửa tài sản {{assetSelected.fixed_asset_name}}</h2>
                 <button class="dialog-x-container">
                     <div 
                         ref="btnx"
@@ -511,8 +511,9 @@ export default {
          */
         btnCloseOnClick() {
             // Xét xem form đã được sửa chưa
-            if(this.isEdited) this.validateProShow = true
-            else this.notifyShow = true
+            // if(this.isEdited) this.validateProShow = true
+            // else this.notifyShow = true
+            this.$emit("hideDialog")
         },
 
         /**

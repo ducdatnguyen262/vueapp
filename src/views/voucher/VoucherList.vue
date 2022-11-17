@@ -79,7 +79,7 @@
                     @keydown.up="prevItem" @keydown.down="nextItem" 
                     @focus="rowFocus=index;voucherSelected=voucher" @click="rowSelected = index" 
                     @dblclick="rowEdit(voucher)"
-                    @mouseover="rowHover = index" 
+                    @mouseenter="rowHover = index" 
                     @mouseleave="rowHover = -1"
                 >
                     <td class="ms-table-right ms-table-fit">
@@ -104,7 +104,7 @@
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div @click="rowDuplicate(voucher)" class="button--icon-delete"></div>
+                                <div @click="deleteOnKey(voucher.voucher_id)" class="button--icon-delete"></div>
                                 <d-tooltip text="Xóa" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>

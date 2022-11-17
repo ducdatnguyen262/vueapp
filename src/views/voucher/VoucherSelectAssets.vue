@@ -91,7 +91,7 @@
                     />
                     <tfoot class="tfoot">
                         <tr>
-                            <td colspan="6">
+                            <td colspan="8">
                                 <div class="tfooter-left">
                                     <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
                                     <div class="tfooter-total">
@@ -244,6 +244,11 @@ import DDialog1Button from '@/components/base/DDialog1Button.vue'
 export default {
     components: { DButton, DTooltip, DDialog, DDialog1Button },
     name:"AssetList",
+    props: {
+        assetsNoDisplay: {
+            type: Array
+        },
+    },
 
     data() {
         return {
@@ -632,17 +637,19 @@ export default {
      * @param {int} code id của dòng chứa checkbox được click
      */
     checkedMethod(order, code) {
-        if (this.checkboxSelected[order] == code) this.checkboxSelected[order] = null
+        if (this.checkboxSelected[order] == code){
+            this.checkboxSelected[order] = null
+            this.assetsSelected[order] = null
+        } 
         for (let i in this.checked) {
             for (let index in this.assets) {
                 if (this.checked[i] == this.assets[index].fixed_asset_id) {
                     this.checkboxSelected[index] = this.assets[index].fixed_asset_id
+                    this.assetsSelected[index] = this.assets[index]
                 }
             }
         }
         this.checkedAllInspect()
-        console.log(this.checked);
-        console.log(this.checkboxSelected);
     },
 
     checkedMethodOnClick(order, code) {
@@ -651,6 +658,7 @@ export default {
                 if(this.checked[i] == this.checkboxSelected[order]) this.checked[i]=null
             }
             this.checkboxSelected[order] = null
+            this.assetsSelected[order] = null
         }
         else {
             this.checked[this.checked.length] = code
@@ -659,12 +667,11 @@ export default {
             for (let index in this.assets) {
                 if (this.checked[i] == this.assets[index].fixed_asset_id) {
                     this.checkboxSelected[index] = this.assets[index].fixed_asset_id
+                    this.assetsSelected[index] = this.assets[index]
                 }
             }
         }
         this.checkedAllInspect()
-        console.log(this.checked);
-        console.log(this.checkboxSelected);
     },
 
     /**
@@ -769,9 +776,14 @@ export default {
      */
     loadData() {
         try{
+            // Chuyển danh sách tài sản thành danh sách id tài sản
+            let assetids = this.assetsNoDisplay.map(function (obj) {
+                return obj.fixed_asset_id;
+            });
+
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.api, {method: Resource.Method.Post, headers:{'Content-Type': 'application/json'}})
+            fetch(this.api, {method: Resource.Method.Post, headers:{'Content-Type': 'application/json'}, body: JSON.stringify(assetids)})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]
@@ -1027,8 +1039,8 @@ export default {
      * NDDAT (15/09/2022)
      */
     btnSelectOnClick() {
-        this.btnCloseOnClick()    
-        this.$$emit("selectAssets", this.assetsSelected)
+        this.btnCloseOnClick()
+        this.$emit("selectAssets", this.assetsSelected)
     },
 
     /**
