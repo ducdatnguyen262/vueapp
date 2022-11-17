@@ -29,7 +29,7 @@
                         type="text"
                         :class="{'input--error':!voucher.voucher_code && this.isSubmited}" 
                     >
-                    <d-tooltip-warning text="Mã tài sản"></d-tooltip-warning>
+                    <d-tooltip-warning text="Mã chứng từ"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item date-picker">
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
@@ -42,7 +42,7 @@
                         placeholder="Chọn ngày"
                         :class="{'datepicker--error':!voucher.voucher_date && this.isSubmited}" 
                     />
-                    <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
+                    <d-tooltip-warning text="Ngày bắt đầu sử dụng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item date-picker">
                     <label>Ngày ghi tăng <span style="color: red;">*</span></label>
@@ -55,7 +55,7 @@
                         placeholder="Chọn ngày"
                         :class="{'datepicker--error':!voucher.increment_date && this.isSubmited}" 
                     />
-                    <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
+                    <d-tooltip-warning text="Ngày ghi tăng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Nội dung</label>
@@ -306,8 +306,8 @@
     <!-- Context Menu -->
     <v-contextmenu ref="contextmenu">
         <v-contextmenu-item @click="selectAssetsShow=true;thisShow=false">Thêm</v-contextmenu-item>
-        <v-contextmenu-item @click="rowEdit(voucherSelected)">Sửa</v-contextmenu-item>
-        <v-contextmenu-item @click="deleteOnKey(voucherSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
+        <v-contextmenu-item @click="rowEdit(this.assetSelected)">Sửa</v-contextmenu-item>
+        <v-contextmenu-item @click="deleteOnKey(this.assetSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
     </v-contextmenu>
 </template>
 
@@ -403,7 +403,7 @@ export default {
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             selectAssetsShow: false,
-            updateAssetShow: false,
+            updateAssetShow: false, // Dialog sửa tài sản có hiện không
             thisShow: true,
             rowSelected:-1,
             rowHover: -1,
@@ -465,19 +465,24 @@ export default {
     validations() {
         return {
             // Các trường cần validate thiếu
-            asset: { 
-                fixed_asset_code: { required },
-                fixed_asset_name: { required },
-                department_code: { required },
-                fixed_asset_category_code: { required },
-                quantity: { required },
-                cost: { required },
-                depreciation_rate: { required },
-                purchase_date: { required },
-                production_date: { required },
-                life_time: { required }, 
-                depreciation_year: { required },          
-            },
+            // asset: { 
+            //     fixed_asset_code: { required },
+            //     fixed_asset_name: { required },
+            //     department_code: { required },
+            //     fixed_asset_category_code: { required },
+            //     quantity: { required },
+            //     cost: { required },
+            //     depreciation_rate: { required },
+            //     purchase_date: { required },
+            //     production_date: { required },
+            //     life_time: { required }, 
+            //     depreciation_year: { required },          
+            // },
+            voucher: {
+                voucher_code: {required},
+                voucher_date: {required},
+                increment_date: {required}
+            }
         }
     },
 
@@ -777,28 +782,11 @@ export default {
             this.v$.$validate()
             if (this.v$.$error) {
                 this.errorArray = []
-                if (this.v$.asset.fixed_asset_code.$error) this.errorArray.push(Resource.IsEmpty.code);
-                if (this.v$.asset.fixed_asset_name.$error) this.errorArray.push(Resource.IsEmpty.name);
-                if (this.v$.asset.department_code.$error) this.errorArray.push(Resource.IsEmpty.department);
-                if (this.v$.asset.fixed_asset_category_code.$error) this.errorArray.push(Resource.IsEmpty.category);
-                if (this.v$.asset.quantity.$error) this.errorArray.push(Resource.IsEmpty.quantity);
-                if (this.v$.asset.cost.$error) this.errorArray.push(Resource.IsEmpty.cost);
-                if (this.v$.asset.depreciation_rate.$error) this.errorArray.push(Resource.IsEmpty.depreciation_rate);
-                if (this.v$.asset.purchase_date.$error) this.errorArray.push(Resource.IsEmpty.purchase_date);
-                if (this.v$.asset.production_date.$error) this.errorArray.push(Resource.IsEmpty.production_date);
-                if (this.v$.asset.life_time.$error) this.errorArray.push(Resource.IsEmpty.life_time);
-                if (this.v$.asset.depreciation_year.$error) this.errorArray.push(Resource.IsEmpty.depreciation_year);
+                if (this.v$.voucher.voucher_code.$error) this.errorArray.push(Resource.IsEmpty.voucher_code);
+                if (this.v$.voucher.voucher_date.$error) this.errorArray.push(Resource.IsEmpty.voucher_date);
+                if (this.v$.voucher.increment_date.$error) this.errorArray.push(Resource.IsEmpty.increment_date);
                 this.createValidateMessage()
                 this.validateShow = true
-                return false;
-            } else if(this.asset.depreciation_year > this.asset.cost) {
-                this.errorMessage = "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá"
-                this.validateShow = true
-                return false;
-            } else if (this.asset.depreciation_rate != parseFloat(100 / this.asset.life_time).toFixed(2)) {
-                this.errorMessage = "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng"
-                this.validateShow = true
-                return false;
             } else {
                 return true;
             } 
@@ -811,12 +799,12 @@ export default {
         saveData() {
             // Cất dữ liệu:
             var method = Resource.Method.Post
-            var url = Resource.Url.Asset
+            var url = Resource.Url.Voucher
             if(this.formMode == Enum.FormMode.Edit) {
                 method = Resource.Method.Put
-                url = url + `/${this.asset.fixed_asset_id}`
+                url = url + `/${this.voucher.voucher_id}`
             }
-            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.voucher)})
             .then(res =>{
                 var status = res.status
                 res.json()

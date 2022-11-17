@@ -5,6 +5,7 @@
 
 .date-picker .el-input__wrapper {
     background: #fff url('../../assets/icon/datepicker-icon.png') no-repeat 190px 10px !important;
+    padding: 0 1px;
 }
 
 .el-input__wrapper:hover {
@@ -27,6 +28,14 @@
     display: none !important;
 }
 
-.datepicker--error .el-input__wrapper {
+.date-picker .el-input__inner {
+    padding: 10px;
+}
+
+.datepicker--error .el-input__wrapper,
+.datepicker--error .el-input__wrapper:hover,
+.datepicker--error .el-input__wrapper:focus,
+.datepicker--error .el-input__wrapper:active {
     border: 1px solid red !important;
+    box-shadow: none !important;
 }

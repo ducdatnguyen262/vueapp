@@ -25,6 +25,7 @@
                         class="dialog-input" 
                         type="text"
                         :class="{'input--error':!asset.fixed_asset_code && this.isSubmited}" 
+                        :disabled="asset.active"
                     >
                     <d-tooltip-warning text="Mã tài sản"></d-tooltip-warning>
                 </div>
@@ -69,6 +70,7 @@
                         :vmodelValue="asset.fixed_asset_category_code"  
                         :tabindex="'104'" 
                         :isSubmited="this.isSubmited" 
+                        :disabled="asset.active"
                         @comboboxSelected="comboboxCategory" 
                         @updateWithCategoryCode="updateWithCategoryCode" 
                     />
@@ -96,28 +98,36 @@
                             valueRange: {min: 0},
                             hideGroupingSeparatorOnFocus: false,
                         }"
+                        :disabled="asset.active"
                         @keyup="notNegative('quantity')"
                     />
                     <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
                 </div>
-                <div class="dialog-item">
+                <div class="dialog-item" style="margin-right:8px">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
                     <d-input-money 
                         v-model="asset.cost" 
                         tabindex="106" 
-                        :class="{'input--error':!asset.cost && asset.cost!='0' && this.isSubmited}"
+                        style="width:146px"
+                        disabled
                         :options="{
                             locale: 'vi-VN',
                             currency: 'EUR',
                             currencyDisplay: 'hidden',
-                            valueRange: {min: 0},
                             hideGroupingSeparatorOnFocus: false,
                         }"
-                        @blur="focus = false" 
-                        @focus="focus = true" 
                     />
                     <d-tooltip-warning text="Nguyên giá"></d-tooltip-warning>
                 </div>
+                <d-button 
+                    tabindex="106" 
+                    text="Sửa" 
+                    class="mr-10"
+                    style="margin:20px 16px 0 0;min-width: 40px;"
+                    :id="'close-asset-detail'"
+                    :disabled="asset.active"
+                    @click="updateAssetShow = true"
+                />
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
                     <input 
@@ -128,6 +138,7 @@
                         min="0" 
                         oninput="validity.valid||(value='');"
                         :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" 
+                        :disabled="asset.active"
                         @keyup="notNegative('depreciation_rate')" 
                         @blur="focus = false" 
                         @focus="focus = true" 
@@ -144,6 +155,7 @@
                         type="date" 
                         placeholder="Chọn ngày"
                         :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
+                        :disabled="asset.active"
                     />
                     <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
                 </div>
@@ -156,7 +168,8 @@
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.production_date && this.isSubmited}" 
+                        :class="{'datepicker--error':!asset.production_date && this.isSubmited}"
+                        :disabled="asset.active"
                     />
                     <d-tooltip-warning text="Ngày bắt đầu sử dụng"></d-tooltip-warning>
                 </div>
@@ -179,7 +192,8 @@
                         type="number" 
                         min="0" 
                         oninput="validity.valid||(value='');"
-                        :class="{'input--error':!asset.life_time && asset.life_time!='0' && this.isSubmited}" 
+                        :class="{'input--error':!asset.life_time && asset.life_time!='0' && this.isSubmited}"
+                        :disabled="asset.active"
                         @keyup="notNegative('life_time')" 
                     >
                     <d-tooltip-warning text="Số năm sử dụng"></d-tooltip-warning>
@@ -196,12 +210,14 @@
                             currencyDisplay: 'hidden',
                             valueRange: {min: 0},
                             hideGroupingSeparatorOnFocus: false,
-                        }"/>
+                        }"
+                        :disabled="asset.active"
+                    />
                     <d-tooltip-warning text="Giá trị hao mòn năm"></d-tooltip-warning>
                 </div>
             </div>
             <div class="dialog__footer">
-                <DButton 
+                <d-button 
                     tabindex="114" 
                     text="Hủy" 
                     type="white" 
@@ -211,7 +227,7 @@
                     @keydown.shift="focusWithShift" 
                     @keydown.tab="focusBack"
                 />
-                <DButton 
+                <d-button 
                     tabindex="113" 
                     text="Lưu" 
                     @click="btnSaveOnClick" 
@@ -243,6 +259,12 @@
         :text="backendErrorMsg"
         @closeNotify="closeBackendError"
     />
+
+    <voucher-update-asset
+        v-if="updateAssetShow"
+        @hideDialog="updateAssetShow=false;thisShow=true"
+        :assetSelected="assetSelected"
+    />
 </template>
 
 <script>
@@ -257,10 +279,11 @@ import Resource from '../../js/resource.js'
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
 import DInputMoney from '../../components/base/DInputMoney.vue';
+import VoucherUpdateAsset from '../voucher/VoucherUpdateAsset.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DCombobox, DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, DInputMoney },
+    components: { DCombobox, DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, DInputMoney, VoucherUpdateAsset },
     props: {
         assetSelected: Function, // Tài sản được chọn
         formMode: {
@@ -317,6 +340,7 @@ export default {
             ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+            updateAssetShow: false, // Dialog sửa tài sản có hiện không
         }
     },
 

@@ -90,8 +90,10 @@
     width: 16%;
 }
 
-.table-2 .thead th:nth-last-child(2) {
+.table-2 .thead th:nth-last-child(2),
+.table-2 .tbody td:nth-last-child(2) {
     width: 16%;
+    text-align: right;
 }
 
 .table-2 .thead th:last-child,

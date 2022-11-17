@@ -53,9 +53,9 @@
                     class="button button--small mr-11"
                     :data="assets"
                     :columns="columns"
-                    :file-name="'filename'"
+                    :file-name="'Danh sách tài sản'"
                     :file-type="'xlsx'"
-                    :sheet-name="'sheetname'"
+                    :sheet-name="'Danh sách tài sản'"
                     >
                     <div class="icon-excel"></div>
                 </vue-excel-xlsx>
@@ -98,6 +98,7 @@
                         </div>
                     </th>
                     <th>Giá trị còn lại</th>
+                    <th>Trạng thái</th>
                     <th>Chức năng</th>
                 </tr>
             </thead>
@@ -135,6 +136,10 @@
                     <td>{{formatMoney(asset.cost)}}</td>
                     <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
                     <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
+                    <td>
+                        <div v-if="asset.active">Đã ghi tăng</div>
+                        <div v-else>Chưa ghi tăng</div>
+                    </td>
                     <td>
                         <div class="table-function">
                             <div class="position-relative">
@@ -243,7 +248,7 @@
                     <td class="plr-10"><b>{{formatMoney(totalCost)}}</b></td>
                     <td class="plr-10"><b>{{formatMoney(totalDepreciation)}}</b></td>
                     <td class="plr-10"><b>{{formatMoney(totalRemain)}}</b></td>
-                    <td></td>
+                    <td colspan="2"></td>
                 </tr>
             </tfoot>
         </table>

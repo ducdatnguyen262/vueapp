@@ -27,6 +27,9 @@ export default {
         production_date: "Ngày bắt đầu sử dụng",
         life_time: "Số năm sử dụng",
         depreciation_year: "Giá trị hao mòn năm",
+        voucher_code: "Mã chứng từ",
+        voucher_date: "Ngày bắt đầu sử dụng",
+        increment_date: "Ngày ghi tăng",
     },
 
     // Loại combobox

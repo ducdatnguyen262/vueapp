@@ -245,14 +245,11 @@
                     tabindex="7" 
                     :id="'table'+index" 
                     :class="{'row--selected':(rowSelected2 == index), 'checkbox--selected':rowFocus2 == index}" 
-                    v-contextmenu:contextmenu
                     @click.right="assetSelected = asset"
-                    @keydown.f2="rowEdit(asset)" 
                     @keydown.insert="rowDuplicate(asset)" 
                     @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
                     @keydown.up="prevItem" @keydown.down="nextItem" 
                     @focus="rowFocus2=index" @click="rowSelected2 = index"
-                    @dblclick="rowEdit(asset)" 
                     @mouseover="rowHover = index" 
                     @mouseleave="rowHover = -1"
                 >
@@ -690,13 +687,13 @@ export default {
     /**
      * Nhấn button hiển thị dialog sửa tài sản
      * NDDAT (15/09/2022)
-     * @param {Asset} asset tài sản đang chọn
+     * @param {Voucher} voucher chứng từ đang chọn
      */
-    rowEdit(asset) {
-        this.assetSelected = asset
-        this.assetCode = this.assetSelected.fixed_asset_code
+    rowEdit(voucher) {
+        this.voucherSelected = voucher
+        // this.assetCode = this.assetSelected.fixed_asset_code
         this.detailFormMode = Enum.FormMode.Edit
-        this.title = Resource.DialogTitle.Edit
+        // this.title = Resource.DialogTitle.Edit
         this.dialogShow = true
     },
 

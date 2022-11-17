@@ -7,6 +7,7 @@
             :tabindex="tabindex" 
             :class="{'input--error': !value && isSubmited}"
             :placeholder="placeholder" 
+            :disabled="disabled"
             @click="toggle()"
             @keydown.esc="close()" 
             @keydown.down="open();focusFirstItem()" 
@@ -15,7 +16,11 @@
             @keyup.enter="selectWithKey()"
         >
         <d-tooltip-warning :text="tooptipText"></d-tooltip-warning>
-        <button tabindex="-1" @click="toggle()" @blur="close()"></button>
+        <button tabindex="-1" 
+            :disabled="disabled"
+            @click="toggle()" 
+            @blur="close()" 
+        />
         <div v-show="isOpen" class="combobox__data">
             <div v-for="(item, index) in items" :key="item[cb.id]" 
                 class="combobox__item"
@@ -50,7 +55,7 @@ import DTooltipWarning from './DTooltipWarning.vue'
 
 export default {
     components: { DTooltipWarning },
-    props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText", "tabindex"],
+    props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText", "tabindex", "disabled"],
     data() {
         return {
             isOpen: false,
