@@ -30,6 +30,8 @@ export default {
         voucher_code: "Mã chứng từ",
         voucher_date: "Ngày bắt đầu sử dụng",
         increment_date: "Ngày ghi tăng",
+        source_name: "Nguồn hình thành",
+        source_cost: "Giá trị"
     },
 
     // Loại combobox

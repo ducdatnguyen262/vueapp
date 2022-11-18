@@ -1,7 +1,7 @@
 <template>
     <div class="combobox">
         <input 
-            v-model=value 
+            v-model="value"
             type="text" 
             :id="'input' + tabindex" 
             :tabindex="tabindex" 
@@ -55,7 +55,7 @@ import DTooltipWarning from './DTooltipWarning.vue'
 
 export default {
     components: { DTooltipWarning },
-    props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText", "tabindex", "disabled"],
+    props: ["placeholder", "main", "type", "vmodelValue", "isSubmited", "tooptipText", "tabindex", "disabled", "budgetId"],
     data() {
         return {
             isOpen: false,
@@ -230,6 +230,9 @@ export default {
             this.$emit("comboboxSelected", id, code, name);
             this.$emit("comboboxSearch", id);
             if(this.main == 'fixed_asset_category_code') this.$emit('updateWithCategoryCode', depreciation_rate, life_time)
+            if(this.main == 'budget_name'){              
+                this.$emit('budgetSelected', main, this.budgetId)
+            } 
         },
 
         /**

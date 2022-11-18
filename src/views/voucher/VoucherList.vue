@@ -268,8 +268,14 @@
                 style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
             />
             <tfoot class="tfoot">
-                <tr>
-                    <td colspan="10">
+                <tr class="total-line">
+                    <td colspan="4"></td>
+                    <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost2)}}</b></td>
+                    <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation2)}}</b></td>
+                    <td colspan="1" class="plr-10"><b>{{formatMoney(totalRemain2)}}</b></td>
+                </tr>
+                <!-- <tr>
+                    <td colspan="7">
                         <div class="tfooter-left">
                             <div class="tfooter-text">Tổng số: <b>{{totalCount2}}</b> bản ghi</div>
                             <div class="tfooter-total">
@@ -352,7 +358,7 @@
                             </div>
                         </div>
                     </td>
-                </tr>
+                </tr> -->
             </tfoot>
         </table>
     </div>
@@ -537,7 +543,7 @@ export default {
   watch: {
     rowFocus: {
         handler() {
-            this.loadAssetData()
+            this.loadDetailData()
         }
     }
   },
@@ -548,9 +554,9 @@ export default {
         return Resource.Url.Voucher+"/filters?keyword="+this.keyword+"&limit="+this.tableView+"&page="+this.page
     },
 
-    // Tạo api lấy tài sản
-    assetApi : function() {
-        return Resource.Url.Asset+"/voucher?voucherCode="+this.vouchers[this.rowFocus].voucher_code+"&limit="+this.tableView+"&page="+this.page
+    // Tạo api lấy chi tiết chứng từ
+    detailApi : function() {
+        return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?limit="+this.tableView+"&page="+this.page
     },
   },
 
@@ -973,7 +979,7 @@ export default {
                 this.totalCost = Object.values(data)[3]
                 this.totalPageMethod()
                 this.checkedAllInspect()
-                this.loadAssetData()
+                this.loadDetailData()
                 this.isLoading = false
             })
             .catch(res => {
@@ -989,15 +995,19 @@ export default {
      * Gọi api lấy dữ liệu các tài sản khi chọn 1 chứng từ
      * NDDAT (15/09/2022)
      */
-    loadAssetData() {
+    loadDetailData() {
         try{
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.assetApi, {method: Resource.Method.Get})
+            console.log(this.detailApi);
+            fetch(this.detailApi, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]
                 this.totalCount2 = Object.values(data)[1]
+                this.totalCost2 = Object.values(data)[3]
+                this.totalDepreciation2 = Object.values(data)[4]
+                this.totalRemain2 = Object.values(data)[5]
                 this.totalPageMethod()
                 this.checkedAllInspect()
                 this.isLoading = false

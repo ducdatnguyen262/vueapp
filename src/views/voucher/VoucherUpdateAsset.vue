@@ -2,7 +2,6 @@
     <div class="dialog-container" v-on:keydown="keyboardEvent">
         <div class="dialog dialog--form">
             <div class="dialog__header background-white">
-                <!-- <h2 class="dialog-title">{{title}}</h2> -->
                 <h2 class="dialog-title">Sửa tài sản {{assetSelected.fixed_asset_name}}</h2>
                 <button class="dialog-x-container">
                     <div 
@@ -19,29 +18,32 @@
             <div class="dialog__content dialog-update-asset">
                 <div class="dialog-item">
                     <label>Bộ phận sử dụng</label>
-                    <input v-model="asset.department_name" class="dialog-input dialog-input-big" type="text" disabled>
+                    <input :value="assetSelected.department_name" class="dialog-input dialog-input-big" type="text" disabled>
                 </div>
 
                 <h4 style="margin:0 0 10px">Nguyên giá</h4>
-                <p>Nguồn hình thành <span style="margin-left:202px">Giá trị</span></p>
+                <p>Nguồn hình thành <span style="margin-left:210px">Giá trị</span></p>
                 <div class="dialog-update-asset">
                     <div v-for="(source, index) in sources" :key="source.id" class="source-item">
-                        <div class="mb-20">
+                        <div class="dialog-item">
                             <d-combobox 
-                                v-model="source.source"
                                 type="3" 
                                 main="budget_name" 
-                                class="source-item-cbb mr-11"
+                                class="source-item-cbb"
+                                tooptipText="Nguồn hình thành"
                                 :tabindex="`10${index}`" 
-                                @searchAll="searchAllCategory" 
-                                @comboboxSearch="categorySearch" 
+                                :vmodelValue="source.name"
+                                :budgetId="source.id"
+                                :isSubmited="this.isSubmited" 
+                                @budgetSelected="comboboxBudget"
                             />
                         </div>
-                        <div class="mb-20">
-                            <d-input-money 
+                        <div class="dialog-item">
+                            <d-input-money
+                                v-model="source.cost"
                                 tabindex="105" 
-                                class="source-item-input mr-10"
-                                :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" 
+                                class="source-item-input"
+                                :class="{'input--error':!source.cost && source.cost!=0 && this.isSubmited}" 
                                 :options="{
                                     locale: 'vi-VN',
                                     currency: 'EUR',
@@ -51,6 +53,7 @@
                                 }"
                                 @keyup="notNegative('quantity')"
                             />
+                            <d-tooltip-warning text="Giá trị"></d-tooltip-warning>
                         </div>
                         <div class="position-relative mt-10 mb-20">
                             <div @click="addField(sources)" class="button-no-border icon-add-border"></div>
@@ -67,7 +70,17 @@
                         <input class="input source-item-cbb mr-10" placeholder="Tổng" disabled>
                     </div>
                     <div class="mb-20">
-                        <input type="number" class="input source-item-input mr-10" placeholder="100.000" disabled>
+                        <d-input-money
+                                v-model="sum"
+                                class="source-item-input"
+                                disabled
+                                :options="{
+                                    locale: 'vi-VN',
+                                    currency: 'EUR',
+                                    currencyDisplay: 'hidden',
+                                    hideGroupingSeparatorOnFocus: false,
+                                }"
+                            />
                     </div>
                 </div>
             </div>
@@ -129,10 +142,11 @@ import DDialog3Button from '@/components/base/DDialog3Button.vue';
 import DInputMoney from '@/components/base/DInputMoney.vue';
 import DTooltip from '@/components/base/DTooltip.vue';
 import DCombobox from '@/components/base/DCombobox.vue';
+import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DCombobox },
+    components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DCombobox, DTooltipWarning },
     props: {
         assetSelected: Function, // Tài sản được chọn
         formMode: {
@@ -190,8 +204,10 @@ export default {
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             firstMinus: true,
-            sources: [{id:1, source: ""}],
-            costs: [{ cost: ""}]
+            sources: [{id:1, name: "", cost: 0}],
+            costs: [{ cost: ""}],
+            sumCost:0,
+            textCost:"",
         }
     },
 
@@ -201,6 +217,12 @@ export default {
             handler() {
                 this.isEdited = true
             }
+        }
+    },
+
+    computed: {
+        sum: function() {
+            return this.sources.reduce((acc, item) => acc + item.cost, 0)
         }
     },
 
@@ -235,8 +257,6 @@ export default {
             this.isEdited = false
             this.firstTimeEdited = false
         }
-        // Cập nhật hao mòn năm
-        this.updateValue()
     },
 
     beforeUnmount() {
@@ -246,19 +266,25 @@ export default {
     validations() {
         return {
             // Các trường cần validate thiếu
-            asset: { 
-                fixed_asset_code: { required },
-                fixed_asset_name: { required },
-                department_code: { required },
-                fixed_asset_category_code: { required },
-                quantity: { required },
-                cost: { required },
-                depreciation_rate: { required },
-                purchase_date: { required },
-                production_date: { required },
-                life_time: { required }, 
-                depreciation_year: { required },          
-            },
+            // asset: { 
+            //     fixed_asset_code: { required },
+            //     fixed_asset_name: { required },
+            //     department_code: { required },
+            //     fixed_asset_category_code: { required },
+            //     quantity: { required },
+            //     cost: { required },
+            //     depreciation_rate: { required },
+            //     purchase_date: { required },
+            //     production_date: { required },
+            //     life_time: { required }, 
+            //     depreciation_year: { required },          
+            // },
+            sources: {
+                source : {
+                    name: { required },
+                    cost: { required }
+                }
+            }
         }
     },
 
@@ -268,7 +294,7 @@ export default {
          * NDDAT (09/11/2022)
          */
         addField(list) {
-            list.push({id: list.at(-1).id+1, value: ""});
+            list.push({id: list.at(-1).id+1, name: "", cost: 0});
         },
 
         /**
@@ -338,23 +364,8 @@ export default {
          * @param {string} code mã phòng ban
          * @param {string} name tên phòng ban
          */
-        comboboxDepartment(id, code, name) {
-            this.asset.department_id = id
-            this.asset.department_code = code
-            this.asset.department_name = name
-        },
-
-        /**
-         * Cập nhật dữ liệu loại tài sản khi chọn trong combobox
-         * NDDAT (28/09/2022)
-         * @param {string} id id loại tài sản
-         * @param {string} code mã loại tài sản
-         * @param {string} name tên loại tài sản
-         */
-        comboboxCategory(id, code, name) {
-            this.asset.fixed_asset_category_id = id
-            this.asset.fixed_asset_category_code = code
-            this.asset.fixed_asset_category_name = name
+        comboboxBudget(main, id) {
+            this.sources[id-1].name = main
         },
 
         /**
@@ -377,17 +388,6 @@ export default {
             if (this.asset.production_date == null) this.asset.production_date = new Date()
             if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
             if (this.asset.cost == null) this.asset.cost = 0
-        },
-
-        /**
-         * Cập nhật các giá trị trong form theo các điều kiện
-         * NDDAT (28/09/2022)
-         */
-        updateValue() {
-            if(this.focus){
-                this.asset.depreciation_year = this.asset.cost * this.asset.depreciation_rate / 100
-            }
-            if(this.asset.depreciation_rate > 100) this.asset.depreciation_rate = 100
         },
 
         /**
@@ -522,12 +522,13 @@ export default {
          */
         btnSaveOnClick() {
             this.isSubmited = true
-            try{
-                if(this.validateData()) {
-                    this.saveData()
-                }         
-            } catch (error) {
-                console.error(error);
+            if(this.validateData()) {
+                // this.saveData()
+                this.sumCost = this.sum
+                this.textCost = JSON.stringify(this.sources)
+                console.log(this.sum + " / " + this.textCost);
+                this.$emit('updateAsset', this.sumCost, this.textCost)
+                this.btnCloseOnClick() 
             }
         },
 
@@ -539,30 +540,24 @@ export default {
             this.v$.$validate()
             if (this.v$.$error) {
                 this.errorArray = []
-                if (this.v$.asset.fixed_asset_code.$error) this.errorArray.push(Resource.IsEmpty.code);
-                if (this.v$.asset.fixed_asset_name.$error) this.errorArray.push(Resource.IsEmpty.name);
-                if (this.v$.asset.department_code.$error) this.errorArray.push(Resource.IsEmpty.department);
-                if (this.v$.asset.fixed_asset_category_code.$error) this.errorArray.push(Resource.IsEmpty.category);
-                if (this.v$.asset.quantity.$error) this.errorArray.push(Resource.IsEmpty.quantity);
-                if (this.v$.asset.cost.$error) this.errorArray.push(Resource.IsEmpty.cost);
-                if (this.v$.asset.depreciation_rate.$error) this.errorArray.push(Resource.IsEmpty.depreciation_rate);
-                if (this.v$.asset.purchase_date.$error) this.errorArray.push(Resource.IsEmpty.purchase_date);
-                if (this.v$.asset.production_date.$error) this.errorArray.push(Resource.IsEmpty.production_date);
-                if (this.v$.asset.life_time.$error) this.errorArray.push(Resource.IsEmpty.life_time);
-                if (this.v$.asset.depreciation_year.$error) this.errorArray.push(Resource.IsEmpty.depreciation_year);
+                let sourceNamevalidated = false
+                let sourceCostvalidated = false
+                for(let i in this.sources) {
+                    if (!this.sources[i].name && !sourceNamevalidated){
+                        sourceNamevalidated = true
+                        this.errorArray.push(Resource.IsEmpty.source_name);
+                    } 
+                    if (!this.sources[i].cost && this.sources[i].cost != 0 && !sourceCostvalidated){
+                        sourceCostvalidated = true
+                        this.errorArray.push(Resource.IsEmpty.source_cost);
+                    } 
+                }
+                if(!sourceNamevalidated && !sourceCostvalidated) return true
                 this.createValidateMessage()
                 this.validateShow = true
-                return false;
-            } else if(this.asset.depreciation_year > this.asset.cost) {
-                this.errorMessage = "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá"
-                this.validateShow = true
-                return false;
-            } else if (this.asset.depreciation_rate != parseFloat(100 / this.asset.life_time).toFixed(2)) {
-                this.errorMessage = "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng"
-                this.validateShow = true
-                return false;
+                return false
             } else {
-                return true;
+                return true
             } 
         },
 

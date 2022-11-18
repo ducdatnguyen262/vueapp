@@ -157,7 +157,13 @@
                         style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
                     />
                     <tfoot class="tfoot">
-                        <tr>
+                        <tr class="total-line">
+                            <td colspan="4"></td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost)}}</b></td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation)}}</b></td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost-totalDepreciation)}}</b></td>
+                        </tr>
+                        <!-- <tr>
                             <td colspan="7">
                                 <div class="tfooter-left">
                                     <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
@@ -241,7 +247,7 @@
                                     </div>
                                 </div>
                             </td>
-                        </tr>
+                        </tr> -->
                     </tfoot>
                 </table>
             </div>
@@ -299,8 +305,9 @@
 
     <voucher-update-asset
         v-if="updateAssetShow"
-        @hideDialog="updateAssetShow=false;thisShow=true"
         :assetSelected="assetSelected"
+        @hideDialog="updateAssetShow=false;thisShow=true"
+        @updateAsset="updateAsset"
     />
 
     <!-- Context Menu -->
@@ -407,6 +414,9 @@ export default {
             thisShow: true,
             rowSelected:-1,
             rowHover: -1,
+            totalCost: 0,
+            totalDepreciation: 0,
+            totalRemain: 0
         }
     },
 
@@ -415,6 +425,12 @@ export default {
             deep: true,
             handler() {
                 this.isEdited = true
+            }
+        },
+        assets: {
+            deep: true,
+            handler() {
+                this.updateAssetSum()
             }
         }
     },
@@ -444,7 +460,7 @@ export default {
         // Focus vào ô đầu của dialog
         this.focusFirst()
         // Đặt lại form là chưa sửa
-        this.isEdited = false
+        this.isEdited = false  
     },
 
     updated() {
@@ -487,6 +503,18 @@ export default {
     },
 
     methods: {
+        /**
+         * Cập nhật tài sản được chọn
+         * NDDAT (18/11/2022)
+         * @param {number} sum nguyên giá
+         * @param {string} text dãy json lưu nguồn tài sản
+         */
+        updateAsset(sum, text) {
+            // goi api update
+            this.asset.cost = sum
+            this.asset.bugget = text
+        },
+
         /**
          * Truyền vào các tài sản đã chọn trong giao diện chọn tài sản
          * NDDAT (18/09/2022)
@@ -787,8 +815,9 @@ export default {
                 if (this.v$.voucher.increment_date.$error) this.errorArray.push(Resource.IsEmpty.increment_date);
                 this.createValidateMessage()
                 this.validateShow = true
+                return false
             } else {
-                return true;
+                return true
             } 
         },
 
@@ -845,7 +874,18 @@ export default {
             this.voucher.created_date = this.voucherSelected.created_date
             this.voucher.modified_by = this.voucherSelected.modified_by
             this.voucher.modified_date = this.voucherSelected.modified_date    
-        }
+        },
+
+        /**
+         * Cập nhật các giá trị tổng của bảng asset
+         * NDDAT (14/11/2022)
+         */
+        updateAssetSum() {
+            for(let asset of this.assets){
+                this.totalCost += asset.cost
+                this.totalDepreciation += asset.depreciation_year*asset.life_time
+            }
+        },
 
         /**
          * Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào

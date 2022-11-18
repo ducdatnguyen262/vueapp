@@ -54,7 +54,6 @@
                         :isSubmited="this.isSubmited" 
                         @comboboxSelected="comboboxDepartment" 
                     />
-                    <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Tên bộ phận sử dụng</label>
@@ -74,7 +73,6 @@
                         @comboboxSelected="comboboxCategory" 
                         @updateWithCategoryCode="updateWithCategoryCode" 
                     />
-                    <d-tooltip-warning text="Mã loại tài sản"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item">
                     <label>Tên loại tài sản</label>
@@ -103,12 +101,11 @@
                     />
                     <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
                 </div>
-                <div class="dialog-item" style="margin-right:8px">
+                <div class="dialog-item">
                     <label>Nguyên giá <span style="color: red;">*</span></label>
                     <d-input-money 
                         v-model="asset.cost" 
                         tabindex="106" 
-                        style="width:146px"
                         disabled
                         :options="{
                             locale: 'vi-VN',
@@ -119,15 +116,16 @@
                     />
                     <d-tooltip-warning text="Nguyên giá"></d-tooltip-warning>
                 </div>
-                <d-button 
+                <!-- <d-button 
                     tabindex="106" 
                     text="Sửa" 
                     class="mr-10"
                     style="margin:20px 16px 0 0;min-width: 40px;"
                     :id="'close-asset-detail'"
+                    :class="{'button--disabled':asset.active}"
                     :disabled="asset.active"
                     @click="updateAssetShow = true"
-                />
+                /> -->
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
                     <input 
@@ -154,7 +152,7 @@
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited}" 
+                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited, 'datepicker--disabled':asset.active}" 
                         :disabled="asset.active"
                     />
                     <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
@@ -168,7 +166,7 @@
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.production_date && this.isSubmited}"
+                        :class="{'datepicker--error':!asset.production_date && this.isSubmited, 'datepicker--disabled':asset.active}"
                         :disabled="asset.active"
                     />
                     <d-tooltip-warning text="Ngày bắt đầu sử dụng"></d-tooltip-warning>
@@ -775,4 +773,5 @@ export default {
 <style scoped>
 @import url('../../css/base/input.css');
 @import url('../../css/base/datepicker.css');
+@import url('../../css/base/tooltipwarning.css');
 </style>

@@ -39,3 +39,7 @@
     border: 1px solid red !important;
     box-shadow: none !important;
 }
+
+.datepicker--disabled .el-input__wrapper:hover {
+    box-shadow: 0 0 0 1px #afafaf inset !important;
+}
