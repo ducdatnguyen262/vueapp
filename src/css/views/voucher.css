@@ -149,6 +149,10 @@
     color: #000;
 }
 
+.source-item-cbb input::placeholder {
+    color: rgb(136, 136, 136);
+}
+
 .source-item-input {
     width: 149px;
     height: 36px;

@@ -133,7 +133,7 @@
                             <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
                             <td :title="asset.department_name">{{asset.department_name}}</td>
                             <td>{{formatMoney(asset.cost)}}</td>
-                            <td>{{formatMoney(asset.depreciation_year)}}</td>
+                            <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
                             <td>
                                 <div v-show="rowHover != index">
                                     {{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}
@@ -328,12 +328,13 @@ import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
+import DTooltip from '@/components/base/DTooltip.vue';
 import VoucherSelectAssets from './VoucherSelectAssets.vue'
 import VoucherUpdateAsset from './VoucherUpdateAsset.vue'
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, VoucherSelectAssets, VoucherUpdateAsset },
+    components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, VoucherSelectAssets, VoucherUpdateAsset, DTooltip },
     props: {
         voucherSelected: Function, // Chứng từ được chọn
         //assetSelected: Function, // Tài sản được chọn
@@ -878,7 +879,7 @@ export default {
 
         /**
          * Cập nhật các giá trị tổng của bảng asset
-         * NDDAT (14/11/2022)
+         * NDDAT (18/11/2022)
          */
         updateAssetSum() {
             for(let asset of this.assets){

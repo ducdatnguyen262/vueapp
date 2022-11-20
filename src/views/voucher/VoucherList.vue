@@ -258,7 +258,7 @@
                     <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
                     <td :title="asset.department_name">{{asset.department_name}}</td>
                     <td>{{formatMoney(asset.cost)}}</td>
-                    <td>{{formatMoney(asset.depreciation_year)}}</td>
+                    <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
                     <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
                 </tr>
                 <tr style="height:auto;"></tr>

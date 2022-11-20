@@ -26,7 +26,7 @@
                 class="combobox__item"
                 :id="tabindex + index" 
                 :tabindex="tabindex" 
-                :class="{'combobox__item--selected': item[main]==value}" 
+                :class="{'combobox__item--selected': item[main]==value || item[main]==vmodelValue}" 
                 @focus="open();isFocus = index;" 
                 @blur="close();isFocus=-1;"
                 @keydown.up="prevItem" 

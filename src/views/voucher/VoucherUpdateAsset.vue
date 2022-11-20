@@ -32,11 +32,19 @@
                                 class="source-item-cbb"
                                 tooptipText="Nguồn hình thành"
                                 :tabindex="`10${index}`" 
-                                :vmodelValue="source.name"
+                                :vmodelValue="source.budget_name"
                                 :budgetId="source.id"
                                 :isSubmited="this.isSubmited" 
                                 @budgetSelected="comboboxBudget"
                             />
+                            <!-- <el-select v-model="source.budget_name" filterable placeholder="Chọn nguồn hình thành" class="source-item-cbb">
+                                <el-option
+                                    v-for="item in budget_options"
+                                    :key="item.budget_id"
+                                    :label="item.budget_name"
+                                    :value="item.budget_id"
+                                />
+                            </el-select> -->
                         </div>
                         <div class="dialog-item">
                             <d-input-money
@@ -204,10 +212,11 @@ export default {
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             firstMinus: true,
-            sources: [{id:1, name: "", cost: 0}],
+            sources: [{id:1, budget_name: "", cost: 0}],
             costs: [{ cost: ""}],
             sumCost:0,
             textCost:"",
+            // budget_options: [],
         }
     },
 
@@ -281,7 +290,7 @@ export default {
             // },
             sources: {
                 source : {
-                    name: { required },
+                    budget_name: { required },
                     cost: { required }
                 }
             }
@@ -294,7 +303,7 @@ export default {
          * NDDAT (09/11/2022)
          */
         addField(list) {
-            list.push({id: list.at(-1).id+1, name: "", cost: 0});
+            list.push({id: list.at(-1).id+1, budget_name: "", cost: 0});
         },
 
         /**
@@ -358,14 +367,10 @@ export default {
         },
 
         /**
-         * Cập nhật dữ liệu phòng ban khi chọn trong combobox
-         * NDDAT (28/09/2022)
-         * @param {string} id id phòng ban
-         * @param {string} code mã phòng ban
-         * @param {string} name tên phòng ban
+         * Cập nhật combobox nguồn ngân sách
          */
         comboboxBudget(main, id) {
-            this.sources[id-1].name = main
+            this.sources[id-1].budget_name = main
         },
 
         /**
@@ -384,6 +389,8 @@ export default {
          * NDDAT (19/09/2022)
          */        
         defaultValue() {
+            this.sources = JSON.parse(this.assetSelected.budget)
+            console.log(JSON.parse(this.assetSelected.budget));
             if (this.asset.purchase_date == null) this.asset.purchase_date = new Date()
             if (this.asset.production_date == null) this.asset.production_date = new Date()
             if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
@@ -543,7 +550,7 @@ export default {
                 let sourceNamevalidated = false
                 let sourceCostvalidated = false
                 for(let i in this.sources) {
-                    if (!this.sources[i].name && !sourceNamevalidated){
+                    if (!this.sources[i].budget_name && !sourceNamevalidated){
                         sourceNamevalidated = true
                         this.errorArray.push(Resource.IsEmpty.source_name);
                     } 
@@ -598,6 +605,27 @@ export default {
                 console.error(res)
             })
         },
+
+        /**
+         * Gọi API lấy dữ liệu combobox
+         * NDDAT (21/11/2022)
+         */
+        // loadDataCbb() {
+        //     try {
+        //         // Gọi api lấy dữ liệu
+        //         fetch(Resource.Url.Budget, { method: "GET" })
+        //             .then(res => res.json())
+        //             .then(data => {
+        //             this.budget_options = Object.values(data);
+        //         })
+        //             .catch(res => {
+        //             console.error(res);
+        //         });
+        //     }
+        //     catch (error) {
+        //         console.error(error);
+        //     }        
+        // },
 
         /**
          * Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
