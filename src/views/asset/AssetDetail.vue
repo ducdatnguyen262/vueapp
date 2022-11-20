@@ -25,7 +25,7 @@
                         class="dialog-input" 
                         type="text"
                         :class="{'input--error':!asset.fixed_asset_code && this.isSubmited}" 
-                        :disabled="asset.active"
+                        :disabled="asset.increment_status"
                     >
                     <d-tooltip-warning text="Mã tài sản"></d-tooltip-warning>
                 </div>
@@ -69,7 +69,7 @@
                         :vmodelValue="asset.fixed_asset_category_code"  
                         :tabindex="'104'" 
                         :isSubmited="this.isSubmited" 
-                        :disabled="asset.active"
+                        :disabled="asset.increment_status"
                         @comboboxSelected="comboboxCategory" 
                         @updateWithCategoryCode="updateWithCategoryCode" 
                     />
@@ -96,7 +96,7 @@
                             valueRange: {min: 0},
                             hideGroupingSeparatorOnFocus: false,
                         }"
-                        :disabled="asset.active"
+                        :disabled="asset.increment_status"
                         @keyup="notNegative('quantity')"
                     />
                     <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
@@ -122,8 +122,8 @@
                     class="mr-10"
                     style="margin:20px 16px 0 0;min-width: 40px;"
                     :id="'close-asset-detail'"
-                    :class="{'button--disabled':asset.active}"
-                    :disabled="asset.active"
+                    :class="{'button--disabled':asset.increment_status}"
+                    :disabled="asset.increment_status"
                     @click="updateAssetShow = true"
                 /> -->
                 <div class="dialog-item">
@@ -136,7 +136,7 @@
                         min="0" 
                         oninput="validity.valid||(value='');"
                         :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" 
-                        :disabled="asset.active"
+                        :disabled="asset.increment_status"
                         @keyup="notNegative('depreciation_rate')" 
                         @blur="focus = false" 
                         @focus="focus = true" 
@@ -152,8 +152,8 @@
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited, 'datepicker--disabled':asset.active}" 
-                        :disabled="asset.active"
+                        :class="{'datepicker--error':!asset.purchase_date && this.isSubmited, 'datepicker--disabled':asset.increment_status}" 
+                        :disabled="asset.increment_status"
                     />
                     <d-tooltip-warning text="Ngày mua"></d-tooltip-warning>
                 </div>
@@ -166,8 +166,8 @@
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
-                        :class="{'datepicker--error':!asset.production_date && this.isSubmited, 'datepicker--disabled':asset.active}"
-                        :disabled="asset.active"
+                        :class="{'datepicker--error':!asset.production_date && this.isSubmited, 'datepicker--disabled':asset.increment_status}"
+                        :disabled="asset.increment_status"
                     />
                     <d-tooltip-warning text="Ngày bắt đầu sử dụng"></d-tooltip-warning>
                 </div>
@@ -191,7 +191,7 @@
                         min="0" 
                         oninput="validity.valid||(value='');"
                         :class="{'input--error':!asset.life_time && asset.life_time!='0' && this.isSubmited}"
-                        :disabled="asset.active"
+                        :disabled="asset.increment_status"
                         @keyup="notNegative('life_time')" 
                     >
                     <d-tooltip-warning text="Số năm sử dụng"></d-tooltip-warning>
@@ -209,7 +209,7 @@
                             valueRange: {min: 0},
                             hideGroupingSeparatorOnFocus: false,
                         }"
-                        :disabled="asset.active"
+                        :disabled="asset.increment_status"
                     />
                     <d-tooltip-warning text="Giá trị hao mòn năm"></d-tooltip-warning>
                 </div>
@@ -317,6 +317,8 @@ export default {
                 life_time:"",
                 active:"",
                 depreciation_year:"",
+                budget:"",
+                increment_status:"",
                 created_by:"",
                 created_date:"",
                 modified_by:"",
@@ -760,11 +762,13 @@ export default {
             this.asset.tracked_year = this.assetSelected.tracked_year
             this.asset.life_time = this.assetSelected.life_time
             this.asset.active = this.assetSelected.active
+            this.asset.budget = this.assetSelected.budget
+            this.asset.increment_status = this.assetSelected.increment_status
             this.asset.depreciation_year = this.assetSelected.depreciation_year
             this.asset.created_by = this.assetSelected.created_by
             this.asset.created_date = this.assetSelected.created_date
             this.asset.modified_by = this.assetSelected.modified_by
-            this.asset.modified_date = this.assetSelected.modified_date    
+            this.asset.modified_date = this.assetSelected.modified_date
         }
     }
 }

@@ -137,7 +137,7 @@
                     <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
                     <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
                     <td>
-                        <div v-if="asset.active">Đã ghi tăng</div>
+                        <div v-if="asset.increment_status">Đã ghi tăng</div>
                         <div v-else>Chưa ghi tăng</div>
                     </td>
                     <td>
