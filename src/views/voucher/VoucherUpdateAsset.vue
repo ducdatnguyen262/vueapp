@@ -167,34 +167,7 @@ export default {
     
     data() {
         return {
-            asset: { // Lưu dữ liệu 1 tài sản
-                fixed_asset_id:"",
-                fixed_asset_code:"",
-                fixed_asset_name:"",
-                organization_id:"",
-                organization_code:"",
-                organization_name:"",
-                department_id:"",
-                department_code:"",
-                department_name:"",
-                fixed_asset_category_id:"",
-                fixed_asset_category_code:"",
-                fixed_asset_category_name:"",
-                quantity:"",
-                cost:"",
-                depreciation_rate:"",
-                purchase_date:"",
-                production_year:"",
-                production_date:"",
-                tracked_year:"",
-                life_time:"",
-                active:"",
-                depreciation_year:"",
-                created_by:"",
-                created_date:"",
-                modified_by:"",
-                modified_date:"",
-            },
+            asset: {}, // Lưu dữ liệu 1 tài sản
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate

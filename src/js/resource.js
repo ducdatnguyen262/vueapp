@@ -108,6 +108,17 @@ export default {
         Voucher: "https://localhost:7148/api/v1/Vouchers",
     },
 
+    // Tiêu đề
+    Title: {
+        Add: "Thêm",
+        Edit: "Sửa"
+    },
+
+    VoucherDetailType: {
+        Add: "batch-add",
+        Delete: "batch-delete",
+    },
+
     // Mã ngôn ngữ
     LanguageCode: {
         // Việt Nam

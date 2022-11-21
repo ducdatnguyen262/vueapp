@@ -55,14 +55,10 @@
                         <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
                             tabindex="7" 
                             :id="'table'+index" 
-                            :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}" 
-                            v-contextmenu:contextmenu
+                            :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}"
                             @keydown.f2="rowEdit(asset)" 
-                            @keydown.insert="rowDuplicate(asset)" 
-                            @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
                             @keydown.up="prevItem" @keydown.down="nextItem" 
                             @focus="rowFocus=index" @click="rowSelect(index);checkedMethodOnClick(index, asset.fixed_asset_id)" 
-                            @dblclick="rowEdit(asset)" 
                             @mouseover="rowHover = index" 
                             @mouseleave="rowHover = -1"
                         >
@@ -222,14 +218,6 @@
         :text="backendErrorMsg"
         @closeNotify="closeBackendError"
     />
-
-    <!-- Context Menu -->
-    <v-contextmenu ref="contextmenu">
-        <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
-        <v-contextmenu-item @click="rowEdit(assetSelected)">Sửa</v-contextmenu-item>
-        <v-contextmenu-item @click="deleteOnKey(assetSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
-        <v-contextmenu-item @click="rowDuplicate(assetSelected)">Nhân bản</v-contextmenu-item>
-    </v-contextmenu>
 </template>
 
 <script>
@@ -369,7 +357,7 @@ export default {
     computed: {
         // Tạo api lấy tài sản
         api : function() {
-            return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page
+            return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page+"&mode="+Enum.GetRecordMode.NotSelectedNotIncrement
         },
     },
 

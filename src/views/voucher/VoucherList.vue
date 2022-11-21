@@ -555,8 +555,14 @@ export default {
     },
 
     // Tạo api lấy chi tiết chứng từ
-    detailApi : function() {
+    getDetailApi : function() {
         return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?limit="+this.tableView+"&page="+this.page
+    },
+
+    // Tạo api cập nhật chi tiết chứng từ
+    updateDetailApi : function() {
+        return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?add="+this.tableView+"&page="+this.page
+        //?add=&addCount=0&delete=&deleteCount=0
     },
   },
 
@@ -999,8 +1005,7 @@ export default {
         try{
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            console.log(this.detailApi);
-            fetch(this.detailApi, {method: Resource.Method.Get})
+            fetch(this.getDetailApi, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]

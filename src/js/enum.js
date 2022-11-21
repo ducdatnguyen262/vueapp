@@ -38,4 +38,14 @@ export default {
         // Ngân sách
         Budget: 3
     },
+
+    // Danh sách các kiểu lấy bản ghi
+    GetRecordMode: {
+        // Lấy các bản ghi không được chọn
+        NotSelected: 0,
+        // Lấy các bản ghi được chọn
+        Selected:1,
+        // Lấy các bản ghi không được chọn và không ghi tăng
+        NotSelectedNotIncrement: 2,
+    },
 }

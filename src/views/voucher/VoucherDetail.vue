@@ -3,7 +3,7 @@
         <div class="dialog dialog-voucher">
             <div class="dialog__header background-white">
                 <!-- <h2 class="dialog-title">{{title}}</h2> -->
-                <h2 class="dialog-title">Thêm chứng từ ghi tăng</h2>
+                <h2 class="dialog-title">{{title}} chứng từ ghi tăng</h2>
                 <button class="dialog-x-container">
                     <div 
                         ref="btnx"
@@ -298,9 +298,9 @@
 
     <voucher-select-assets
         v-if="selectAssetsShow"
+        :assetsNoDisplay="assets"
         @hideDialog="selectAssetsShow=false;thisShow=true"
         @selectAssets="selectAssets"
-        :assetsNoDisplay="assets"
     />
 
     <voucher-update-asset
@@ -345,7 +345,6 @@ export default {
             type: Number,
             default: Enum.FormMode.Add
         },
-        title: String,
         assetCode: String,
     },
     
@@ -417,7 +416,10 @@ export default {
             rowHover: -1,
             totalCost: 0,
             totalDepreciation: 0,
-            totalRemain: 0
+            totalRemain: 0,
+            title:"", // Tiêu đề dialog
+            addArray:[],
+            deleteArray:[],
         }
     },
 
@@ -517,13 +519,31 @@ export default {
         },
 
         /**
+         * Xóa tài sản khỏi bảng
+         * NDDAT (21/11/2022)
+         * @param {string} id mã tài sản cần xóa
+         */
+        deleteOnKey(id) {
+            for(let i in this.assets) {
+                if(this.assets[i].fixed_asset_id == id) {
+                    this.deleteArray.push(id)
+                    this.assets.splice(i,1)
+                    break
+                }
+            }
+        },
+
+        /**
          * Truyền vào các tài sản đã chọn trong giao diện chọn tài sản
          * NDDAT (18/09/2022)
          * @param {array} assetsSelected các tài sản được chọn
          */
         selectAssets(assetsSelected) {
             for(let asset of assetsSelected) {
-                if(asset!=null) this.assets.push(asset)
+                if(asset!=null){
+                    this.addArray.push(asset.fixed_asset_id)
+                    this.assets.push(asset)
+                } 
             }
         },
 
@@ -645,6 +665,9 @@ export default {
             // voucher
             if (this.voucher.voucher_date == null) this.voucher.voucher_date = new Date().toISOString()
             if (this.voucher.increment_date == null) this.voucher.increment_date = new Date().toISOString()
+
+            if(this.formMode == Enum.FormMode.Add) this.title = Resource.Title.Add
+            else if(this.formMode == Enum.FormMode.Edit) this.title = Resource.Title.Edit
 
             // if (this.asset.purchase_date == null) this.asset.purchase_date = new Date().toISOString()
             // if (this.asset.production_date == null) this.asset.production_date = new Date().toISOString()
@@ -796,6 +819,14 @@ export default {
             this.isSubmited = true
             try{
                 if(this.validateData()) {
+                    // Lấy 2 dãy thêm và xóa
+                    let temp = this.addArray
+                    this.addArray = this.addArray.filter(val => !this.deleteArray.includes(val));
+                    this.deleteArray = this.deleteArray.filter(val => !temp.includes(val));
+
+                    // Lưu dữ liệu
+                    if(this.addArray.length > 0) this.saveDetailVoucher(Resource.VoucherDetailType.Add)
+                    if(this.deleteArray.length > 0) this.saveDetailVoucher(Resource.VoucherDetailType.Delete)
                     this.saveData()
                 }         
             } catch (error) {
@@ -827,7 +858,6 @@ export default {
          * NDDAT (08/10/2022)
          */
         saveData() {
-            // Cất dữ liệu:
             var method = Resource.Method.Post
             var url = Resource.Url.Voucher
             if(this.formMode == Enum.FormMode.Edit) {
@@ -855,6 +885,40 @@ export default {
                     }
                 });
             })
+            .catch(res => {
+                console.error(res)
+            })
+        },
+
+        /**
+         * Lưu các tài sản của chứng
+         * NDDAT (21/11/2022)
+         */
+        saveDetailVoucher(type) {
+            var method = Resource.Method.Post
+            var url = Resource.Url.Voucher + `/detail/${type}?voucherId=${this.voucherSelected.voucher_id}`
+            var body = []
+            if(type == Resource.VoucherDetailType.Add) body = this.addArray
+            else if(type == Resource.VoucherDetailType.Delete) body = this.deleteArray
+
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+            .then(res =>{
+                    var status = res.status
+                    switch(status) {
+                        case 400: 
+                            this.backEndErrorNotify(Resource.ErrorCode[400])
+                            break
+                        case 405: 
+                            this.backEndErrorNotify(Resource.ErrorCode[405])
+                            break
+                        case 500: 
+                            this.backEndErrorNotify(Resource.ErrorCode[500])
+                            break
+                        default: 
+                            this.addArray = []
+                            this.deleteArray = []
+                    }
+                })
             .catch(res => {
                 console.error(res)
             })
