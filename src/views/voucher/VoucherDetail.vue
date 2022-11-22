@@ -420,6 +420,7 @@ export default {
             title:"", // Tiêu đề dialog
             addArray:[],
             deleteArray:[],
+            addedVoucherId: "",
         }
     },
 
@@ -824,10 +825,18 @@ export default {
                     this.addArray = this.addArray.filter(val => !this.deleteArray.includes(val));
                     this.deleteArray = this.deleteArray.filter(val => !temp.includes(val));
 
+                    // Truyền dữ liệu mặc định
+                    this.voucher.cost = this.totalCost
+
                     // Lưu dữ liệu
-                    if(this.addArray.length > 0) this.saveDetailVoucher(Resource.VoucherDetailType.Add)
-                    if(this.deleteArray.length > 0) this.saveDetailVoucher(Resource.VoucherDetailType.Delete)
-                    this.saveData()
+                    if(this.formMode == Enum.FormMode.Add) {
+                        this.saveData()
+                    }
+                    else {
+                        if(this.addArray.length > 0) this.saveDetailVoucher(Resource.VoucherDetailType.Add)
+                        if(this.deleteArray.length > 0) this.saveDetailVoucher(Resource.VoucherDetailType.Delete)
+                        this.saveData()
+                    }
                 }         
             } catch (error) {
                 console.error(error);
@@ -848,6 +857,9 @@ export default {
                 this.createValidateMessage()
                 this.validateShow = true
                 return false
+            } else if(this.assets.length == 0) {
+                this.errorMessage = "Chọn ít nhất 1 tài sản"
+                this.validateShow = true
             } else {
                 return true
             } 
@@ -881,6 +893,11 @@ export default {
                             this.backEndErrorNotify(Resource.ErrorCode[500])
                             break
                         default: 
+                            if(this.formMode == Enum.FormMode.Add) {
+                                console.log(Object.values(data).join(''));
+                                this.addedVoucherId = Object.values(data).join('')
+                                this.saveDetailVoucher(Resource.VoucherDetailType.Add)
+                            }
                             this.$emit("hideDialogSuccess")
                     }
                 });
@@ -896,7 +913,10 @@ export default {
          */
         saveDetailVoucher(type) {
             var method = Resource.Method.Post
-            var url = Resource.Url.Voucher + `/detail/${type}?voucherId=${this.voucherSelected.voucher_id}`
+            var voucherId = this.voucherSelected.voucher_id
+            if(this.formMode == Enum.FormMode.Add) voucherId = this.addedVoucherId
+            console.log(voucherId);
+            var url = Resource.Url.Voucher + `/detail/${type}?voucherId=${voucherId}`
             var body = []
             if(type == Resource.VoucherDetailType.Add) body = this.addArray
             else if(type == Resource.VoucherDetailType.Delete) body = this.deleteArray

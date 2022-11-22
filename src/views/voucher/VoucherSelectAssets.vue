@@ -58,7 +58,8 @@
                             :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}"
                             @keydown.f2="rowEdit(asset)" 
                             @keydown.up="prevItem" @keydown.down="nextItem" 
-                            @focus="rowFocus=index" @click="rowSelect(index);checkedMethodOnClick(index, asset.fixed_asset_id)" 
+                            @focus="rowFocus=index" 
+                            @click="rowSelect(index); checkedMethodOnClick(index, asset.fixed_asset_id)" 
                             @mouseover="rowHover = index" 
                             @mouseleave="rowHover = -1"
                         >
@@ -640,6 +641,12 @@ export default {
         this.checkedAllInspect()
     },
 
+    /**
+     * Check vào checkbox khi click vào dòng
+     * NDDAT (15/11/2022)
+     * @param {int} order số thứ tự dòng của checkbox
+     * @param {int} code id của dòng chứa checkbox được click
+     */
     checkedMethodOnClick(order, code) {
         if (this.checkboxSelected[order] == code){
             for (let i in this.checked) {

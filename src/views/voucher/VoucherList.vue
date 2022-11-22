@@ -75,9 +75,10 @@
                     @click.right="voucherSelected = voucher"
                     @keydown.f2="rowEdit(voucher)" 
                     @keydown.insert="rowDuplicate(voucher)" 
-                    @keydown.delete="deleteOnKey(voucher.voucher_id)" 
+                    @keydown.delete="rowDelete(voucher.voucher_id)" 
                     @keydown.up="prevItem" @keydown.down="nextItem" 
-                    @focus="rowFocus=index;voucherSelected=voucher" @click="rowSelected = index" 
+                    @focus="rowFocus=index;voucherSelected=voucher" 
+                    @click="rowSelect(index); checkedMethodOnClick(index, voucher.voucher_id)" 
                     @dblclick="rowEdit(voucher)"
                     @mouseenter="rowHover = index" 
                     @mouseleave="rowHover = -1"
@@ -104,7 +105,7 @@
                                 <d-tooltip text="Sửa"></d-tooltip>
                             </div>
                             <div class="position-relative">
-                                <div @click="deleteOnKey(voucher.voucher_id)" class="button--icon-delete"></div>
+                                <div @click="rowDelete(voucher.voucher_id)" class="button--icon-delete"></div>
                                 <d-tooltip text="Xóa" class="tool-tip--left"></d-tooltip>
                             </div>
                         </div>
@@ -247,9 +248,10 @@
                     :class="{'row--selected':(rowSelected2 == index), 'checkbox--selected':rowFocus2 == index}" 
                     @click.right="assetSelected = asset"
                     @keydown.insert="rowDuplicate(asset)" 
-                    @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
+                    @keydown.delete="rowDelete(asset.fixed_asset_id)" 
                     @keydown.up="prevItem" @keydown.down="nextItem" 
-                    @focus="rowFocus2=index" @click="rowSelected2 = index"
+                    @focus="rowFocus2=index" 
+                    @click="rowSelected2 = index"
                     @mouseover="rowHover = index" 
                     @mouseleave="rowHover = -1"
                 >
@@ -367,7 +369,7 @@
     <v-contextmenu ref="contextmenu">
         <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
         <v-contextmenu-item @click="rowEdit(voucherSelected)">Sửa</v-contextmenu-item>
-        <v-contextmenu-item @click="deleteOnKey(voucherSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
+        <v-contextmenu-item @click="rowDelete(voucherSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
         <v-contextmenu-item @click="rowDuplicate(voucherSelected)">Nhân bản</v-contextmenu-item>
     </v-contextmenu>
 
@@ -432,6 +434,7 @@ export default {
   data() {
     return {
         vouchers:[], // Mảng lưu các chứng từ đang hiện
+        vouchersSelected:[], // Mảng lưu các chứng từ đang chọn
         voucherSelected: {}, // Chứng từ được chọn
         voucherCode: "", // Mã của chứng từ được chọn
         assets:[], // Mảng lưu các tài sản đang hiện
@@ -568,6 +571,67 @@ export default {
 
   methods: {
     /**
+     * Click 1 dòng trong bảng để highlight
+     * NDDAT (15/09/2022)
+     * @param {int} index số thứ tự dòng
+     */
+    rowSelect(index) {
+        this.rowSelected = index
+    },
+
+    /**
+     * Check vào checkbox khi click vào dòng
+     * NDDAT (15/11/2022)
+     * @param {int} order số thứ tự dòng của checkbox
+     * @param {int} code id của dòng chứa checkbox được click
+     */
+    checkedMethodOnClick(order, code) {
+        this.checked = []
+        if (this.checkboxSelected[order] != code) this.checked[this.checked.length] = code
+        this.checkboxSelected = []
+        this.vouchersSelected = []
+        for (let i in this.checked) {
+            for (let index in this.vouchers) {
+                if (this.checked[i] == this.vouchers[index].voucher_id) {
+                    this.checkboxSelected[index] = this.vouchers[index].voucher_id
+                    this.vouchersSelected[index] = this.vouchers[index]
+                }
+            }
+        }
+        console.log(this.checked[0]);
+        console.log(this.rowFocusDelete[0] + " >12");
+        this.checkedAllInspect()
+    },
+
+    /**
+     * Check vào checkbox khi click vào dòng khi đang giữ Ctrl
+     * NDDAT (15/11/2022)
+     * @param {int} order số thứ tự dòng của checkbox
+     * @param {int} code id của dòng chứa checkbox được click
+     */
+    checkedMethodOnClickCtrl(order, code) {
+        if (this.checkboxSelected[order] == code){
+            for (let i in this.checked) {
+                if(this.checked[i] == this.checkboxSelected[order]) this.checked[i]=null
+            }
+            this.checkboxSelected[order] = null
+            this.vouchersSelected[order] = null
+        }
+        else {
+            this.checked[this.checked.length] = code
+        }
+        for (let i in this.checked) {
+            for (let index in this.assets) {
+                if (this.checked[i] == this.vouchers[index].voucher_id) {
+                    this.checkboxSelected[index] = this.vouchers[index].voucher_id
+                    this.vouchersSelected[index] = this.vouchers[index]
+                }
+            }
+        }
+        this.checkedAllInspect()
+    },
+
+    /**
      * Nhấn button hiển thị dialog thêm tài sản 1
      * NDDAT (15/09/2022)
      */
@@ -584,14 +648,14 @@ export default {
      * NDDAT (26/09/2022)
      */
     deleteTextCreate() {
-        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> tài sản đã được chọn. Bạn có muốn xóa các tài sản này khỏi danh sách?"
+        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> chứng từ đã được chọn. Bạn có muốn xóa các chứng từ này khỏi danh sách?"
         else {
             var id
             if(this.checked.length == 1) id = this.checked[0];
             else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
-            for (let index in this.assets) {
-                if (id == this.assets[index].fixed_asset_id){
-                    this.deleteText = "Bạn có muốn xóa tài sản <b>"+this.assets[index].fixed_asset_code+"</b> - <b>"+this.assets[index].fixed_asset_name+"</b>?"
+            for (let index in this.vouchers) {
+                if (id == this.vouchers[index].voucher_id){
+                    this.deleteText = "Bạn có muốn xóa chứng từ có mã <b>"+this.vouchers[index].voucher_code+"</b>?"
                     break;
                 }
             } 
@@ -599,25 +663,11 @@ export default {
     },
 
     /**
-     * Nhấn button hiển thị dialog cảnh báo xóa tài sản
-     * NDDAT (15/09/2022)
-     */
-    btnDeleteOnClick() {
-        if(this.checked.length == 0) {
-            this.deleteSelectedNone =true
-        }
-        else {
-            this.deleteTextCreate()
-            this.deleteShow = true
-        }
-    },
-
-    /**
-     * Nhấn phím tắt Delete hiển thị dialog cảnh báo xóa tài sản
+     * Xóa tài sản
      * NDDAT (07/10/2022)
      * @param {string} id ID tài sản đang focus
      */
-    deleteOnKey(id) {
+    rowDelete(id) {
         this.rowFocusDelete[0] = id;
         this.deleteTextCreate()
         this.deleteShow = true
@@ -633,15 +683,15 @@ export default {
     },
 
     /**
-     * Xác nhận xóa và đóng dialog cảnh báo xóa tài sản
-     * NDDAT (28/09/2022)
+     * Xác nhận xóa và đóng dialog cảnh báo xóa chứng từ
+     * NDDAT (22/11/2022)
      */
     confirmDelete() {
-        // Xóa tài sản
+        // Xóa chứng từ
         if(this.rowFocusDelete[0] || this.checked[0]){
             try{
                 // Xóa dữ liệu:
-                var url = Resource.Url.Asset + "/batch-delete"
+                var url = Resource.Url.Voucher + "/batch-delete"
                 var body = ""
                 if(this.checked[0]) body = this.checked
                 else body = this.rowFocusDelete
@@ -659,10 +709,6 @@ export default {
                             this.backEndErrorNotify(Resource.ErrorCode[500])
                             break
                         default: 
-                            this.closeDelete()
-                            this.loadData()
-                            this.rowFocusDelete = []
-                            this.checked = []
                     }
                 })
                 .catch(res => {
@@ -672,6 +718,41 @@ export default {
                 console.error(error);
             }
         }
+
+        // Xóa các tài sản của chứng từ
+        var method = Resource.Method.Post
+        url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
+        body = []
+        for(let asset of this.assets) {
+            body.push(asset.fixed_asset_id)
+        }
+        console.log(this.rowFocusDelete[0]);
+        console.log(body);
+        fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+        .then(res =>{
+                var status = res.status
+                switch(status) {
+                    case 400: 
+                        this.backEndErrorNotify(Resource.ErrorCode[400])
+                        break
+                    case 405: 
+                        this.backEndErrorNotify(Resource.ErrorCode[405])
+                        break
+                    case 500: 
+                        this.backEndErrorNotify(Resource.ErrorCode[500])
+                        break
+                    default: 
+                        this.addArray = []
+                        this.deleteArray = []
+                        this.closeDelete()
+                        this.loadData()
+                        this.rowFocusDelete = []
+                        this.checked = []
+                }
+            })
+        .catch(res => {
+            console.error(res)
+        })
     },
 
     /**
@@ -823,11 +904,15 @@ export default {
      * @param {int} code id của dòng chứa checkbox được click
      */
     checkedMethod(order, code) {
-        if (this.checkboxSelected[order] == code) this.checkboxSelected[order] = null
+        if (this.checkboxSelected[order] == code){
+            this.checkboxSelected[order] = null
+            this.vouchersSelected[order] = null
+        } 
         for (let i in this.checked) {
             for (let index in this.vouchers) {
                 if (this.checked[i] == this.vouchers[index].voucher_id) {
                     this.checkboxSelected[index] = this.vouchers[index].voucher_id
+                    this.vouchersSelected[index] = this.vouchers[index]
                 }
             }
         }
