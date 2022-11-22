@@ -594,6 +594,7 @@ export default {
         this.detailFormMode = Enum.FormMode.Duplicate
         this.title = Resource.DialogTitle.Duplicate
         this.dialogShow = true
+        console.log(1);
     },
 
     /**

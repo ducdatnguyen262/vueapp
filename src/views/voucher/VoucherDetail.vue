@@ -140,7 +140,7 @@
                                 </div>
                                 <div v-show="rowHover == index" class="table-function" style="justify-content: flex-end;">
                                     <div class="position-relative mr-10">
-                                        <div @click="rowEdit(asset)" class="button--icon-edit"></div>
+                                        <div @click="rowEdit(asset, index)" class="button--icon-edit"></div>
                                         <d-tooltip text="Sửa"></d-tooltip>
                                     </div>
                                     <div class="position-relative">
@@ -308,6 +308,7 @@
         :assetSelected="assetSelected"
         @hideDialog="updateAssetShow=false;thisShow=true"
         @updateAsset="updateAsset"
+        @loadDetailData="loadDetailData"
     />
 
     <!-- Context Menu -->
@@ -391,8 +392,10 @@ export default {
             //     modified_date:"",
             // },
             //assetsSelected:[], // Mảng lưu các tài sản được chọn
+            asset: {},
             assets:[], // Mảng lưu các tài sản hiển thị
             assetSelected: {}, // Tài sản được chọn
+            indexSelected: -1, // Mã số của tài sản được chọn
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -431,18 +434,26 @@ export default {
                 this.isEdited = true
             }
         },
-        assets: {
-            deep: true,
-            handler() {
-                this.updateAssetSum()
-            }
-        }
+        // assets: {
+        //     deep: true,
+        //     handler() {
+        //         this.updateAssetSum()
+        //     }
+        // }
+    },
+
+    computed: {
+        // Tạo api lấy chi tiết chứng từ
+        getDetailApi : function() {
+            return Resource.Url.Voucher+"/detail/"+this.voucherSelected.voucher_id+"?limit=-1&page=1"
+        },
     },
 
     created() {
-        // Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
+        // Cập nhật giá trị dialog
         this.updateVoucher()
-        // this.updateAsset()   
+        this.loadDetailData()
+        // this.updateAsset()
         // Truyền vào các giá trị mặc định
         this.defaultValue()
         // Sinh mã tiếp theo nếu là thêm và nhân bản
@@ -450,7 +461,7 @@ export default {
             this.generateNextCode()
         }
         // Truyền vào các tài sản được chọn
-        this.assets = this.assetsSelected
+        // this.assets = this.assetsSelected
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -510,13 +521,10 @@ export default {
         /**
          * Cập nhật tài sản được chọn
          * NDDAT (18/11/2022)
-         * @param {number} sum nguyên giá
-         * @param {string} text dãy json lưu nguồn tài sản
+         * @param {number} cost nguyên giá sau khi cập nhật
          */
-        updateAsset(sum, text) {
-            // goi api update
-            this.asset.cost = sum
-            this.asset.bugget = text
+        updateAsset(cost) {
+            this.assets[this.indexSelected].cost = cost
         },
 
         /**
@@ -553,8 +561,9 @@ export default {
          * NDDAT (17/11/2022)
          * @param {Asset} asset tài sản đang chọn
          */
-        rowEdit(asset) {
+        rowEdit(asset, index) {
             this.assetSelected = asset
+            this.indexSelected = index
             this.updateAssetShow = true;
             this.thisShow = false
         },
@@ -894,7 +903,7 @@ export default {
                             break
                         default: 
                             if(this.formMode == Enum.FormMode.Add) {
-                                console.log(Object.values(data).join(''));
+                                // console.log(Object.values(data).join(''));
                                 this.addedVoucherId = Object.values(data).join('')
                                 this.saveDetailVoucher(Resource.VoucherDetailType.Add)
                             }
@@ -915,7 +924,6 @@ export default {
             var method = Resource.Method.Post
             var voucherId = this.voucherSelected.voucher_id
             if(this.formMode == Enum.FormMode.Add) voucherId = this.addedVoucherId
-            console.log(voucherId);
             var url = Resource.Url.Voucher + `/detail/${type}?voucherId=${voucherId}`
             var body = []
             if(type == Resource.VoucherDetailType.Add) body = this.addArray
@@ -943,6 +951,33 @@ export default {
                 console.error(res)
             })
         },
+
+    /**
+     * Gọi api lấy dữ liệu các tài sản khi chọn 1 chứng từ
+     * NDDAT (15/09/2022)
+     */
+    loadDetailData() {
+        try{
+            // Gọi api lấy dữ liệu
+            this.isLoading = true
+            fetch(this.getDetailApi, {method: Resource.Method.Get})
+            .then(res => res.json())
+            .then(data => {
+                this.assets = Object.values(data)[0]
+                this.totalCount = Object.values(data)[1]
+                this.totalCost = Object.values(data)[3]
+                this.totalDepreciation = Object.values(data)[4]
+                this.totalRemain = Object.values(data)[5]
+                this.isLoading = false
+            })
+            .catch(res => {
+                console.error(res);
+                this.isLoading = false
+            })
+        } catch (error) {
+            console.error(error);
+        }
+    },
 
         /**
          * Cập nhật giá trị mảng voucher thành giá trị chứng từ truyền vào

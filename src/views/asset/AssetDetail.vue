@@ -355,7 +355,8 @@ export default {
 
     created() {
         // Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
-        this.updateAsset()   
+        this.updateAsset()  
+        console.log("debug"); 
         // Truyền vào các giá trị mặc định
         this.defaultValue()
         // Sinh mã tiếp theo nếu là thêm và nhân bản
@@ -762,9 +763,9 @@ export default {
             this.asset.tracked_year = this.assetSelected.tracked_year
             this.asset.life_time = this.assetSelected.life_time
             this.asset.active = this.assetSelected.active
+            this.asset.depreciation_year = this.assetSelected.depreciation_year
             this.asset.budget = this.assetSelected.budget
             this.asset.increment_status = this.assetSelected.increment_status
-            this.asset.depreciation_year = this.assetSelected.depreciation_year
             this.asset.created_by = this.assetSelected.created_by
             this.asset.created_date = this.assetSelected.created_date
             this.asset.modified_by = this.assetSelected.modified_by

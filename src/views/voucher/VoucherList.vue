@@ -383,7 +383,6 @@
         v-if="dialogShow" 
         :formMode="detailFormMode" 
         :voucherSelected="voucherSelected" 
-        :assetsSelected ="assets"
         :title="title"
         @hideDialogSuccess="hideDialogSuccessMethod" 
         @hideDialog="hideDialogMethod" 
@@ -598,8 +597,6 @@ export default {
                 }
             }
         }
-        console.log(this.checked[0]);
-        console.log(this.rowFocusDelete[0] + " >12");
         this.checkedAllInspect()
     },
 
@@ -726,8 +723,6 @@ export default {
         for(let asset of this.assets) {
             body.push(asset.fixed_asset_id)
         }
-        console.log(this.rowFocusDelete[0]);
-        console.log(body);
         fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
         .then(res =>{
                 var status = res.status

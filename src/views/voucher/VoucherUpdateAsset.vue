@@ -26,25 +26,26 @@
                 <div class="dialog-update-asset">
                     <div v-for="(source, index) in sources" :key="source.id" class="source-item">
                         <div class="dialog-item">
-                            <d-combobox 
+                            <!-- <d-combobox 
                                 type="3" 
                                 main="budget_name" 
                                 class="source-item-cbb"
                                 tooptipText="Nguồn hình thành"
                                 :tabindex="`10${index}`" 
+                                :isSubmited="this.isSubmited"
+                                @comboboxSelected="comboboxBudget"
                                 :vmodelValue="source.budget_name"
                                 :budgetId="source.id"
-                                :isSubmited="this.isSubmited" 
                                 @budgetSelected="comboboxBudget"
-                            />
-                            <!-- <el-select v-model="source.budget_name" filterable placeholder="Chọn nguồn hình thành" class="source-item-cbb">
+                            /> -->
+                            <el-select v-model="source.budget_id" filterable placeholder="Chọn nguồn hình thành" class="source-item-cbb">
                                 <el-option
                                     v-for="item in budget_options"
                                     :key="item.budget_id"
                                     :label="item.budget_name"
                                     :value="item.budget_id"
                                 />
-                            </el-select> -->
+                            </el-select>
                         </div>
                         <div class="dialog-item">
                             <d-input-money
@@ -149,12 +150,11 @@ import Resource from '../../js/resource.js'
 import DDialog3Button from '@/components/base/DDialog3Button.vue';
 import DInputMoney from '@/components/base/DInputMoney.vue';
 import DTooltip from '@/components/base/DTooltip.vue';
-import DCombobox from '@/components/base/DCombobox.vue';
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DCombobox, DTooltipWarning },
+    components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DTooltipWarning },
     props: {
         assetSelected: Function, // Tài sản được chọn
         formMode: {
@@ -167,13 +167,43 @@ export default {
     
     data() {
         return {
-            asset: {}, // Lưu dữ liệu 1 tài sản
+            asset: { // Lưu dữ liệu 1 tài sản
+                fixed_asset_id:"",
+                fixed_asset_code:"",
+                fixed_asset_name:"",
+                organization_id:"",
+                organization_code:"",
+                organization_name:"",
+                department_id:"",
+                department_code:"",
+                department_name:"",
+                fixed_asset_category_id:"",
+                fixed_asset_category_code:"",
+                fixed_asset_category_name:"",
+                quantity:"",
+                cost:"",
+                depreciation_rate:"",
+                purchase_date:"",
+                production_year:"",
+                production_date:"",
+                tracked_year:"",
+                life_time:"",
+                active:"",
+                depreciation_year:"",
+                budget:"",
+                increment_status:"",
+                created_by:"",
+                created_date:"",
+                modified_by:"",
+                modified_date:"",
+            },
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
             errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
             validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate thiếu hay không
             validateProShow: false, // Có hiển thị dialog cảnh báo lỗi validate nghiệp vụ hay không
+            temp: "", // Lưu giá trị tạm
             isSubmited: false, // Đã submit form hay chưa (sau khi submit thì mới validate)
             focus: false, // Có đang focus vào hay không
             isEdited: false, // Form đã được chỉnh sửa chưa
@@ -185,11 +215,11 @@ export default {
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             firstMinus: true,
-            sources: [{id:1, budget_name: "", cost: 0}],
+            sources: [{budget_id: "", budget_name: "", cost: 0}],
             costs: [{ cost: ""}],
             sumCost:0,
             textCost:"",
-            // budget_options: [],
+            budget_options: [],
         }
     },
 
@@ -210,13 +240,11 @@ export default {
 
     created() {
         // Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
-        // this.updateAsset()   
+        this.updateAsset()   
         // Truyền vào các giá trị mặc định
         this.defaultValue()
-        // Sinh mã tiếp theo nếu là thêm và nhân bản
-        if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
-            this.generateNextCode()
-        }
+        // Lấy dữ liệu combobox
+        this.loadDataCbb()
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -276,7 +304,7 @@ export default {
          * NDDAT (09/11/2022)
          */
         addField(list) {
-            list.push({id: list.at(-1).id+1, budget_name: "", cost: 0});
+            list.push({budget_id: "", budget_name: "", cost: 0});
         },
 
         /**
@@ -317,34 +345,14 @@ export default {
         },
 
         /**
-         * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
-         * NDDAT (29/09/2022)
-         */
-        generateNextCode() {
-            try{
-                // Gọi api lấy dữ liệu
-                this.isLoading = true
-                fetch(Resource.Url.Asset + `/nextCode`, {method: Resource.Method.Get})
-                .then(res => res.json())
-                .then(data => {
-                    this.asset.fixed_asset_code = Object.values(data)[0]
-                    this.isLoading = false
-                })
-                .catch(res => {
-                    console.error(res);
-                    this.isLoading = false
-                })
-            } catch (error) {
-                console.error(error);
-            }
-        },
-
-        /**
          * Cập nhật combobox nguồn ngân sách
          */
         comboboxBudget(main, id) {
             this.sources[id-1].budget_name = main
         },
+        // comboboxBudget(id, code, name) {
+        //     this.sources[id-1].budget_name = main
+        // },
 
         /**
          * Cập nhật dữ liệu liên quan tới mã loại tài sản
@@ -363,7 +371,6 @@ export default {
          */        
         defaultValue() {
             this.sources = JSON.parse(this.assetSelected.budget)
-            console.log(JSON.parse(this.assetSelected.budget));
             if (this.asset.purchase_date == null) this.asset.purchase_date = new Date()
             if (this.asset.production_date == null) this.asset.production_date = new Date()
             if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
@@ -503,12 +510,15 @@ export default {
         btnSaveOnClick() {
             this.isSubmited = true
             if(this.validateData()) {
-                // this.saveData()
-                this.sumCost = this.sum
-                this.textCost = JSON.stringify(this.sources)
-                console.log(this.sum + " / " + this.textCost);
-                this.$emit('updateAsset', this.sumCost, this.textCost)
-                this.btnCloseOnClick() 
+                this.asset.cost = this.sum
+                for(let source of this.sources) {
+                    for(let option in this.budget_options) {
+                        if(source.budget_id == option.budget_id) source.budget_name = option.budget_name
+                    }
+                }
+                this.asset.budget = JSON.stringify(this.sources)
+                // this.$emit('updateAsset', this.sumCost, this.textCost)
+                this.saveData()
             }
         },
 
@@ -517,28 +527,28 @@ export default {
          * NDDAT (08/10/2022)
          */
         validateData() {
-            this.v$.$validate()
-            if (this.v$.$error) {
-                this.errorArray = []
-                let sourceNamevalidated = false
-                let sourceCostvalidated = false
-                for(let i in this.sources) {
-                    if (!this.sources[i].budget_name && !sourceNamevalidated){
-                        sourceNamevalidated = true
-                        this.errorArray.push(Resource.IsEmpty.source_name);
-                    } 
-                    if (!this.sources[i].cost && this.sources[i].cost != 0 && !sourceCostvalidated){
-                        sourceCostvalidated = true
-                        this.errorArray.push(Resource.IsEmpty.source_cost);
-                    } 
-                }
-                if(!sourceNamevalidated && !sourceCostvalidated) return true
-                this.createValidateMessage()
-                this.validateShow = true
-                return false
-            } else {
+            // this.v$.$validate()
+            // if (this.v$.$error) {
+            //     this.errorArray = []
+            //     let sourceNamevalidated = false
+            //     let sourceCostvalidated = false
+            //     for(let i in this.sources) {
+            //         if (!this.sources[i].budget_name && !sourceNamevalidated){
+            //             sourceNamevalidated = true
+            //             this.errorArray.push(Resource.IsEmpty.source_name);
+            //         } 
+            //         if (!this.sources[i].cost && this.sources[i].cost != 0 && !sourceCostvalidated){
+            //             sourceCostvalidated = true
+            //             this.errorArray.push(Resource.IsEmpty.source_cost);
+            //         } 
+            //     }
+            //     if(!sourceNamevalidated && !sourceCostvalidated) return true
+            //     this.createValidateMessage()
+            //     this.validateShow = true
+            //     return false
+            // } else {
                 return true
-            } 
+            // } 
         },
 
         /**
@@ -547,12 +557,8 @@ export default {
          */
         saveData() {
             // Cất dữ liệu:
-            var method = Resource.Method.Post
-            var url = Resource.Url.Asset
-            if(this.formMode == Enum.FormMode.Edit) {
-                method = Resource.Method.Put
-                url = url + `/${this.asset.fixed_asset_id}`
-            }
+            var method = Resource.Method.Put
+            var url = Resource.Url.Asset + `/${this.asset.fixed_asset_id}`
             fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
             .then(res =>{
                 var status = res.status
@@ -570,7 +576,8 @@ export default {
                             this.backEndErrorNotify(Resource.ErrorCode[500])
                             break
                         default: 
-                            this.$emit("hideDialogSuccess")
+                            this.$emit("loadDetailData")
+                            this.btnCloseOnClick()
                     }
                 });
             })
@@ -583,55 +590,57 @@ export default {
          * Gọi API lấy dữ liệu combobox
          * NDDAT (21/11/2022)
          */
-        // loadDataCbb() {
-        //     try {
-        //         // Gọi api lấy dữ liệu
-        //         fetch(Resource.Url.Budget, { method: "GET" })
-        //             .then(res => res.json())
-        //             .then(data => {
-        //             this.budget_options = Object.values(data);
-        //         })
-        //             .catch(res => {
-        //             console.error(res);
-        //         });
-        //     }
-        //     catch (error) {
-        //         console.error(error);
-        //     }        
-        // },
+        loadDataCbb() {
+            try {
+                // Gọi api lấy dữ liệu
+                fetch(Resource.Url.Budget, { method: "GET" })
+                    .then(res => res.json())
+                    .then(data => {
+                    this.budget_options = Object.values(data);
+                })
+                    .catch(res => {
+                    console.error(res);
+                });
+            }
+            catch (error) {
+                console.error(error);
+            }        
+        },
 
         /**
          * Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
          * NDDAT (06/10/2022)
          */
-        // updateAsset() {
-        //     this.asset.fixed_asset_id = this.assetSelected.fixed_asset_id
-        //     this.asset.fixed_asset_code = this.assetSelected.fixed_asset_code
-        //     this.asset.fixed_asset_name = this.assetSelected.fixed_asset_name
-        //     this.asset.organization_id = this.assetSelected.organization_id
-        //     this.asset.organization_code = this.assetSelected.organization_code
-        //     this.asset.organization_name = this.assetSelected.organization_name
-        //     this.asset.department_id = this.assetSelected.department_id
-        //     this.asset.department_code = this.assetSelected.department_code
-        //     this.asset.department_name = this.assetSelected.department_name
-        //     this.asset.fixed_asset_category_id = this.assetSelected.fixed_asset_category_id
-        //     this.asset.fixed_asset_category_code = this.assetSelected.fixed_asset_category_code
-        //     this.asset.fixed_asset_category_name = this.assetSelected.fixed_asset_category_name
-        //     this.asset.quantity = this.assetSelected.quantity
-        //     this.asset.cost = this.assetSelected.cost
-        //     this.asset.depreciation_rate = this.assetSelected.depreciation_rate
-        //     this.asset.purchase_date = this.assetSelected.purchase_date
-        //     this.asset.production_year = this.assetSelected.production_year
-        //     this.asset.production_date = this.assetSelected.production_date
-        //     this.asset.tracked_year = this.assetSelected.tracked_year
-        //     this.asset.life_time = this.assetSelected.life_time
-        //     this.asset.active = this.assetSelected.active
-        //     this.asset.depreciation_year = this.assetSelected.depreciation_year
-        //     this.asset.created_by = this.assetSelected.created_by
-        //     this.asset.created_date = this.assetSelected.created_date
-        //     this.asset.modified_by = this.assetSelected.modified_by
-        //     this.asset.modified_date = this.assetSelected.modified_date    
-        // }
+        updateAsset() {
+            this.asset.fixed_asset_id = this.assetSelected.fixed_asset_id
+            this.asset.fixed_asset_code = this.assetSelected.fixed_asset_code
+            this.asset.fixed_asset_name = this.assetSelected.fixed_asset_name
+            this.asset.organization_id = this.assetSelected.organization_id
+            this.asset.organization_code = this.assetSelected.organization_code
+            this.asset.organization_name = this.assetSelected.organization_name
+            this.asset.department_id = this.assetSelected.department_id
+            this.asset.department_code = this.assetSelected.department_code
+            this.asset.department_name = this.assetSelected.department_name
+            this.asset.fixed_asset_category_id = this.assetSelected.fixed_asset_category_id
+            this.asset.fixed_asset_category_code = this.assetSelected.fixed_asset_category_code
+            this.asset.fixed_asset_category_name = this.assetSelected.fixed_asset_category_name
+            this.asset.quantity = this.assetSelected.quantity
+            this.asset.cost = this.assetSelected.cost
+            this.asset.depreciation_rate = this.assetSelected.depreciation_rate
+            this.asset.purchase_date = this.assetSelected.purchase_date
+            this.asset.production_year = this.assetSelected.production_year
+            this.asset.production_date = this.assetSelected.production_date
+            this.asset.tracked_year = this.assetSelected.tracked_year
+            this.asset.life_time = this.assetSelected.life_time
+            this.asset.active = this.assetSelected.active
+            this.asset.depreciation_year = this.assetSelected.depreciation_year
+            this.asset.budget = this.assetSelected.budget
+            this.asset.increment_status = this.assetSelected.increment_status
+            this.asset.created_by = this.assetSelected.created_by
+            this.asset.created_date = this.assetSelected.created_date
+            this.asset.modified_by = this.assetSelected.modified_by
+            this.asset.modified_date = this.assetSelected.modified_date    
+        }
     }
 }
 </script>
