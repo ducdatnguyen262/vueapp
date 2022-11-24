@@ -72,12 +72,12 @@
                     :id="'table'+index" 
                     :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == voucher.voucher_id) || checkedAll || rowFocus == index}" 
                     v-contextmenu:contextmenu
-                    @click.right="voucherSelected = voucher"
+                    @click.right="voucherSelected = voucher;"
                     @keydown.f2="rowEdit(voucher)" 
                     @keydown.insert="rowDuplicate(voucher)" 
                     @keydown.delete="rowDelete(voucher.voucher_id)" 
                     @keydown.up="prevItem" @keydown.down="nextItem" 
-                    @focus="rowFocus=index;voucherSelected=voucher" 
+                    @focus="rowFocus=index;voucherSelected=voucher;" 
                     @click="rowSelect(index); checkedMethodOnClick(index, voucher.voucher_id)" 
                     @dblclick="rowEdit(voucher)"
                     @mouseenter="rowHover = index" 
@@ -115,7 +115,8 @@
             </tbody>
             <el-empty v-if="totalCount==0" 
                 description="Không có dữ liệu"
-                style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
+                style="position: absolute; top: calc(50% - 80px); left: calc(50% - 80px);" 
+                :image-size="80"
             />
             <tfoot class="tfoot tfoot--big">
                 <tr class="total-line">
@@ -267,11 +268,16 @@
             </tbody>
             <el-empty v-if="totalCount2==0" 
                 description="Không có dữ liệu"
-                style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
+                style="position: absolute; top: calc(50% - 70px); left: calc(50% - 80px);" 
+                :image-size="80"
             />
             <tfoot class="tfoot">
                 <tr class="total-line">
-                    <td colspan="4"></td>
+                    <td colspan="4">
+                        <div class="tfooter-left">
+                            <div class="tfooter-text">Tổng số: <b>{{totalCount2}}</b> bản ghi</div>
+                        </div>
+                    </td>
                     <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost2)}}</b></td>
                     <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation2)}}</b></td>
                     <td colspan="1" class="plr-10"><b>{{formatMoney(totalRemain2)}}</b></td>
@@ -369,7 +375,7 @@
     <v-contextmenu ref="contextmenu">
         <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
         <v-contextmenu-item @click="rowEdit(voucherSelected)">Sửa</v-contextmenu-item>
-        <v-contextmenu-item @click="rowDelete(voucherSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
+        <v-contextmenu-item @click="rowDelete(voucherSelected.voucher_id)">Xóa</v-contextmenu-item>
         <v-contextmenu-item @click="rowDuplicate(voucherSelected)">Nhân bản</v-contextmenu-item>
     </v-contextmenu>
 
@@ -465,7 +471,7 @@ export default {
         totalPage2: 1, // Tổng số trang
         page2: 1, // Trang đang chọn
         totalCount2: 0, // Tổng số bản ghi
-        keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
+        keyword: "", // Từ khóa để tìm kiếm (theo số chứng từ và nội dung)
         departmentId: "", // Mã phòng ban để tìm kiếm
         categoryId: "", // Mã loại tài sản để tìm kiếm
         assetCode: "", // Mã tài sản lưu lại khi mở form
@@ -547,6 +553,19 @@ export default {
         handler() {
             this.loadDetailData()
         }
+    },
+    totalCount: {
+        handler(newVal, oldVal) {
+            if(newVal == 0 && this.page > 1 && this.keyword == ""){
+                this.nextPage()
+            }
+            else if(newVal == 0) {
+                this.totalCount2 = 0
+                this.assets = []
+                this.resetChecked()
+            } 
+            else if(newVal > 0 && oldVal == 0) this.rowFocus = 0
+        }
     }
   },
 
@@ -558,7 +577,9 @@ export default {
 
     // Tạo api lấy chi tiết chứng từ
     getDetailApi : function() {
-        return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?limit="+this.tableView+"&page="+this.page
+        if(this.vouchers[this.rowFocus])
+            return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?limit=-1"
+        else return -1;
     },
 
     // Tạo api cập nhật chi tiết chứng từ
@@ -645,18 +666,19 @@ export default {
      * NDDAT (26/09/2022)
      */
     deleteTextCreate() {
-        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> chứng từ đã được chọn. Bạn có muốn xóa các chứng từ này khỏi danh sách?"
-        else {
-            var id
-            if(this.checked.length == 1) id = this.checked[0];
-            else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
+        // if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> chứng từ đã được chọn. Bạn có muốn xóa các chứng từ này khỏi danh sách?"
+        // else {
+        //     var id
+        //     if(this.checked.length == 1) id = this.checked[0];
+        //     else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
+            var id = this.rowFocusDelete[0]
             for (let index in this.vouchers) {
                 if (id == this.vouchers[index].voucher_id){
                     this.deleteText = "Bạn có muốn xóa chứng từ có mã <b>"+this.vouchers[index].voucher_code+"</b>?"
                     break;
                 }
             } 
-        }
+        // }
     },
 
     /**
@@ -665,9 +687,14 @@ export default {
      * @param {string} id ID tài sản đang focus
      */
     rowDelete(id) {
-        this.rowFocusDelete[0] = id;
-        this.deleteTextCreate()
-        this.deleteShow = true
+        if(id) {
+            this.rowFocusDelete[0] = id;
+            this.deleteTextCreate()
+            this.deleteShow = true
+        }
+        else {
+            this.deleteSelectedNone = true
+        }
     },
 
     /**
@@ -675,7 +702,7 @@ export default {
      * NDDAT (15/09/2022)
      */
     closeDelete() {
-        document.getElementById(`table${this.rowFocus+1}`).focus()
+        // document.getElementById(`table${this.rowFocus+1}`).focus()
         this.deleteShow = false
     },
 
@@ -685,13 +712,15 @@ export default {
      */
     confirmDelete() {
         // Xóa chứng từ
-        if(this.rowFocusDelete[0] || this.checked[0]){
+        // if(this.rowFocusDelete[0] || this.checked[0]){
+        if(this.rowFocusDelete[0]){
             try{
                 // Xóa dữ liệu:
                 var url = Resource.Url.Voucher + "/batch-delete"
-                var body = ""
-                if(this.checked[0]) body = this.checked
-                else body = this.rowFocusDelete
+                // var body = ""
+                // if(this.checked[0]) body = this.checked
+                // else body = this.rowFocusDelete
+                var body = this.rowFocusDelete
                 fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
                 .then(res =>{
                     var status = res.status
@@ -706,6 +735,15 @@ export default {
                             this.backEndErrorNotify(Resource.ErrorCode[500])
                             break
                         default: 
+                            if(this.assets.length <= 0) {
+                                this.addArray = []
+                                this.deleteArray = []
+                                this.closeDelete()
+                                this.loadData()
+                                this.rowFocus = 0
+                                this.rowFocusDelete = []
+                                this.checked = []
+                            }
                     }
                 })
                 .catch(res => {
@@ -717,37 +755,40 @@ export default {
         }
 
         // Xóa các tài sản của chứng từ
-        var method = Resource.Method.Post
-        url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
-        body = []
-        for(let asset of this.assets) {
-            body.push(asset.fixed_asset_id)
-        }
-        fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
-        .then(res =>{
-                var status = res.status
-                switch(status) {
-                    case 400: 
-                        this.backEndErrorNotify(Resource.ErrorCode[400])
-                        break
-                    case 405: 
-                        this.backEndErrorNotify(Resource.ErrorCode[405])
-                        break
-                    case 500: 
-                        this.backEndErrorNotify(Resource.ErrorCode[500])
-                        break
-                    default: 
-                        this.addArray = []
-                        this.deleteArray = []
-                        this.closeDelete()
-                        this.loadData()
-                        this.rowFocusDelete = []
-                        this.checked = []
-                }
+        if(this.assets.length > 0) {
+            var method = Resource.Method.Post
+            url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
+            body = []
+            for(let asset of this.assets) {
+                body.push(asset.fixed_asset_id)
+            }
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+            .then(res =>{
+                    var status = res.status
+                    switch(status) {
+                        case 400: 
+                            this.backEndErrorNotify(Resource.ErrorCode[400])
+                            break
+                        case 405: 
+                            this.backEndErrorNotify(Resource.ErrorCode[405])
+                            break
+                        case 500: 
+                            this.backEndErrorNotify(Resource.ErrorCode[500])
+                            break
+                        default: 
+                            this.addArray = []
+                            this.deleteArray = []
+                            this.closeDelete()
+                            this.loadData()
+                            this.rowFocus = 0
+                            this.rowFocusDelete = []
+                            this.checked = []
+                    }
+                })
+            .catch(res => {
+                console.error(res)
             })
-        .catch(res => {
-            console.error(res)
-        })
+        }
     },
 
     /**
@@ -755,9 +796,9 @@ export default {
      * NDDAT (15/09/2022)
      */
     hideDialogMethod () {
-        if(this.rowFocus > -1) {
-            document.getElementById(`table${this.rowFocus}`).focus()
-        }
+        // if(this.rowFocus > -1) {
+        //     document.getElementById(`table${this.rowFocus}`).focus()
+        // }
         this.dialogShow = false
         this.loadData()
     },
@@ -767,6 +808,9 @@ export default {
      * NDDAT (15/09/2022)
      */
     hideDialogSuccessMethod() {
+        this.rowFocus = 0
+        this.loadDetailData()
+        this.resetChecked()
         this.hideDialogMethod()
         this.toastShow = true
         setTimeout(() => this.toastShow = false, 3000)
@@ -804,43 +848,7 @@ export default {
      */
     searchMethod(keyword) {
         this.keyword = keyword
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm toàn bộ loại tài sản
-     * NDDAT (29/09/2022)
-     */
-    searchAllCategory() {
-        this.categoryId = ""
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm toàn bộ phòng ban
-     * NDDAT (29/09/2022)
-     */
-    searchAllDepartment() {
-        this.departmentId = ""
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm loại tài sản
-     * NDDAT (29/09/2022)
-     */
-    categorySearch(id) {
-        this.categoryId = id
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm phòng ban
-     * NDDAT (29/09/2022)
-     * @param {string} id ID phòng ban
-     */
-    departmentSearch(id) {
-        this.departmentId = id
+        console.log(this.keyword);
         this.loadData()
     },
 
@@ -1082,27 +1090,30 @@ export default {
      * NDDAT (15/09/2022)
      */
     loadDetailData() {
-        try{
-            // Gọi api lấy dữ liệu
-            this.isLoading = true
-            fetch(this.getDetailApi, {method: Resource.Method.Get})
-            .then(res => res.json())
-            .then(data => {
-                this.assets = Object.values(data)[0]
-                this.totalCount2 = Object.values(data)[1]
-                this.totalCost2 = Object.values(data)[3]
-                this.totalDepreciation2 = Object.values(data)[4]
-                this.totalRemain2 = Object.values(data)[5]
-                this.totalPageMethod()
-                this.checkedAllInspect()
-                this.isLoading = false
-            })
-            .catch(res => {
-                console.error(res);
-                this.isLoading = false
-            })
-        } catch (error) {
-            console.error(error);
+        if(this.getDetailApi != -1) {
+            try{
+                // Gọi api lấy dữ liệu
+                this.isLoading = true
+                fetch(this.getDetailApi, {method: Resource.Method.Get})
+                .then(res => res.json())
+                .then(data => {
+                    this.assets = Object.values(data)[0]
+                    console.log(this.assets);
+                    this.totalCount2 = Object.values(data)[1]
+                    this.totalCost2 = Object.values(data)[3]
+                    this.totalDepreciation2 = Object.values(data)[4]
+                    this.totalRemain2 = Object.values(data)[5]
+                    this.totalPageMethod()
+                    this.checkedAllInspect()
+                    this.isLoading = false
+                })
+                .catch(res => {
+                    console.error(res);
+                    this.isLoading = false
+                })
+            } catch (error) {
+                console.error(error);
+            }
         }
     },
   },

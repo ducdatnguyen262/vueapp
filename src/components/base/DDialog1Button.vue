@@ -8,7 +8,7 @@
                     class="warning-icon"
                     @keyup="focusNext()" 
                 />
-                <div class="dialog__content-text">{{text}}</div>
+                <div class="dialog__content-text" v-html="text"></div>
             </div>
             <div class="dialog__footer">
                 <DButton 

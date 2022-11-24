@@ -111,9 +111,11 @@
                     @click.right="assetSelected = asset"
                     @keydown.f2="rowEdit(asset)" 
                     @keydown.insert="rowDuplicate(asset)" 
-                    @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
-                    @keydown.up="prevItem" @keydown.down="nextItem" 
-                    @focus="rowFocus=index" @click="rowSelect(index)" 
+                    @keydown.delete="deleteOnKey(asset.fixed_asset_id, asset.fixed_asset_code)" 
+                    @keydown.up="prevItem" 
+                    @keydown.down="nextItem" 
+                    @focus="rowFocus=index" 
+                    @click="rowSelect(index)" 
                     @dblclick="rowEdit(asset)" 
                     @mouseover="rowHover = index" 
                     @mouseleave="rowHover = -1"
@@ -258,7 +260,7 @@
     <v-contextmenu ref="contextmenu">
         <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
         <v-contextmenu-item @click="rowEdit(assetSelected)">Sửa</v-contextmenu-item>
-        <v-contextmenu-item @click="deleteOnKey(assetSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
+        <v-contextmenu-item @click="deleteOnKey(assetSelected.fixed_asset_id, assetSelected.fixed_asset_code)">Xóa</v-contextmenu-item>
         <v-contextmenu-item @click="rowDuplicate(assetSelected)">Nhân bản</v-contextmenu-item>
     </v-contextmenu>
 
@@ -293,10 +295,18 @@
         @closeNotify="this.deleteSelectedNone = false" 
     />
 
+    <!-- Dialog cảnh cáo lỗi từ backend -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="backendError" 
         :text="backendErrorMsg"
         @closeNotify="this.backendError = false"
+    />
+
+    <!-- Dialog cảnh cáo lỗi xóa tài sản ghi tăng -->
+    <d-dialog-1-button
+        v-if="deleteIncrement"
+        :text="deleteIncrementMsg"
+        @closeNotify="this.deleteIncrement = false"
     />
 
     <!-- Toast thông báo thành công -->
@@ -355,6 +365,8 @@ export default {
         assetCode: "", // Mã tài sản lưu lại khi mở form
         backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+        deleteIncrement: false, // Có hiển thị dialog cảnh báo lỗi xóa tài sản ghi tăng không
+        deleteIncrementMsg: "", // Thông điệp trong cảnh báo lỗi xóa tài sản ghi tăng
         columns : [
                     {
                         label: "Mã tài sản",
@@ -469,8 +481,28 @@ export default {
      * NDDAT (15/09/2022)
      */
     btnDeleteOnClick() {
+        let checkIncrement = false
+        let incrementCount = 0
+        let code = ""
+        for(let check of this.checked){
+            for(let asset of this.assets) {
+                if(asset.fixed_asset_id == check && asset.increment_status){
+                    code = asset.fixed_asset_code
+                    incrementCount++
+                    checkIncrement = true
+                } 
+            }
+        }
         if(this.checked.length == 0) {
             this.deleteSelectedNone =true
+        }
+        else if(this.checked.length == 1 && checkIncrement) {
+            let text = "Tài sản có mã <b>"+code+"</b> đã phát sinh chứng từ ghi tăng."
+            this.deleteIncrementNotify(text)
+        }
+        else if(this.checked.length > 1 && checkIncrement) {
+            let text = "<b>"+(incrementCount>9 ? incrementCount : "0"+incrementCount)+"</b> tài sản được chọn không thể xóa. Vui lòng kiểm tra lại tài sản trước khi thực hiện xóa."
+            this.deleteIncrementNotify(text)
         }
         else {
             this.deleteTextCreate()
@@ -483,10 +515,20 @@ export default {
      * NDDAT (07/10/2022)
      * @param {string} id ID tài sản đang focus
      */
-    deleteOnKey(id) {
-        this.rowFocusDelete[0] = id;
-        this.deleteTextCreate()
-        this.deleteShow = true
+    deleteOnKey(id, code) {
+        let checkIncrement = false
+        for(let asset of this.assets) {
+            if(asset.fixed_asset_id == id && asset.increment_status) checkIncrement = true
+        }
+        if(checkIncrement) {
+            let text = `Tài sản có mã <b>${code}</b> đã phát sinh chứng từ ghi tăng.`
+            this.deleteIncrementNotify(text)
+        }
+        else {
+            this.rowFocusDelete[0] = id;
+            this.deleteTextCreate()
+            this.deleteShow = true
+        }
     },
 
     /**
@@ -779,6 +821,16 @@ export default {
     backEndErrorNotify(text) {
         this.backendErrorMsg = text
         this.backendError = true;
+    },
+
+    /**
+     * Hiện thị cảnh báo lỗi xóa tài sản ghi tăng
+     * NDDAT (23/11/2022)
+     * @param {string} text Thông điệp trong cảnh báo
+     */
+    deleteIncrementNotify(text) {
+        this.deleteIncrementMsg = text
+        this.deleteIncrement = true;
     },
 
     /**

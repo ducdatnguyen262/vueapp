@@ -114,3 +114,15 @@
 .combobox__data::-webkit-scrollbar-thumb {
     border-radius: 4px;
 }
+
+.input--error .el-input__wrapper {
+    box-shadow: 0 0 0 1px #ff4040 inset !important;
+}
+
+.duplicate-source-input--error .el-input__wrapper {
+    box-shadow: 0 0 0 1px #ff4040 inset !important;
+}
+
+.el-select-dropdown {
+    font-family: Roboto !important;
+}

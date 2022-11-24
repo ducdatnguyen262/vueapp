@@ -43,3 +43,7 @@
 .datepicker--disabled .el-input__wrapper:hover {
     box-shadow: 0 0 0 1px #afafaf inset !important;
 }
+
+.el-picker-panel__body {
+    font-family: Roboto !important;
+}

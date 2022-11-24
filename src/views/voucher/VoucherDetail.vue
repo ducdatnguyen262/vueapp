@@ -154,11 +154,16 @@
                     </tbody>
                     <el-empty v-if="totalCount==0" 
                         description="Không có dữ liệu"
-                        style="position: absolute; top: calc(50% - 146px); left: calc(50% - 80px);" 
+                        style="position: absolute; top: calc(50% - 70px); left: calc(50% - 80px);" 
+                        :image-size="80"
                     />
                     <tfoot class="tfoot">
                         <tr class="total-line">
-                            <td colspan="4"></td>
+                            <td colspan="4">
+                                <div class="tfooter-left">
+                                    <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
+                                </div>
+                            </td>
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost)}}</b></td>
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation)}}</b></td>
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost-totalDepreciation)}}</b></td>
@@ -306,8 +311,10 @@
     <voucher-update-asset
         v-if="updateAssetShow"
         :assetSelected="assetSelected"
+        :assets="assets"
+        :totalCost="totalCost"
         @hideDialog="updateAssetShow=false;thisShow=true"
-        @updateAsset="updateAsset"
+        @updateAssets="updateAssets"
         @loadDetailData="loadDetailData"
     />
 
@@ -417,6 +424,7 @@ export default {
             thisShow: true,
             rowSelected:-1,
             rowHover: -1,
+            totalCount: 0,
             totalCost: 0,
             totalDepreciation: 0,
             totalRemain: 0,
@@ -424,6 +432,7 @@ export default {
             addArray:[],
             deleteArray:[],
             addedVoucherId: "",
+            keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản)
         }
     },
 
@@ -440,13 +449,25 @@ export default {
         //         this.updateAssetSum()
         //     }
         // }
+        asset_lenght: {
+            deep: true,
+            handler() {
+                // if(newVal > oldVal) {
+                //     }
+                    this.updateAssetSum()
+            }
+        }
     },
 
     computed: {
         // Tạo api lấy chi tiết chứng từ
         getDetailApi : function() {
-            return Resource.Url.Voucher+"/detail/"+this.voucherSelected.voucher_id+"?limit=-1&page=1"
+            return Resource.Url.Voucher+"/detail/"+this.voucherSelected.voucher_id+"?keyword="+this.keyword+"&limit=-1"
         },
+        // Số lượng tài sản
+        asset_lenght: function() {
+            return this.assets.length
+        }
     },
 
     created() {
@@ -484,9 +505,6 @@ export default {
             this.isEdited = false
             this.firstTimeEdited = false
         }
-
-        // // Cập nhật hao mòn năm
-        // this.updateValue()
     },
 
     beforeUnmount() {
@@ -495,20 +513,6 @@ export default {
 
     validations() {
         return {
-            // Các trường cần validate thiếu
-            // asset: { 
-            //     fixed_asset_code: { required },
-            //     fixed_asset_name: { required },
-            //     department_code: { required },
-            //     fixed_asset_category_code: { required },
-            //     quantity: { required },
-            //     cost: { required },
-            //     depreciation_rate: { required },
-            //     purchase_date: { required },
-            //     production_date: { required },
-            //     life_time: { required }, 
-            //     depreciation_year: { required },          
-            // },
             voucher: {
                 voucher_code: {required},
                 voucher_date: {required},
@@ -521,10 +525,12 @@ export default {
         /**
          * Cập nhật tài sản được chọn
          * NDDAT (18/11/2022)
-         * @param {number} cost nguyên giá sau khi cập nhật
+         * @param {array} assets dãy các tài sản
          */
-        updateAsset(cost) {
-            this.assets[this.indexSelected].cost = cost
+        updateAssets(assets, totalCost) {
+            this.assets = assets
+            console.log("/: "+totalCost);
+            this.totalCost = totalCost
         },
 
         /**
@@ -537,6 +543,7 @@ export default {
                 if(this.assets[i].fixed_asset_id == id) {
                     this.deleteArray.push(id)
                     this.assets.splice(i,1)
+                    this.totalCount--
                     break
                 }
             }
@@ -552,6 +559,7 @@ export default {
                 if(asset!=null){
                     this.addArray.push(asset.fixed_asset_id)
                     this.assets.push(asset)
+                    this.totalCount++
                 } 
             }
         },
@@ -631,43 +639,6 @@ export default {
         },
 
         /**
-         * Cập nhật dữ liệu phòng ban khi chọn trong combobox
-         * NDDAT (28/09/2022)
-         * @param {string} id id phòng ban
-         * @param {string} code mã phòng ban
-         * @param {string} name tên phòng ban
-         */
-        comboboxDepartment(id, code, name) {
-            this.asset.department_id = id
-            this.asset.department_code = code
-            this.asset.department_name = name
-        },
-
-        /**
-         * Cập nhật dữ liệu loại tài sản khi chọn trong combobox
-         * NDDAT (28/09/2022)
-         * @param {string} id id loại tài sản
-         * @param {string} code mã loại tài sản
-         * @param {string} name tên loại tài sản
-         */
-        comboboxCategory(id, code, name) {
-            this.asset.fixed_asset_category_id = id
-            this.asset.fixed_asset_category_code = code
-            this.asset.fixed_asset_category_name = name
-        },
-
-        /**
-         * Cập nhật dữ liệu liên quan tới mã loại tài sản
-         * NDDAT (28/09/2022)
-         * @param {float} depreciation_rate 
-         * @param {int} life_time 
-         */
-        updateWithCategoryCode(depreciation_rate, life_time) {
-            this.asset.depreciation_rate = depreciation_rate ? depreciation_rate*100 : null
-            this.asset.life_time = life_time
-        },
-
-        /**
          * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
          * NDDAT (19/09/2022)
          */        
@@ -675,25 +646,8 @@ export default {
             // voucher
             if (this.voucher.voucher_date == null) this.voucher.voucher_date = new Date().toISOString()
             if (this.voucher.increment_date == null) this.voucher.increment_date = new Date().toISOString()
-
             if(this.formMode == Enum.FormMode.Add) this.title = Resource.Title.Add
             else if(this.formMode == Enum.FormMode.Edit) this.title = Resource.Title.Edit
-
-            // if (this.asset.purchase_date == null) this.asset.purchase_date = new Date().toISOString()
-            // if (this.asset.production_date == null) this.asset.production_date = new Date().toISOString()
-            // if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
-            // if (this.asset.cost == null) this.asset.cost = 0
-        },
-
-        /**
-         * Cập nhật các giá trị trong form theo các điều kiện
-         * NDDAT (28/09/2022)
-         */
-        updateValue() {
-            if(this.focus){
-                this.asset.depreciation_year = this.asset.cost * this.asset.depreciation_rate / 100
-            }
-            if(this.asset.depreciation_rate > 100) this.asset.depreciation_rate = 100
         },
 
         /**
@@ -812,6 +766,16 @@ export default {
         },
 
         /**
+         * Tìm kiếm theo mã và tên tài sản
+         * NDDAT (27/09/2022)
+         * @param {String} keyword từ khóa tìm kiếm
+         */
+        searchMethod(keyword) {
+            this.keyword = keyword
+            this.loadDetailData()
+        },
+
+        /**
          * Click vào button để đóng dialog tài sản
          * NDDAT (15/09/2022)
          */
@@ -833,6 +797,8 @@ export default {
                     let temp = this.addArray
                     this.addArray = this.addArray.filter(val => !this.deleteArray.includes(val));
                     this.deleteArray = this.deleteArray.filter(val => !temp.includes(val));
+                    console.log(this.addArray);
+                    console.log(this.deleteArray);
 
                     // Truyền dữ liệu mặc định
                     this.voucher.cost = this.totalCost
@@ -943,8 +909,8 @@ export default {
                             this.backEndErrorNotify(Resource.ErrorCode[500])
                             break
                         default: 
-                            this.addArray = []
-                            this.deleteArray = []
+                            if(type == Resource.VoucherDetailType.Add) this.addArray = []
+                            else if(type == Resource.VoucherDetailType.Delete) this.deleteArray = []
                     }
                 })
             .catch(res => {
@@ -1001,6 +967,8 @@ export default {
          * NDDAT (18/11/2022)
          */
         updateAssetSum() {
+            this.totalCost = 0
+            this.totalDepreciation = 0
             for(let asset of this.assets){
                 this.totalCost += asset.cost
                 this.totalDepreciation += asset.depreciation_year*asset.life_time

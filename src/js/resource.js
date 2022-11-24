@@ -75,7 +75,7 @@ export default {
     // Mã lỗi
     ErrorCode: {
         // Error 400
-        400: "Dữ liệu đầu vào ko hợp lệ",
+        400: "Dữ liệu đầu vào không hợp lệ",
         // Error 405
         405: "Phương thức yêu cầu của bạn không hợp lệ hoặc không được cho phép tại server",
         // Error 500
@@ -92,6 +92,8 @@ export default {
         ValidateEmpty: "Cần phải nhập thông tin: ",
         // Lời nhắn khi trùng mã tài sản
         ValidateDuplicateCode: "Mã tài sản đã tồn tại",
+        // Lời nhắn khi trùng nguồn chi phí
+        ValidateDuplicateSource: "Nguồn chi phí đã tồn tại",
     },
 
     // Url

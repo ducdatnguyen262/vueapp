@@ -765,7 +765,10 @@ export default {
             this.asset.active = this.assetSelected.active
             this.asset.depreciation_year = this.assetSelected.depreciation_year
             this.asset.budget = this.assetSelected.budget
-            this.asset.increment_status = this.assetSelected.increment_status
+            if(this.formMode == Enum.FormMode.Edit) 
+                this.asset.increment_status = this.assetSelected.increment_status
+            else 
+                this.asset.increment_status = false
             this.asset.created_by = this.assetSelected.created_by
             this.asset.created_date = this.assetSelected.created_date
             this.asset.modified_by = this.assetSelected.modified_by

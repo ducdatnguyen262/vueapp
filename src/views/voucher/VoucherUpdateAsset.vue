@@ -38,7 +38,13 @@
                                 :budgetId="source.id"
                                 @budgetSelected="comboboxBudget"
                             /> -->
-                            <el-select v-model="source.budget_id" filterable placeholder="Chọn nguồn hình thành" class="source-item-cbb">
+                            <el-select 
+                                v-model="source.budget_id" 
+                                filterable 
+                                placeholder="Chọn nguồn hình thành" 
+                                class="source-item-cbb"
+                                :class="{'input--error':!source.budget_id && this.isSubmited, 'duplicate-source-input--error':duplicateValidate[index] == 1 && this.isSubmited,}"
+                            >
                                 <el-option
                                     v-for="item in budget_options"
                                     :key="item.budget_id"
@@ -46,9 +52,10 @@
                                     :value="item.budget_id"
                                 />
                             </el-select>
+                            <d-tooltip-warning text="Nguồn hình thành"></d-tooltip-warning>
                         </div>
                         <div class="dialog-item">
-                            <d-input-money
+                            <!-- <d-input-money
                                 v-model="source.cost"
                                 tabindex="105" 
                                 class="source-item-input"
@@ -61,7 +68,16 @@
                                     hideGroupingSeparatorOnFocus: false,
                                 }"
                                 @keyup="notNegative('quantity')"
-                            />
+                            /> -->
+                            <input 
+                                v-model="sourceCost[index]"
+                                type="text"
+                                tabindex="105" 
+                                class="dialog-input source-item-input"
+                                style="text-align: right;"
+                                :class="{'input--error':!source.cost && source.cost!=0 && this.isSubmited}"
+                                @input="inputMoneySourceCost(index)"
+                            >
                             <d-tooltip-warning text="Giá trị"></d-tooltip-warning>
                         </div>
                         <div class="position-relative mt-10 mb-20">
@@ -80,16 +96,16 @@
                     </div>
                     <div class="mb-20">
                         <d-input-money
-                                v-model="sum"
-                                class="source-item-input"
-                                disabled
-                                :options="{
-                                    locale: 'vi-VN',
-                                    currency: 'EUR',
-                                    currencyDisplay: 'hidden',
-                                    hideGroupingSeparatorOnFocus: false,
-                                }"
-                            />
+                            v-model="sum"
+                            class="source-item-input"
+                            disabled
+                            :options="{
+                                locale: 'vi-VN',
+                                currency: 'EUR',
+                                currencyDisplay: 'hidden',
+                                hideGroupingSeparatorOnFocus: false,
+                            }"
+                        />
                     </div>
                 </div>
             </div>
@@ -141,8 +157,6 @@
 
 <script>
 import DButton from '@/components/base/DButton.vue';
-import useValidate from '@vuelidate/core'
-import {required} from '@vuelidate/validators'
 import DDialog from '@/components/base/DDialog.vue';
 import DDialog1Button from '../../components/base/DDialog1Button.vue';
 import Enum from '../../js/enum.js'
@@ -157,12 +171,14 @@ export default {
     components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DTooltipWarning },
     props: {
         assetSelected: Function, // Tài sản được chọn
+        assets: [],
         formMode: {
             type: Number,
             default: Enum.FormMode.Add
         },
         title: String,
         assetCode: String,
+        totalCost: Number,
     },
     
     data() {
@@ -198,7 +214,6 @@ export default {
                 modified_date:"",
             },
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
-            v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
             errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
             validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate thiếu hay không
@@ -220,6 +235,8 @@ export default {
             sumCost:0,
             textCost:"",
             budget_options: [],
+            duplicateValidate: [],
+            sourceCost:[], // Lưu số tiền của nguồn ngân sách dưới dạng string có đấu '.'
         }
     },
 
@@ -229,7 +246,7 @@ export default {
             handler() {
                 this.isEdited = true
             }
-        }
+        },
     },
 
     computed: {
@@ -245,6 +262,10 @@ export default {
         this.defaultValue()
         // Lấy dữ liệu combobox
         this.loadDataCbb()
+
+        for(let i in this.sources) {
+            this.sourceCost[i] = this.formatMoney(this.sources[i].cost)
+        }
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -273,38 +294,46 @@ export default {
         window.removeEventListener('keypress', this.handler);
     },
 
-    validations() {
-        return {
-            // Các trường cần validate thiếu
-            // asset: { 
-            //     fixed_asset_code: { required },
-            //     fixed_asset_name: { required },
-            //     department_code: { required },
-            //     fixed_asset_category_code: { required },
-            //     quantity: { required },
-            //     cost: { required },
-            //     depreciation_rate: { required },
-            //     purchase_date: { required },
-            //     production_date: { required },
-            //     life_time: { required }, 
-            //     depreciation_year: { required },          
-            // },
-            sources: {
-                source : {
-                    budget_name: { required },
-                    cost: { required }
+    methods: {
+        // checkDuplicate(id, index) {
+        //     let check = false
+        //     for(let i=0; i<index; i++) {
+        //         if(this.sources[index].budget_id == id) {
+        //             check = true
+        //             break
+        //         }
+        //     }
+        //     return check
+        // },
+
+        checkDuplicate() {
+            this.duplicateValidate = []
+            let check = true
+            for(let i in this.sources) {
+                for(let j in this.sources) {
+                    if(this.sources[i].budget_id == this.sources[j].budget_id && i<j) {
+                        this.duplicateValidate[j] = 1
+                        check = false
+                    }
                 }
             }
-        }
-    },
+            return check
+        },
 
-    methods: {
+        inputMoneySourceCost(index) {
+            this.sourceCost[index] = this.sourceCost[index].replaceAll('.','')
+            this.sources[index].cost = parseFloat(this.sourceCost[index])
+            this.sourceCost[index] = this.formatMoney(this.sourceCost[index])
+            if(this.sourceCost[index] == "0") this.sources[index].cost = 0
+        },
+
         /**
          * Thêm một nguồn hình thành
          * NDDAT (09/11/2022)
          */
         addField(list) {
             list.push({budget_id: "", budget_name: "", cost: 0});
+            this.inputMoneySourceCost(0)
         },
 
         /**
@@ -449,7 +478,7 @@ export default {
         confirmNotifyMethod() {
             this.closeNotify()
             this.closeProValidate()
-            this.$emit("hideDialog")
+            this.btnCloseOnClick()
         },
 
         /**
@@ -459,6 +488,16 @@ export default {
         backEndErrorNotify(text) {
             this.backendErrorMsg = text
             this.backendError = true;
+        },
+
+        /**
+         * Định dạng tiền tệ
+         * NDDAT (18/09/2022)
+         * @param {double} money số tiền
+         */
+        formatMoney(money) {
+            money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
+            return money
         },
 
         /**
@@ -527,28 +566,31 @@ export default {
          * NDDAT (08/10/2022)
          */
         validateData() {
-            // this.v$.$validate()
-            // if (this.v$.$error) {
-            //     this.errorArray = []
-            //     let sourceNamevalidated = false
-            //     let sourceCostvalidated = false
-            //     for(let i in this.sources) {
-            //         if (!this.sources[i].budget_name && !sourceNamevalidated){
-            //             sourceNamevalidated = true
-            //             this.errorArray.push(Resource.IsEmpty.source_name);
-            //         } 
-            //         if (!this.sources[i].cost && this.sources[i].cost != 0 && !sourceCostvalidated){
-            //             sourceCostvalidated = true
-            //             this.errorArray.push(Resource.IsEmpty.source_cost);
-            //         } 
-            //     }
-            //     if(!sourceNamevalidated && !sourceCostvalidated) return true
-            //     this.createValidateMessage()
-            //     this.validateShow = true
-            //     return false
-            // } else {
+            this.errorArray = []
+            let sourceIdRequred = false // Có thiếu Nguồn ngân sách không
+            let sourceCostRequired = false // Có thiếu giá trị không
+            for(let i in this.sources) {
+                if (!this.sources[i].budget_id && !sourceIdRequred){
+                    sourceIdRequred = true
+                    this.errorArray.push(Resource.IsEmpty.source_name);
+                } 
+                if (!this.sources[i].cost && this.sources[i].cost != 0 && !sourceCostRequired){
+                    sourceCostRequired = true
+                    this.errorArray.push(Resource.IsEmpty.source_cost);
+                } 
+            }
+            // if(!sourceIdRequred && !sourceCostRequired) return true
+            if (sourceIdRequred || sourceCostRequired) {
+                this.createValidateMessage()
+                this.validateShow = true
+                return false
+            } else if(!this.checkDuplicate()) {
+                this.errorMessage = Resource.ErrorMsg.ValidateDuplicateSource
+                this.validateShow = true
+                return false
+            } else {
                 return true
-            // } 
+            } 
         },
 
         /**
@@ -576,7 +618,16 @@ export default {
                             this.backEndErrorNotify(Resource.ErrorCode[500])
                             break
                         default: 
-                            this.$emit("loadDetailData")
+                            // this.$emit("loadDetailData")
+                            var totalCostAfterUpdate = 0
+                            for(let asset of this.assets) {
+                                if(asset.fixed_asset_id == this.asset.fixed_asset_id) {
+                                    totalCostAfterUpdate = this.totalCost + this.asset.cost - asset.cost
+                                    asset.cost = this.asset.cost
+                                    asset.budget = this.asset.budget
+                                }
+                            }
+                            this.$emit("updateAssets", this.assets, totalCostAfterUpdate)
                             this.btnCloseOnClick()
                     }
                 });
@@ -648,4 +699,5 @@ export default {
 <style scoped>
     @import url('../../css/base/input.css');
     @import url('../../css/base/datepicker.css');
+    @import url('../../css/base/combobox.css');
 </style>
