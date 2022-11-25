@@ -9,367 +9,426 @@
                 class="mr-11"
                 @click="btnAddOnClick" 
             />
-            <d-button 
-                tabindex="4"
-                class="mr-11"
-                type="medium"
-                icon="menu"
-                icon2="down"
-                @click="btnAddOnClick" 
-            />
-        </div>
-    </div>
-    <div class="content-menu content-menu--white">
-        <div class="content-search">
-            <div class="search">
-                <div class="search__icon"></div>
-                <input 
-                    v-model="search" 
-                    tabindex="1" 
-                    id="searchInput"
-                    class="search__input search__input--long mr-11" 
-                    type="text" 
-                    placeholder="Tìm kiếm theo số chứng từ, nội dung"
-                    @keypress.enter="searchMethod(search)"
-                >
+            <div class="menuWarp">
+                <d-button 
+                    v-show="dividerPosition != 76"
+                    tabindex="4"
+                    class="menuExpand mr-11"
+                    type="medium"
+                    icon="menu"
+                    icon2="down"
+                    @click="menuSelect=!menuSelect"
+                />
+                <d-button 
+                    v-show="dividerPosition == 76"
+                    tabindex="4"
+                    class="menuExpand mr-11"
+                    type="medium"
+                    icon="menuExpand"
+                    icon2="down"
+                    @click="menuSelect=!menuSelect"
+                />
+                <d-button 
+                    v-show="menuSelect"
+                    tabindex="4"
+                    class="menuSelect mr-11"
+                    style="top: 37px;"
+                    text="Giao diện dọc"
+                    type="medium"
+                    icon="menuExpand"
+                    @click="dividerPosition = 42"
+                    @mouseup="menuSelect=!menuSelect"
+                />
+                <d-button 
+                    v-show="menuSelect"
+                    tabindex="4"
+                    class="menuSelect mr-11"
+                    style="top: 73px;"
+                    text="Giao diện ngang"
+                    type="medium"
+                    icon="menu"
+                    @click="dividerPosition = 76"
+                    @mouseup="menuSelect=!menuSelect"
+                />
             </div>
-        </div>
-        <div class="content-btns">
-            <div class="position-relative">
-                <div class="button-no-border icon-print"></div>
-                <d-tooltip text="In"></d-tooltip>
-            </div>
-            <div class="position-relative">
-                <div class="button-no-border icon-option"></div>
-                <d-tooltip text="Tùy chọn"></d-tooltip>
-            </div>
+            
         </div>
     </div>
 
-    <!-- Table 1 -->
-    <div class="table-container table-1">
-        <table class="table">
-            <thead class="thead">
-                <tr>
-                    <th><input v-model="checkedAll" @click="checkedAllMethod()" type="checkbox"></th>
-                    <th>
-                        <div class="position-relative">
-                            STT
-                            <d-tooltip text="Số thứ tự"></d-tooltip>
-                        </div>
-                    </th>
-                    <th>Mã chứng từ</th>
-                    <th>Ngày chứng từ</th>
-                    <th>Ngày ghi tăng</th>
-                    <th>Tổng nguyên giá</th>
-                    <th>Nội dung</th>
-                    <th>Chức năng</th>
-                </tr>
-            </thead>
-            <tbody class="tbody">
-                <tr v-for="(voucher, index) in vouchers" :key="voucher.voucher_id" 
-                    tabindex="7" 
-                    :id="'table'+index" 
-                    :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == voucher.voucher_id) || checkedAll || rowFocus == index}" 
-                    v-contextmenu:contextmenu
-                    @click.right="voucherSelected = voucher;"
-                    @keydown.f2="rowEdit(voucher)" 
-                    @keydown.insert="rowDuplicate(voucher)" 
-                    @keydown.delete="rowDelete(voucher.voucher_id)" 
-                    @keydown.up="prevItem" @keydown.down="nextItem" 
-                    @focus="rowFocus=index;voucherSelected=voucher;" 
-                    @click="rowSelect(index); checkedMethodOnClick(index, voucher.voucher_id)" 
-                    @dblclick="rowEdit(voucher)"
-                    @mouseenter="rowHover = index" 
-                    @mouseleave="rowHover = -1"
-                >
-                    <td class="ms-table-right ms-table-fit">
+    <div class="wrapper" @mouseUp="endDragging()">
+        <div v-show="dividerPosition != -9">
+            <div class="content-menu content-menu--white">
+                <div class="content-search">
+                    <div class="search">
+                        <div class="search__icon"></div>
                         <input 
-                            v-model="checked" 
-                            :value="voucher.voucher_id" 
-                            type="checkbox"
-                            @click.stop 
-                            @change="checkedMethod(index, voucher.voucher_id)" 
+                            v-model="search" 
+                            tabindex="1" 
+                            id="searchInput"
+                            class="search__input search__input--long mr-11" 
+                            type="text" 
+                            placeholder="Tìm kiếm theo số chứng từ, nội dung"
+                            @keypress.enter="searchMethod(search)"
                         >
-                    </td>
-                    <td>{{index + 1}}</td>
-                    <td>{{voucher.voucher_code}}</td>
-                    <td>{{formatDate(voucher.voucher_date)}}</td>
-                    <td>{{formatDate(voucher.increment_date)}}</td>
-                    <td>{{formatMoney(voucher.cost)}}</td>
-                    <td>{{voucher.description}}</td>
-                    <td>
-                        <div class="table-function">
-                            <div class="position-relative">
-                                <div @click="rowEdit(voucher)" class="button--icon-edit"></div>
-                                <d-tooltip text="Sửa"></d-tooltip>
-                            </div>
-                            <div class="position-relative">
-                                <div @click="rowDelete(voucher.voucher_id)" class="button--icon-delete"></div>
-                                <d-tooltip text="Xóa" class="tool-tip--left"></d-tooltip>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr style="height:auto;"></tr>
-            </tbody>
-            <el-empty v-if="totalCount==0" 
-                description="Không có dữ liệu"
-                style="position: absolute; top: calc(50% - 80px); left: calc(50% - 80px);" 
-                :image-size="80"
-            />
-            <tfoot class="tfoot tfoot--big">
-                <tr class="total-line">
-                    <td colspan="5"></td>
-                    <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost)}}</b></td>
-                    <td colspan="2"></td>
-                </tr>
-                <tr>
-                    <td colspan="8">
-                        <div class="tfooter-left">
-                            <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
-                            <div class="tfooter-total">
-                                <select @change="page=1;loadData()" v-model="tableView">
-                                    <option value="20" selected>20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="200">200</option>
-                                </select>
-                            </div>
-                            <div @click="prevPage()" class="tfooter-prev position-relative">
-                                <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
-                            </div>
-                            <div 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page == 1}" 
-                                @click="toPage(1)" 
-                            >
-                                1
-                            </div>
-                            <div 
-                                v-show="page>=3 && totalPage>5 && totalPage!=1" 
-                                class="tfooter-page"
-                            >
-                                ...
-                            </div>
-                            <div 
-                                v-show="(page<3 || totalPage==5 || totalPage==3) && totalPage>=3 " 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page == 2}" 
-                                @click="toPage(2)" 
-                            >
-                                2
-                            </div>
-                            <div 
-                                v-show="page<3 && totalPage!=1 && totalPage>3" 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page == 3}" 
-                                @click="toPage(3)" 
-                            >
-                                3
-                            </div>
-                            <div 
-                                v-show="page>=3 && page<totalPage-1 && totalPage!=1" 
-                                class="tfooter-page tfooter-page--selected"
-                            >
-                                {{page}}
-                            </div>
-                            <div 
-                                v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" 
-                                class="tfooter-page"
-                            >
-                                ...
-                            </div>
-                            <div 
-                                v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page == totalPage-2}" 
-                                @click="toPage(totalPage-2)" 
-                            >
-                                {{totalPage-2}}
-                            </div>
-                            <div 
-                                v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page == totalPage-1}" 
-                                @click="toPage(totalPage-1)" 
-                            >
-                                {{totalPage-1}}
-                            </div>
-                            <div 
-                                v-show="totalPage>1" :class="{'tfooter-page--selected':page == totalPage}" 
-                                class="tfooter-page"
-                                @click="toPage(totalPage)" 
-                            >
-                                {{totalPage}}
-                            </div>
-                            <div @click="nextPage()" class="tfooter-next position-relative">
-                                <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
+                    </div>
+                </div>
+                <div class="content-btns">
+                    <div v-show="checked.length > 1" class="position-relative">
+                        <div @click="btnDeleteOnClick()" class="button-no-border icon-delete"></div>
+                        <d-tooltip text="Xóa"></d-tooltip>
+                    </div>
+                    <div class="position-relative">
+                        <div class="button-no-border icon-print"></div>
+                        <d-tooltip text="In"></d-tooltip>
+                    </div>
+                    <div class="position-relative">
+                        <div class="button-no-border icon-option"></div>
+                        <d-tooltip text="Tùy chọn"></d-tooltip>
+                    </div>
+                </div>
+            </div>
 
-    <div class="content-menu content-menu-2--white">
-        <h3 style="margin:10px 0">Thông tin chi tiết</h3>
-        <div class="content-btns">
-            <div class="position-relative">
-                <div class="button-no-border icon-square"></div>
-                <d-tooltip text="Mở rộng"></d-tooltip>
+            <!-- Table 1 -->
+            <div class="table-container table-1" :style="{height: `${dividerPosition}vh`}">
+                <table class="table">
+                    <thead class="thead">
+                        <tr>
+                            <th><input v-model="checkedAll" @click="checkedAllMethod()" type="checkbox"></th>
+                            <th>
+                                <div class="position-relative">
+                                    STT
+                                    <d-tooltip text="Số thứ tự"></d-tooltip>
+                                </div>
+                            </th>
+                            <th>Mã chứng từ</th>
+                            <th>Ngày chứng từ</th>
+                            <th>Ngày ghi tăng</th>
+                            <th>Tổng nguyên giá</th>
+                            <th>Nội dung</th>
+                            <th>Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbody">
+                        <tr v-for="(voucher, index) in vouchers" :key="voucher.voucher_id" 
+                            tabindex="7" 
+                            :id="'table'+index" 
+                            :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == voucher.voucher_id) || checkedAll || rowFocus == index}" 
+                            v-contextmenu:contextmenu
+                            @click.right.exact="voucherSelected = voucher;"
+                            @keydown.f2="rowEdit(voucher)" 
+                            @keydown.insert="rowDuplicate(voucher)" 
+                            @keydown.delete="rowDelete(voucher.voucher_id)" 
+                            @keydown.up="prevItem" @keydown.down="nextItem" 
+                            @focus="rowFocus=index;voucherSelected=voucher;" 
+                            @click.exact="checkedMethodOnClick(index, voucher.voucher_id)"
+                            @click.shift.exact="checkedMethodOnClickShift(index, voucher.voucher_id, $event)"
+                            @click.ctrl.exact="checkedMethodOnClickCtrl(index, voucher.voucher_id)"
+                            @dblclick="rowEdit(voucher)"
+                            @mouseenter="rowHover = index" 
+                            @mouseleave="rowHover = -1"
+                        >
+                            <td class="ms-table-right ms-table-fit">
+                                <input 
+                                    v-model="checked" 
+                                    :value="voucher.voucher_id" 
+                                    type="checkbox"
+                                    @click.stop 
+                                    @change="checkedMethod(index, voucher.voucher_id)" 
+                                >
+                            </td>
+                            <td>{{index + 1}}</td>
+                            <td>{{voucher.voucher_code}}</td>
+                            <td>{{formatDate(voucher.voucher_date)}}</td>
+                            <td>{{formatDate(voucher.increment_date)}}</td>
+                            <td>{{formatMoney(voucher.cost)}}</td>
+                            <td>{{voucher.description}}</td>
+                            <td>
+                                <div class="table-function">
+                                    <div class="position-relative">
+                                        <div @click="rowEdit(voucher)" class="button--icon-edit"></div>
+                                        <d-tooltip text="Sửa"></d-tooltip>
+                                    </div>
+                                    <div class="position-relative">
+                                        <div @click="rowDelete(voucher.voucher_id)" class="button--icon-delete"></div>
+                                        <d-tooltip text="Xóa" class="tool-tip--left"></d-tooltip>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr style="height:auto;"></tr>
+                    </tbody>
+                    <el-empty v-if="totalCount==0" 
+                        description="Không có dữ liệu"
+                        style="position: absolute; top: calc(50% - 80px); left: calc(50% - 80px);" 
+                        :image-size="80"
+                    />
+                    <tfoot class="tfoot tfoot--big">
+                        <tr class="total-line">
+                            <td colspan="5"></td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost)}}</b></td>
+                            <td colspan="2"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="8">
+                                <div class="tfooter-left">
+                                    <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
+                                    <div class="tfooter-total">
+                                        <select @change="page=1;loadData()" v-model="tableView">
+                                            <option value="20" selected>20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="200">200</option>
+                                        </select>
+                                    </div>
+                                    <div @click="prevPage()" class="tfooter-prev position-relative">
+                                        <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
+                                    </div>
+                                    <div 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page == 1}" 
+                                        @click="toPage(1)" 
+                                    >
+                                        1
+                                    </div>
+                                    <div 
+                                        v-show="page>=3 && totalPage>5 && totalPage!=1" 
+                                        class="tfooter-page"
+                                    >
+                                        ...
+                                    </div>
+                                    <div 
+                                        v-show="(page<3 || totalPage==5 || totalPage==3) && totalPage>=3 " 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page == 2}" 
+                                        @click="toPage(2)" 
+                                    >
+                                        2
+                                    </div>
+                                    <div 
+                                        v-show="page<3 && totalPage!=1 && totalPage>3" 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page == 3}" 
+                                        @click="toPage(3)" 
+                                    >
+                                        3
+                                    </div>
+                                    <div 
+                                        v-show="page>=3 && page<totalPage-1 && totalPage!=1" 
+                                        class="tfooter-page tfooter-page--selected"
+                                    >
+                                        {{page}}
+                                    </div>
+                                    <div 
+                                        v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" 
+                                        class="tfooter-page"
+                                    >
+                                        ...
+                                    </div>
+                                    <div 
+                                        v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page == totalPage-2}" 
+                                        @click="toPage(totalPage-2)" 
+                                    >
+                                        {{totalPage-2}}
+                                    </div>
+                                    <div 
+                                        v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page == totalPage-1}" 
+                                        @click="toPage(totalPage-1)" 
+                                    >
+                                        {{totalPage-1}}
+                                    </div>
+                                    <div 
+                                        v-show="totalPage>1" :class="{'tfooter-page--selected':page == totalPage}" 
+                                        class="tfooter-page"
+                                        @click="toPage(totalPage)" 
+                                    >
+                                        {{totalPage}}
+                                    </div>
+                                    <div @click="nextPage()" class="tfooter-next position-relative">
+                                        <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
+
+        <!-- <div 
+            class="divider" 
+            :style="{ top: `${dividerPosition+14}vh`}"
+            @mouseDown="startDragging()" 
+        /> -->
+
+        <div v-show="dividerPosition != 76">
+            <div class="content-menu content-menu-2--white">
+                <h3 style="margin:10px 0">Thông tin chi tiết</h3>
+                <div class="content-btns">
+                    <div v-show="dividerPosition != -9" class="position-relative">
+                        <div class="button-no-border icon-expand" @click="dividerPosition = -9;menuSelect=false"></div>
+                        <d-tooltip text="Mở rộng"></d-tooltip>
+                    </div>
+                    <div v-show="dividerPosition == -9" class="position-relative">
+                        <div class="button-no-border icon-shrink" @click="dividerPosition = 42"></div>
+                        <d-tooltip text="Thu nhỏ"></d-tooltip>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table 2 -->
+            <div class="table-container table-2" :style="{height: `${78 - 9 - dividerPosition}vh`}">
+                <table class="table">
+                    <thead class="thead">
+                        <tr>
+                            <th>
+                                <div class="position-relative">
+                                    STT
+                                    <d-tooltip text="Số thứ tự"></d-tooltip>
+                                </div>
+                            </th>
+                            <th>Mã tài sản</th>
+                            <th>Tên tài sản</th>
+                            <th>Bộ phận sử dụng</th>
+                            <th>Nguyên giá</th>
+                            <th>Hao mòn năm</th>
+                            <th>Giá trị còn lại</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbody">
+                        <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
+                            tabindex="7" 
+                            :id="'table'+index" 
+                            :class="{'row--selected':(rowSelected2 == index), 'checkbox--selected':rowFocus2 == index}" 
+                            @click.right="assetSelected = asset"
+                            @keydown.insert="rowDuplicate(asset)" 
+                            @keydown.delete="rowDelete(asset.fixed_asset_id)" 
+                            @keydown.up="prevItem" @keydown.down="nextItem" 
+                            @focus="rowFocus2=index" 
+                            @click="rowSelected2 = index"
+                            @mouseover="rowHover = index" 
+                            @mouseleave="rowHover = -1"
+                        >
+                            <td>{{index + 1}}</td>
+                            <td>{{asset.fixed_asset_code}}</td>
+                            <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
+                            <td :title="asset.department_name">{{asset.department_name}}</td>
+                            <td>{{formatMoney(asset.cost)}}</td>
+                            <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
+                            <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
+                        </tr>
+                        <tr style="height:auto;"></tr>
+                    </tbody>
+                    <el-empty v-if="totalCount2==0" 
+                        description="Không có dữ liệu"
+                        style="position: absolute; top: calc(50% - 70px); left: calc(50% - 80px);" 
+                        :image-size="80"
+                    />
+                    <tfoot class="tfoot">
+                        <tr class="total-line">
+                            <td colspan="4">
+                                <div class="tfooter-left">
+                                    <div class="tfooter-text">Tổng số: <b>{{totalCount2}}</b> bản ghi</div>
+                                </div>
+                            </td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost2)}}</b></td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation2)}}</b></td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalRemain2)}}</b></td>
+                        </tr>
+                        <!-- <tr>
+                            <td colspan="7">
+                                <div class="tfooter-left">
+                                    <div class="tfooter-text">Tổng số: <b>{{totalCount2}}</b> bản ghi</div>
+                                    <div class="tfooter-total">
+                                        <select @change="page2=1;loadData()" v-model="tableView2">
+                                            <option value="20" selected>20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="200">200</option>
+                                        </select>
+                                    </div>
+                                    <div @click="prevPage2()" class="tfooter-prev position-relative">
+                                        <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
+                                    </div>
+                                    <div 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page2 == 1}" 
+                                        @click="toPage2(1)" 
+                                    >
+                                        1
+                                    </div>
+                                    <div 
+                                        v-show="page2>=3 && totalPage2>5 && totalPage2!=1" 
+                                        class="tfooter-page"
+                                    >
+                                        ...
+                                    </div>
+                                    <div 
+                                        v-show="(page2<3 || totalPage2==5 || totalPage2==3) && totalPage2>=3" 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page2 == 2}" 
+                                        @click="toPage2(2)" 
+                                    >
+                                        2
+                                    </div>
+                                    <div 
+                                        v-show="page2<3 && totalPage2!=1 && totalPage2>3" 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page2 == 3}" 
+                                        @click="toPage2(3)" 
+                                    >
+                                        3
+                                    </div>
+                                    <div 
+                                        v-show="page2>=3 && page2<totalPage2-1 && totalPage2!=1" 
+                                        class="tfooter-page tfooter-page--selected"
+                                    >
+                                        {{page2}}
+                                    </div>
+                                    <div 
+                                        v-show="page2<totalPage2-1 && totalPage2>5 && totalPage2!=1" 
+                                        class="tfooter-page"
+                                    >
+                                        ...
+                                    </div>
+                                    <div 
+                                        v-show="page2>=totalPage2-1 && totalPage2!=1 && totalPage2>3" 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page2 == totalPage2-2}" 
+                                        @click="toPage2(totalPage-2)" 
+                                    >
+                                        {{totalPage2-2}}
+                                    </div>
+                                    <div 
+                                        v-show="(page2>=totalPage2-1 || totalPage2==5) && totalPage2!=1 && totalPage2>3" 
+                                        class="tfooter-page"
+                                        :class="{'tfooter-page--selected':page2 == totalPage2-1}" 
+                                        @click="toPage2(totalPage2-1)" 
+                                    >
+                                        {{totalPage2-1}}
+                                    </div>
+                                    <div 
+                                        v-show="totalPage2>1" :class="{'tfooter-page--selected':page2 == totalPage2}" 
+                                        class="tfooter-page"
+                                        @click="toPage2(totalPage2)" 
+                                    >
+                                        {{totalPage2}}
+                                    </div>
+                                    <div @click="nextPage2()" class="tfooter-next position-relative">
+                                        <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr> -->
+                    </tfoot>
+                </table>
+            </div>
+        </div>    
     </div>
 
-    <!-- Table 2 -->
-    <div class="table-container table-2">
-        <table class="table">
-            <thead class="thead">
-                <tr>
-                    <th>
-                        <div class="position-relative">
-                            STT
-                            <d-tooltip text="Số thứ tự"></d-tooltip>
-                        </div>
-                    </th>
-                    <th>Mã tài sản</th>
-                    <th>Tên tài sản</th>
-                    <th>Bộ phận sử dụng</th>
-                    <th>Nguyên giá</th>
-                    <th>Hao mòn năm</th>
-                    <th>Giá trị còn lại</th>
-                </tr>
-            </thead>
-            <tbody class="tbody">
-                <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
-                    tabindex="7" 
-                    :id="'table'+index" 
-                    :class="{'row--selected':(rowSelected2 == index), 'checkbox--selected':rowFocus2 == index}" 
-                    @click.right="assetSelected = asset"
-                    @keydown.insert="rowDuplicate(asset)" 
-                    @keydown.delete="rowDelete(asset.fixed_asset_id)" 
-                    @keydown.up="prevItem" @keydown.down="nextItem" 
-                    @focus="rowFocus2=index" 
-                    @click="rowSelected2 = index"
-                    @mouseover="rowHover = index" 
-                    @mouseleave="rowHover = -1"
-                >
-                    <td>{{index + 1}}</td>
-                    <td>{{asset.fixed_asset_code}}</td>
-                    <td :title="asset.fixed_asset_name">{{asset.fixed_asset_name}}</td>
-                    <td :title="asset.department_name">{{asset.department_name}}</td>
-                    <td>{{formatMoney(asset.cost)}}</td>
-                    <td>{{formatMoney(asset.depreciation_year*asset.life_time)}}</td>
-                    <td>{{formatMoney(asset.cost-asset.depreciation_year*asset.life_time<0 ? 0 : asset.cost-asset.depreciation_year*asset.life_time)}}</td>
-                </tr>
-                <tr style="height:auto;"></tr>
-            </tbody>
-            <el-empty v-if="totalCount2==0" 
-                description="Không có dữ liệu"
-                style="position: absolute; top: calc(50% - 70px); left: calc(50% - 80px);" 
-                :image-size="80"
-            />
-            <tfoot class="tfoot">
-                <tr class="total-line">
-                    <td colspan="4">
-                        <div class="tfooter-left">
-                            <div class="tfooter-text">Tổng số: <b>{{totalCount2}}</b> bản ghi</div>
-                        </div>
-                    </td>
-                    <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost2)}}</b></td>
-                    <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation2)}}</b></td>
-                    <td colspan="1" class="plr-10"><b>{{formatMoney(totalRemain2)}}</b></td>
-                </tr>
-                <!-- <tr>
-                    <td colspan="7">
-                        <div class="tfooter-left">
-                            <div class="tfooter-text">Tổng số: <b>{{totalCount2}}</b> bản ghi</div>
-                            <div class="tfooter-total">
-                                <select @change="page2=1;loadData()" v-model="tableView2">
-                                    <option value="20" selected>20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="200">200</option>
-                                </select>
-                            </div>
-                            <div @click="prevPage2()" class="tfooter-prev position-relative">
-                                <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
-                            </div>
-                            <div 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page2 == 1}" 
-                                @click="toPage2(1)" 
-                            >
-                                1
-                            </div>
-                            <div 
-                                v-show="page2>=3 && totalPage2>5 && totalPage2!=1" 
-                                class="tfooter-page"
-                            >
-                                ...
-                            </div>
-                            <div 
-                                v-show="(page2<3 || totalPage2==5 || totalPage2==3) && totalPage2>=3" 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page2 == 2}" 
-                                @click="toPage2(2)" 
-                            >
-                                2
-                            </div>
-                            <div 
-                                v-show="page2<3 && totalPage2!=1 && totalPage2>3" 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page2 == 3}" 
-                                @click="toPage2(3)" 
-                            >
-                                3
-                            </div>
-                            <div 
-                                v-show="page2>=3 && page2<totalPage2-1 && totalPage2!=1" 
-                                class="tfooter-page tfooter-page--selected"
-                            >
-                                {{page2}}
-                            </div>
-                            <div 
-                                v-show="page2<totalPage2-1 && totalPage2>5 && totalPage2!=1" 
-                                class="tfooter-page"
-                            >
-                                ...
-                            </div>
-                            <div 
-                                v-show="page2>=totalPage2-1 && totalPage2!=1 && totalPage2>3" 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page2 == totalPage2-2}" 
-                                @click="toPage2(totalPage-2)" 
-                            >
-                                {{totalPage2-2}}
-                            </div>
-                            <div 
-                                v-show="(page2>=totalPage2-1 || totalPage2==5) && totalPage2!=1 && totalPage2>3" 
-                                class="tfooter-page"
-                                :class="{'tfooter-page--selected':page2 == totalPage2-1}" 
-                                @click="toPage2(totalPage2-1)" 
-                            >
-                                {{totalPage2-1}}
-                            </div>
-                            <div 
-                                v-show="totalPage2>1" :class="{'tfooter-page--selected':page2 == totalPage2}" 
-                                class="tfooter-page"
-                                @click="toPage2(totalPage2)" 
-                            >
-                                {{totalPage2}}
-                            </div>
-                            <div @click="nextPage2()" class="tfooter-next position-relative">
-                                <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
-                            </div>
-                        </div>
-                    </td>
-                </tr> -->
-            </tfoot>
-        </table>
-    </div>
 
     <!-- Context Menu -->
     <v-contextmenu ref="contextmenu">
@@ -477,6 +536,8 @@ export default {
         assetCode: "", // Mã tài sản lưu lại khi mở form
         backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+        dividerPosition: 42,
+        menuSelect: false,
         columns : [
                     {
                         label: "Mã tài sản",
@@ -557,7 +618,7 @@ export default {
     totalCount: {
         handler(newVal, oldVal) {
             if(newVal == 0 && this.page > 1 && this.keyword == ""){
-                this.nextPage()
+                this.prevPage()
             }
             else if(newVal == 0) {
                 this.totalCount2 = 0
@@ -565,6 +626,12 @@ export default {
                 this.resetChecked()
             } 
             else if(newVal > 0 && oldVal == 0) this.rowFocus = 0
+        }
+    },
+    checked: {
+        deep: true,
+        handler() {
+            console.log("1");
         }
     }
   },
@@ -590,6 +657,20 @@ export default {
   },
 
   methods: {
+    // handleDragging (e) {
+    //   const percentage = (e.pageX / window.innerHeight) * 100
+
+    //   if (percentage >= 10 && percentage <= 90) {
+    //     this.dividerPosition = percentage.toFixed(2)
+    //   }
+    // },
+    // startDragging () {
+    //   document.addEventListener('mousemove', this.handleDragging)
+    // },
+    // endDragging () {
+    //   document.removeEventListener('mousemove', this.handleDragging)
+    // },
+
     /**
      * Click 1 dòng trong bảng để highlight
      * NDDAT (15/09/2022)
@@ -602,12 +683,16 @@ export default {
     /**
      * Check vào checkbox khi click vào dòng
      * NDDAT (15/11/2022)
-     * @param {int} order số thứ tự dòng của checkbox
+     * @param {int} index số thứ tự dòng của checkbox
      * @param {int} code id của dòng chứa checkbox được click
      */
-    checkedMethodOnClick(order, code) {
+    checkedMethodOnClick(index, code) {
+        this.rowSelected = index
+        // Khi chọn 1 dòng thì bỏ check các dòng
         this.checked = []
-        if (this.checkboxSelected[order] != code) this.checked[this.checked.length] = code
+        // Nếu dòng chưa check thì sẽ check
+        if (this.checkboxSelected[index] != code) this.checked[this.checked.length] = code
+        // Cập nhật dãy checkboxSelected và vouchersSelected lưu các dòng được check
         this.checkboxSelected = []
         this.vouchersSelected = []
         for (let i in this.checked) {
@@ -620,24 +705,31 @@ export default {
         }
         this.checkedAllInspect()
     },
-
+    
     /**
-     * Check vào checkbox khi click vào dòng khi đang giữ Ctrl
+     * Check vào checkbox khi click vào dòng khi đang giữ Shift
      * NDDAT (15/11/2022)
-     * @param {int} order số thứ tự dòng của checkbox
+     * @param {int} index số thứ tự dòng của checkbox
      * @param {int} code id của dòng chứa checkbox được click
      */
-    checkedMethodOnClickCtrl(order, code) {
-        if (this.checkboxSelected[order] == code){
+    checkedMethodOnClickShift(index, code, event) {
+        event.preventDefault();
+        this.rowSelected = index
+        // Mã chứng từ của lần chọn trước
+        // let oldCode = this.checked[this.checked.length-1]
+        // Nếu dòng chọn đã check thì bỏ check
+        if (this.checkboxSelected[index] == code){
             for (let i in this.checked) {
-                if(this.checked[i] == this.checkboxSelected[order]) this.checked[i]=null
+                if(this.checked[i] == this.checkboxSelected[index]) this.checked[i]=null
             }
-            this.checkboxSelected[order] = null
-            this.vouchersSelected[order] = null
+            this.checkboxSelected[index] = null
+            this.vouchersSelected[index] = null
         }
+        // Nếu dòng chọn chưa check thì check
         else {
             this.checked[this.checked.length] = code
         }
+        // Cập nhật dãy checkboxSelected và vouchersSelected lưu các dòng được check
         for (let i in this.checked) {
             for (let index in this.assets) {
                 if (this.checked[i] == this.vouchers[index].voucher_id) {
@@ -646,6 +738,81 @@ export default {
                 }
             }
         }
+        
+        if(this.checked.length > 1) {
+            // this.checked.splice(-1)
+            // Lấy vị trí của lần check trước
+            let nearIndex
+            let min = null
+            // Tìm vị trí gần nhất đã check so với ô đang check
+            for (let i in this.checkboxSelected) {
+                // if(this.checkboxSelected[i] == oldCode) oldIndex = i
+                // if(i!=0&&index==0)
+                if(this.checkboxSelected[i]&&i!=index) {
+                    if(min == null){
+                        min = (i>=index) ? i-index : index-i
+                        nearIndex = i
+                        console.log("startNear: "+nearIndex);
+                    } 
+                    let temp = (i>=index) ? i-index : index-i
+                    if(temp < min) {
+                        min = temp
+                        nearIndex = i
+                        console.log("updateNear: "+nearIndex);
+                    }
+                }
+            }
+            console.log("finalNear: "+nearIndex);
+            // Check các dòng ở giữa dòng vừa check và dòng check lần trước
+            if(nearIndex < index)
+                for(let i = nearIndex; i <= index; i++) {
+                    if(i != nearIndex && i != index) this.checked[this.checked.length] = this.vouchers[i].voucher_id
+                    this.checkboxSelected[i] = this.vouchers[i].voucher_id
+                    this.vouchersSelected[i] = this.vouchers[i]
+                }
+            else
+                for(let i = index; i <= nearIndex; i++) {
+                    if(i != nearIndex && i != index) this.checked[this.checked.length] = this.vouchers[i].voucher_id
+                    this.checkboxSelected[i] = this.vouchers[i].voucher_id
+                    this.vouchersSelected[i] = this.vouchers[i]
+                }
+            // this.checked[this.checked.length] = code
+            console.log(this.checkboxSelected);
+            console.log(this.checked);
+        }
+        this.checkedAllInspect()
+    },
+
+    /**
+     * Check vào checkbox khi click vào dòng khi đang giữ Ctrl
+     * NDDAT (15/11/2022)
+     * @param {int} index số thứ tự dòng của checkbox
+     * @param {int} code id của dòng chứa checkbox được click
+     */
+    checkedMethodOnClickCtrl(index, code) {
+        this.rowSelected = index
+        // Nếu dòng chọn đã check thì bỏ check
+        if (this.checkboxSelected[index] == code){
+            for (let i in this.checked) {
+                if(this.checked[i] == this.checkboxSelected[index]) this.checked[i]=null
+            }
+            this.checkboxSelected[index] = null
+            this.vouchersSelected[index] = null
+        }
+        // Nếu dòng chọn chưa check thì check
+        else {
+            this.checked[this.checked.length] = code
+        }
+        // Cập nhật dãy checkboxSelected và vouchersSelected lưu các dòng được check
+        for (let i in this.checked) {
+            for (let index in this.assets) {
+                if (this.checked[i] == this.vouchers[index].voucher_id) {
+                    this.checkboxSelected[index] = this.vouchers[index].voucher_id
+                    this.vouchersSelected[index] = this.vouchers[index]
+                }
+            }
+        }
+        console.log(this.checkboxSelected);
         this.checkedAllInspect()
     },
 
@@ -662,12 +829,24 @@ export default {
     },
 
     /**
+     * Nhấn button hiển thị dialog cảnh báo xóa tài sản
+     * NDDAT (15/09/2022)
+     */
+    btnDeleteOnClick() {
+        this.rowFocusDelete = this.checked
+        console.log(this.checked);
+        console.log(this.checkboxSelected);
+        this.deleteTextCreate()
+        this.deleteShow = true
+    },
+
+    /**
      * Tạo text cho dialog cảnh báo xóa
      * NDDAT (26/09/2022)
      */
     deleteTextCreate() {
-        // if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> chứng từ đã được chọn. Bạn có muốn xóa các chứng từ này khỏi danh sách?"
-        // else {
+        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> chứng từ đã được chọn. Bạn có muốn xóa các chứng từ này khỏi danh sách?"
+        else {
         //     var id
         //     if(this.checked.length == 1) id = this.checked[0];
         //     else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
@@ -678,7 +857,7 @@ export default {
                     break;
                 }
             } 
-        // }
+        }
     },
 
     /**
@@ -713,29 +892,70 @@ export default {
     confirmDelete() {
         // Xóa chứng từ
         // if(this.rowFocusDelete[0] || this.checked[0]){
-        if(this.rowFocusDelete[0]){
-            try{
-                // Xóa dữ liệu:
-                var url = Resource.Url.Voucher + "/batch-delete"
-                // var body = ""
-                // if(this.checked[0]) body = this.checked
-                // else body = this.rowFocusDelete
-                var body = this.rowFocusDelete
-                fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+        if(this.rowFocusDelete.length == 1) {
+            if(this.rowFocusDelete[0]){
+                try{
+                    // Xóa dữ liệu:
+                    var url = Resource.Url.Voucher + "/batch-delete"
+                    // var body = ""
+                    // if(this.checked[0]) body = this.checked
+                    // else body = this.rowFocusDelete
+                    var body = this.rowFocusDelete
+                    fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+                    .then(res =>{
+                        var status = res.status
+                        switch(status) {
+                            case 400: 
+                                this.backEndErrorNotify(Resource.ErrorCode[400])
+                                break
+                            case 405: 
+                                this.backEndErrorNotify(Resource.ErrorCode[405])
+                                break
+                            case 500: 
+                                this.backEndErrorNotify(Resource.ErrorCode[500])
+                                break
+                            default: 
+                                if(this.assets.length <= 0) {
+                                    this.addArray = []
+                                    this.deleteArray = []
+                                    this.closeDelete()
+                                    this.loadData()
+                                    this.rowFocus = 0
+                                    this.rowFocusDelete = []
+                                    this.checked = []
+                                }
+                        }
+                    })
+                    .catch(res => {
+                        console.error(res);
+                    })
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+    
+            // Xóa các tài sản của chứng từ
+            if(this.assets.length > 0) {
+                var method = Resource.Method.Post
+                url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
+                body = []
+                for(let asset of this.assets) {
+                    body.push(asset.fixed_asset_id)
+                }
+                fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
                 .then(res =>{
-                    var status = res.status
-                    switch(status) {
-                        case 400: 
-                            this.backEndErrorNotify(Resource.ErrorCode[400])
-                            break
-                        case 405: 
-                            this.backEndErrorNotify(Resource.ErrorCode[405])
-                            break
-                        case 500: 
-                            this.backEndErrorNotify(Resource.ErrorCode[500])
-                            break
-                        default: 
-                            if(this.assets.length <= 0) {
+                        var status = res.status
+                        switch(status) {
+                            case 400: 
+                                this.backEndErrorNotify(Resource.ErrorCode[400])
+                                break
+                            case 405: 
+                                this.backEndErrorNotify(Resource.ErrorCode[405])
+                                break
+                            case 500: 
+                                this.backEndErrorNotify(Resource.ErrorCode[500])
+                                break
+                            default: 
                                 this.addArray = []
                                 this.deleteArray = []
                                 this.closeDelete()
@@ -743,51 +963,21 @@ export default {
                                 this.rowFocus = 0
                                 this.rowFocusDelete = []
                                 this.checked = []
-                            }
-                    }
-                })
+                        }
+                    })
                 .catch(res => {
-                    console.error(res);
+                    console.error(res)
                 })
-            } catch (error) {
-                console.error(error);
             }
         }
-
-        // Xóa các tài sản của chứng từ
-        if(this.assets.length > 0) {
-            var method = Resource.Method.Post
-            url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
-            body = []
-            for(let asset of this.assets) {
-                body.push(asset.fixed_asset_id)
-            }
-            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
-            .then(res =>{
-                    var status = res.status
-                    switch(status) {
-                        case 400: 
-                            this.backEndErrorNotify(Resource.ErrorCode[400])
-                            break
-                        case 405: 
-                            this.backEndErrorNotify(Resource.ErrorCode[405])
-                            break
-                        case 500: 
-                            this.backEndErrorNotify(Resource.ErrorCode[500])
-                            break
-                        default: 
-                            this.addArray = []
-                            this.deleteArray = []
-                            this.closeDelete()
-                            this.loadData()
-                            this.rowFocus = 0
-                            this.rowFocusDelete = []
-                            this.checked = []
-                    }
-                })
-            .catch(res => {
-                console.error(res)
-            })
+        else {
+            this.addArray = []
+            this.deleteArray = []
+            this.closeDelete()
+            this.loadData()
+            this.rowFocus = 0
+            this.rowFocusDelete = []
+            this.checked = []
         }
     },
 
@@ -809,9 +999,9 @@ export default {
      */
     hideDialogSuccessMethod() {
         this.rowFocus = 0
-        this.loadDetailData()
         this.resetChecked()
         this.hideDialogMethod()
+        this.loadDetailData()
         this.toastShow = true
         setTimeout(() => this.toastShow = false, 3000)
     },
@@ -1098,7 +1288,6 @@ export default {
                 .then(res => res.json())
                 .then(data => {
                     this.assets = Object.values(data)[0]
-                    console.log(this.assets);
                     this.totalCount2 = Object.values(data)[1]
                     this.totalCost2 = Object.values(data)[3]
                     this.totalDepreciation2 = Object.values(data)[4]

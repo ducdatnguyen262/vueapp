@@ -521,13 +521,40 @@ export default {
             if(asset.fixed_asset_id == id && asset.increment_status) checkIncrement = true
         }
         if(checkIncrement) {
-            let text = `Tài sản có mã <b>${code}</b> đã phát sinh chứng từ ghi tăng.`
-            this.deleteIncrementNotify(text)
+            this.checkIncrementMethod(id, code)
         }
         else {
             this.rowFocusDelete[0] = id;
             this.deleteTextCreate()
             this.deleteShow = true
+        }
+    },
+
+    checkIncrementMethod(assetId, assetCode) {
+        try{
+            // Gọi api lấy dữ liệu
+            this.isLoading = true
+            let url = Resource.Url.Asset + `/checkIncrement/` + assetId
+            fetch(url , {method: Resource.Method.Get})
+            .then(res => res.json())
+            .then(data => {
+                let voucherCode = Object.values(data)[0]
+                if(voucherCode != "-1") {
+                    let text = `Tài sản có mã <b>${assetCode}</b> đã phát sinh chứng từ ghi tăng có mã <b>${voucherCode}</b>`
+                    this.deleteIncrementNotify(text)
+                }
+                else {
+                    let text = `Tài sản có mã <b>${assetCode}</b> chưa phát sinh chứng từ ghi tăng nhưng lại có trạng thái ghi tăng. Yêu cầu sửa tại nguồn.`
+                    this.deleteIncrementNotify(text)
+                }
+                this.isLoading = false
+            })
+            .catch(res => {
+                console.error(res);
+                this.isLoading = false
+            })
+        } catch (error) {
+            console.error(error);
         }
     },
 

@@ -122,7 +122,7 @@
                             @keydown.f2="rowEdit(asset)" 
                             @keydown.insert="rowDuplicate(asset)" 
                             @keydown.delete="deleteOnKey(asset.fixed_asset_id)" 
-                            @keydown.up="prevItem" @keydown.down="nextItem" 
+                            @keydown.up="prevItem" @keydown.down="nextItem"
                             @focus="rowFocus2=index" @click="rowSelected = index"
                             @dblclick="rowEdit(asset)" 
                             @mouseenter="rowHover = index" 
