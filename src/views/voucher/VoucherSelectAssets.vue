@@ -59,7 +59,8 @@
                             @keydown.f2="rowEdit(asset)" 
                             @keydown.up="prevItem" @keydown.down="nextItem" 
                             @focus="rowFocus=index" 
-                            @click="rowSelect(index); checkedMethodOnClick(index, asset.fixed_asset_id)" 
+                            @click.exact="checkedMethodOnClick(index, asset.fixed_asset_id)"
+                            @click.shift.exact="checkedMethodOnClickShift(index, asset.fixed_asset_id, $event)"
                             @mouseover="rowHover = index" 
                             @mouseleave="rowHover = -1"
                         >
@@ -183,9 +184,7 @@
                     type="white" 
                     class="mr-10" 
                     :id="'close-asset-detail'"
-                    @click="btnCloseOnClick" 
-                    @keydown.shift="focusWithShift" 
-                    @keydown.tab="focusBack"
+                    @click="btnCloseOnClick"
                 />
                 <d-button 
                     tabindex="113" 
@@ -219,6 +218,11 @@
         :text="backendErrorMsg"
         @closeNotify="closeBackendError"
     />
+
+    <!-- Toast thông báo thất bại -->
+    <transition name="toast">
+        <d-toast v-show="toastFailedShow" type="failed"></d-toast>
+    </transition>
 </template>
 
 <script>
@@ -274,6 +278,7 @@ export default {
             assetCode: "", // Mã tài sản lưu lại khi mở form
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+            toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
             columns : [
                         {
                             label: "Mã tài sản",
@@ -394,110 +399,12 @@ export default {
     },
 
     /**
-     * Nhấn button hiển thị dialog cảnh báo xóa tài sản
-     * NDDAT (15/09/2022)
-     */
-    btnDeleteOnClick() {
-        if(this.checked.length == 0) {
-            this.deleteSelectedNone =true
-        }
-        else {
-            this.deleteTextCreate()
-            this.deleteShow = true
-        }
-    },
-
-    /**
-     * Nhấn phím tắt Delete hiển thị dialog cảnh báo xóa tài sản
-     * NDDAT (07/10/2022)
-     * @param {string} id ID tài sản đang focus
-     */
-    deleteOnKey(id) {
-        this.rowFocusDelete[0] = id;
-        this.deleteTextCreate()
-        this.deleteShow = true
-    },
-
-    /**
      * Đóng dialog cảnh báo xóa tài sản
      * NDDAT (15/09/2022)
      */
     closeDelete() {
         document.getElementById(`table${this.rowFocus+1}`).focus()
         this.deleteShow = false
-    },
-
-    /**
-     * Xác nhận xóa và đóng dialog cảnh báo xóa tài sản
-     * NDDAT (28/09/2022)
-     */
-    confirmDelete() {
-        // Xóa tài sản
-        if(this.rowFocusDelete[0] || this.checked[0]){
-            try{
-                // Xóa dữ liệu:
-                var url = Resource.Url.Asset + "/batch-delete"
-                var body = ""
-                if(this.checked[0]) body = this.checked
-                else body = this.rowFocusDelete
-                fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
-                .then(res =>{
-                    var status = res.status
-                    switch(status) {
-                        case 400: 
-                            this.backEndErrorNotify(Resource.ErrorCode[400])
-                            break
-                        case 405: 
-                            this.backEndErrorNotify(Resource.ErrorCode[405])
-                            break
-                        case 500: 
-                            this.backEndErrorNotify(Resource.ErrorCode[500])
-                            break
-                        default: 
-                            this.closeDelete()
-                            this.loadData()
-                            this.rowFocusDelete = []
-                            this.checked = []
-                    }
-                })
-                .catch(res => {
-                    console.error(res);
-                })
-            } catch (error) {
-                console.error(error);
-            }
-        }
-    },
-
-    /**
-     * Ẩn dialog chi tiết tài sản
-     * NDDAT (15/09/2022)
-     */
-    hideDialogMethod () {
-        if(this.rowFocus > -1) {
-            document.getElementById(`table${this.rowFocus}`).focus()
-        }
-        this.dialogShow = false
-        this.loadData()
-    },
-
-    /**
-     * Hiện thông báo thêm thành công và ẩn dialog chi tiết tài sản
-     * NDDAT (15/09/2022)
-     */
-    hideDialogSuccessMethod() {
-        this.hideDialogMethod()
-        this.toastShow = true
-        setTimeout(() => this.toastShow = false, 3000)
-    },
-
-    /**
-     * Click 1 dòng trong bảng để highlight
-     * NDDAT (15/09/2022)
-     * @param {int} index số thứ tự dòng
-     */
-    rowSelect(index) {
-        this.rowSelected = index
     },
 
     /**
@@ -514,61 +421,12 @@ export default {
     },
 
     /**
-     * Nhấn button hiển thị dialog nhân bản tài sản
-     * NDDAT (15/09/2022)
-     * @param {Asset} asset tài sản đang chọn
-     */
-    rowDuplicate(asset) {
-        this.assetSelected = asset
-        this.detailFormMode = Enum.FormMode.Duplicate
-        this.title = Resource.DialogTitle.Duplicate
-        this.dialogShow = true
-    },
-
-    /**
      * Tìm kiếm theo mã và tên tài sản
      * NDDAT (27/09/2022)
      * @param {String} keyword từ khóa tìm kiếm
      */
     searchMethod(keyword) {
         this.keyword = keyword
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm toàn bộ loại tài sản
-     * NDDAT (29/09/2022)
-     */
-    searchAllCategory() {
-        this.categoryId = ""
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm toàn bộ phòng ban
-     * NDDAT (29/09/2022)
-     */
-    searchAllDepartment() {
-        this.departmentId = ""
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm loại tài sản
-     * NDDAT (29/09/2022)
-     */
-    categorySearch(id) {
-        this.categoryId = id
-        this.loadData()
-    },
-
-    /**
-     * Tìm kiếm phòng ban
-     * NDDAT (29/09/2022)
-     * @param {string} id ID phòng ban
-     */
-    departmentSearch(id) {
-        this.departmentId = id
         this.loadData()
     },
 
@@ -644,20 +502,24 @@ export default {
     /**
      * Check vào checkbox khi click vào dòng
      * NDDAT (15/11/2022)
-     * @param {int} order số thứ tự dòng của checkbox
+     * @param {int} index số thứ tự dòng của checkbox
      * @param {int} code id của dòng chứa checkbox được click
      */
-    checkedMethodOnClick(order, code) {
-        if (this.checkboxSelected[order] == code){
+    checkedMethodOnClick(index, code) {
+        this.rowSelected = index
+        // Nếu dòng chọn đã check thì bỏ check
+        if (this.checkboxSelected[index] == code){
             for (let i in this.checked) {
-                if(this.checked[i] == this.checkboxSelected[order]) this.checked[i]=null
+                if(this.checked[i] == this.checkboxSelected[index]) this.checked[i]=null
             }
-            this.checkboxSelected[order] = null
-            this.assetsSelected[order] = null
+            this.checkboxSelected[index] = null
+            this.assetsSelected[index] = null
         }
+        // Nếu dòng chọn chưa check thì check
         else {
             this.checked[this.checked.length] = code
         }
+        // Cập nhật dãy checkboxSelected và assetsSelected lưu các dòng được check
         for (let i in this.checked) {
             for (let index in this.assets) {
                 if (this.checked[i] == this.assets[index].fixed_asset_id) {
@@ -665,6 +527,72 @@ export default {
                     this.assetsSelected[index] = this.assets[index]
                 }
             }
+        }
+        this.checkedAllInspect()
+    },
+
+    /**
+     * Check vào checkbox khi click vào dòng khi đang giữ Shift
+     * NDDAT (15/11/2022)
+     * @param {int} index số thứ tự dòng của checkbox
+     * @param {int} code id của dòng chứa checkbox được click
+     * @param {PointerEvent} event sự kiện click khi nhấn giữ shift
+     */
+    checkedMethodOnClickShift(index, code, event) {
+        event.preventDefault();
+        this.rowSelected = index
+        // Nếu dòng chọn đã check thì bỏ check
+        if (this.checkboxSelected[index] == code){
+            for (let i in this.checked) {
+                if(this.checked[i] == this.checkboxSelected[index]) this.checked[i]=null
+            }
+            this.checkboxSelected[index] = null
+            this.assetsSelected[index] = null
+        }
+        // Nếu dòng chọn chưa check thì check
+        else {
+            this.checked[this.checked.length] = code
+        }
+        // Cập nhật dãy checkboxSelected và assetsSelected lưu các dòng được check
+        for (let i in this.checked) {
+            for (let index in this.assets) {
+                if (this.checked[i] == this.assets[index].fixed_asset_id) {
+                    this.checkboxSelected[index] = this.assets[index].fixed_asset_id
+                    this.assetsSelected[index] = this.assets[index]
+                }
+            }
+        }
+        
+        if(this.checked.length > 1) {
+            let nearIndex
+            let min = null
+            // Tìm vị trí gần nhất đã check so với ô đang check
+            for (let i in this.checkboxSelected) {
+                if(this.checkboxSelected[i]&&i!=index) {
+                    if(min == null){
+                        min = (i>=index) ? i-index : index-i
+                        nearIndex = i
+                    } 
+                    let temp = (i>=index) ? i-index : index-i
+                    if(temp < min) {
+                        min = temp
+                        nearIndex = i
+                    }
+                }
+            }
+            // Check các dòng ở giữa dòng vừa check và dòng check lần trước
+            if(nearIndex < index)
+                for(let i = nearIndex; i <= index; i++) {
+                    if(i != nearIndex && i != index) this.checked[this.checked.length] = this.assets[i].fixed_asset_id
+                    this.checkboxSelected[i] = this.assets[i].fixed_asset_id
+                    this.assetsSelected[i] = this.assets[i]
+                }
+            else
+                for(let i = index; i <= nearIndex; i++) {
+                    if(i != nearIndex && i != index) this.checked[this.checked.length] = this.assets[i].fixed_asset_id
+                    this.checkboxSelected[i] = this.assets[i].fixed_asset_id
+                    this.assetsSelected[i] = this.assets[i]
+                }
         }
         this.checkedAllInspect()
     },
@@ -794,9 +722,14 @@ export default {
             .catch(res => {
                 console.error(res);
                 this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         } catch (error) {
             console.error(error);
+            this.isLoading = false
+            this.toastFailedShow = true
+            setTimeout(() => this.toastFailedShow = false, 3000)
         }
     },
 
@@ -804,7 +737,7 @@ export default {
      * Xử lí sự kiện keyboard shortcut
      * NDDAT (12/10/2022)
      */
-    keyboardEvent (e) {
+    keyboardEvent(e) {
         if (e.which == Enum.KeyCode.ESC) {
             if(this.notifyShow == true){
                 this.closeNotify()
@@ -827,101 +760,6 @@ export default {
             this.btnCloseOnClick()
             this.ctrlPressed = false
         }
-    },
-
-    /**
-     * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
-     * NDDAT (29/09/2022)
-     */
-    generateNextCode() {
-        try{
-            // Gọi api lấy dữ liệu
-            this.isLoading = true
-            fetch(Resource.Url.Voucher + `/nextCode`, {method: Resource.Method.Get})
-            .then(res => res.json())
-            .then(data => {
-                this.voucher.voucher_code = Object.values(data)[0]
-                this.isLoading = false
-            })
-            .catch(res => {
-                console.error(res);
-                this.isLoading = false
-            })
-        } catch (error) {
-            console.error(error);
-        }
-    },
-
-    /**
-     * Cập nhật dữ liệu phòng ban khi chọn trong combobox
-     * NDDAT (28/09/2022)
-     * @param {string} id id phòng ban
-     * @param {string} code mã phòng ban
-     * @param {string} name tên phòng ban
-     */
-    comboboxDepartment(id, code, name) {
-        this.asset.department_id = id
-        this.asset.department_code = code
-        this.asset.department_name = name
-    },
-
-    /**
-     * Cập nhật dữ liệu loại tài sản khi chọn trong combobox
-     * NDDAT (28/09/2022)
-     * @param {string} id id loại tài sản
-     * @param {string} code mã loại tài sản
-     * @param {string} name tên loại tài sản
-     */
-    comboboxCategory(id, code, name) {
-        this.asset.fixed_asset_category_id = id
-        this.asset.fixed_asset_category_code = code
-        this.asset.fixed_asset_category_name = name
-    },
-
-    /**
-     * Cập nhật dữ liệu liên quan tới mã loại tài sản
-     * NDDAT (28/09/2022)
-     * @param {float} depreciation_rate 
-     * @param {int} life_time 
-     */
-    updateWithCategoryCode(depreciation_rate, life_time) {
-        this.asset.depreciation_rate = depreciation_rate ? depreciation_rate*100 : null
-        this.asset.life_time = life_time
-    },
-
-    /**
-     * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
-     * NDDAT (19/09/2022)
-     */        
-    defaultValue() {
-        // voucher
-        if (this.voucher.voucher_date == null) this.voucher.voucher_date = new Date().toISOString()
-        if (this.voucher.increment_date == null) this.voucher.increment_date = new Date().toISOString()
-
-        if (this.asset.purchase_date == null) this.asset.purchase_date = new Date().toISOString()
-        if (this.asset.production_date == null) this.asset.production_date = new Date().toISOString()
-        if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
-        if (this.asset.cost == null) this.asset.cost = 0
-    },
-
-    /**
-     * Cập nhật các giá trị trong form theo các điều kiện
-     * NDDAT (28/09/2022)
-     */
-    updateValue() {
-        if(this.focus){
-            this.asset.depreciation_year = this.asset.cost * this.asset.depreciation_rate / 100
-        }
-        if(this.asset.depreciation_rate > 100) this.asset.depreciation_rate = 100
-    },
-
-    /**
-     * Cập nhật lại các giá trị nếu nó âm 
-     * NDDAT (04/10/2022)
-     * @param {string} type loại dữ liệu
-     */
-    notNegative(type) {
-        if(this.asset[type] < 0) this.asset[type] = 0
     },
 
     /**
@@ -999,29 +837,6 @@ export default {
     },
 
     /**
-     * Chuyển focus lên đầu sau khi đến cuối dialog tài sản
-     * NDDAT (15/09/2022)
-     */
-    focusBack() {
-        if(!this.shiftPressed) {
-            this.$refs.btnx.focus()
-        }
-        this.shiftPressed = false
-    },
-
-    /**
-     * Focus ngược khi dùng Shift+Tab
-     * NDDAT (15/09/2022)
-     */
-    focusWithShift(e) {
-        if(e.tab) {
-            document.getElementById('close-asset-detail').focus()
-        } else {
-            this.shiftPressed = true
-        }
-    },
-
-    /**
      * Click vào button để đóng dialog tài sản
      * NDDAT (15/09/2022)
      */
@@ -1037,96 +852,6 @@ export default {
         this.btnCloseOnClick()
         this.$emit("selectAssets", this.assetsSelected)
     },
-
-    /**
-     * Validate dữ liệu truyền vào
-     * NDDAT (08/10/2022)
-     */
-    validateData() {
-        this.v$.$validate()
-        if (this.v$.$error) {
-            this.errorArray = []
-            if (this.v$.asset.fixed_asset_code.$error) this.errorArray.push(Resource.IsEmpty.code);
-            if (this.v$.asset.fixed_asset_name.$error) this.errorArray.push(Resource.IsEmpty.name);
-            if (this.v$.asset.department_code.$error) this.errorArray.push(Resource.IsEmpty.department);
-            if (this.v$.asset.fixed_asset_category_code.$error) this.errorArray.push(Resource.IsEmpty.category);
-            if (this.v$.asset.quantity.$error) this.errorArray.push(Resource.IsEmpty.quantity);
-            if (this.v$.asset.cost.$error) this.errorArray.push(Resource.IsEmpty.cost);
-            if (this.v$.asset.depreciation_rate.$error) this.errorArray.push(Resource.IsEmpty.depreciation_rate);
-            if (this.v$.asset.purchase_date.$error) this.errorArray.push(Resource.IsEmpty.purchase_date);
-            if (this.v$.asset.production_date.$error) this.errorArray.push(Resource.IsEmpty.production_date);
-            if (this.v$.asset.life_time.$error) this.errorArray.push(Resource.IsEmpty.life_time);
-            if (this.v$.asset.depreciation_year.$error) this.errorArray.push(Resource.IsEmpty.depreciation_year);
-            this.createValidateMessage()
-            this.validateShow = true
-            return false;
-        } else if(this.asset.depreciation_year > this.asset.cost) {
-            this.errorMessage = "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá"
-            this.validateShow = true
-            return false;
-        } else if (this.asset.depreciation_rate != parseFloat(100 / this.asset.life_time).toFixed(2)) {
-            this.errorMessage = "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng"
-            this.validateShow = true
-            return false;
-        } else {
-            return true;
-        } 
-    },
-
-    /**
-     * Lưu tài sản
-     * NDDAT (08/10/2022)
-     */
-    saveData() {
-        // Cất dữ liệu:
-        var method = Resource.Method.Post
-        var url = Resource.Url.Asset
-        if(this.formMode == Enum.FormMode.Edit) {
-            method = Resource.Method.Put
-            url = url + `/${this.asset.fixed_asset_id}`
-        }
-        fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
-        .then(res =>{
-            var status = res.status
-            res.json()
-            .then(data => {
-                switch(status) {
-                    case 400: 
-                        if(Object.values(data)[3][0]) this.backEndErrorNotify(Object.values(data)[3][0])
-                        else this.backEndErrorNotify(Resource.ErrorCode[400])
-                        break
-                    case 405: 
-                        this.backEndErrorNotify(Resource.ErrorCode[405])
-                        break
-                    case 500: 
-                        this.backEndErrorNotify(Resource.ErrorCode[500])
-                        break
-                    default: 
-                        this.$emit("hideDialogSuccess")
-                }
-            });
-        })
-        .catch(res => {
-            console.error(res)
-        })
-    },
-
-    /**
-     * Cập nhật giá trị mảng voucher thành giá trị chứng từ truyền vào
-     * NDDAT (14/11/2022)
-     */
-    updateVoucher() {
-        this.voucher.voucher_id = this.voucherSelected.voucher_id
-        this.voucher.voucher_code = this.voucherSelected.voucher_code
-        this.voucher.voucher_date = this.voucherSelected.voucher_date
-        this.voucher.increment_date = this.voucherSelected.increment_date
-        this.voucher.cost = this.voucherSelected.cost
-        this.voucher.description = this.voucherSelected.description
-        this.voucher.created_by = this.voucherSelected.created_by
-        this.voucher.created_date = this.voucherSelected.created_date
-        this.voucher.modified_by = this.voucherSelected.modified_by
-        this.voucher.modified_date = this.voucherSelected.modified_date    
-    }
   },
 }
 </script>

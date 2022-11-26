@@ -126,3 +126,11 @@
 .el-select-dropdown {
     font-family: Roboto !important;
 }
+
+.el-select .el-input__inner {
+    font-size: 13px;
+}
+
+.el-select-dropdown__item {
+    font-size: 13px;
+}

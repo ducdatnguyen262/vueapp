@@ -311,7 +311,12 @@
 
     <!-- Toast thông báo thành công -->
     <transition name="toast">
-        <d-toast v-show="toastShow"></d-toast>
+        <d-toast v-show="toastShow" type="success"></d-toast>
+    </transition>
+
+    <!-- Toast thông báo thất bại -->
+    <transition name="toast">
+        <d-toast v-show="toastFailedShow" type="failed"></d-toast>
     </transition>
 </template>
 
@@ -351,6 +356,7 @@ export default {
         deleteText:"", // Nội dung dialog cảnh báo xóa
         deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
         toastShow: false, // Hiển thị toast thông báo thành công hay không
+        toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
         tableView: 20, // Số trang hiển thị
         totalPage: 1, // Tổng số trang
         page: 1, // Trang đang chọn
@@ -552,9 +558,14 @@ export default {
             .catch(res => {
                 console.error(res);
                 this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         } catch (error) {
             console.error(error);
+            this.isLoading = false
+            this.toastFailedShow = true
+            setTimeout(() => this.toastFailedShow = false, 3000)
         }
     },
 
@@ -602,9 +613,15 @@ export default {
                 })
                 .catch(res => {
                     console.error(res);
+                    this.closeDelete()
+                    this.toastFailedShow = true
+                    setTimeout(() => this.toastFailedShow = false, 3000)
                 })
             } catch (error) {
                 console.error(error);
+                this.closeDelete()
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             }
         }
     },
@@ -663,7 +680,6 @@ export default {
         this.detailFormMode = Enum.FormMode.Duplicate
         this.title = Resource.DialogTitle.Duplicate
         this.dialogShow = true
-        console.log(1);
     },
 
     /**
@@ -908,9 +924,14 @@ export default {
             .catch(res => {
                 console.error(res);
                 this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         } catch (error) {
             console.error(error);
+            this.isLoading = false
+            this.toastFailedShow = true
+            setTimeout(() => this.toastFailedShow = false, 3000)
         }
     },
   },

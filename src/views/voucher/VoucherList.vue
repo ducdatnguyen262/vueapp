@@ -294,7 +294,12 @@
                             <th>Tên tài sản</th>
                             <th>Bộ phận sử dụng</th>
                             <th>Nguyên giá</th>
-                            <th>Hao mòn năm</th>
+                            <th>                       
+                                <div class="position-relative">
+                                    HM/KH lũy kế
+                                    <d-tooltip text="Hao mòn khấu hao lũy kế"></d-tooltip>
+                                </div>
+                            </th>
                             <th>Giá trị còn lại</th>
                         </tr>
                     </thead>
@@ -476,7 +481,12 @@
 
     <!-- Toast thông báo thành công -->
     <transition name="toast">
-        <d-toast v-show="toastShow"></d-toast>
+        <d-toast v-show="toastShow" type="success"></d-toast>
+    </transition>
+
+    <!-- Toast thông báo thất bại -->
+    <transition name="toast">
+        <d-toast v-show="toastFailedShow" type="failed"></d-toast>
     </transition>
 </template>
 
@@ -521,76 +531,24 @@ export default {
         deleteText:"", // Nội dung dialog cảnh báo xóa
         deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
         toastShow: false, // Hiển thị toast thông báo thành công hay không
+        toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
         tableView: 20, // Số trang hiển thị
         totalPage: 1, // Tổng số trang
         page: 1, // Trang đang chọn
         totalCount: 0, // Tổng số bản ghi
         totalCost: 0, // Tổng số nguyên giá
-        tableView2: 20, // Số trang hiển thị
-        totalPage2: 1, // Tổng số trang
-        page2: 1, // Trang đang chọn
-        totalCount2: 0, // Tổng số bản ghi
+        tableView2: 20, // Số trang hiển thị bảng 2
+        totalPage2: 1, // Tổng số trang bảng 2
+        page2: 1, // Trang đang chọn bảng 2
+        totalCount2: 0, // Tổng số bản ghi bảng 2
         keyword: "", // Từ khóa để tìm kiếm (theo số chứng từ và nội dung)
         departmentId: "", // Mã phòng ban để tìm kiếm
         categoryId: "", // Mã loại tài sản để tìm kiếm
         assetCode: "", // Mã tài sản lưu lại khi mở form
         backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
-        dividerPosition: 42,
-        menuSelect: false,
-        columns : [
-                    {
-                        label: "Mã tài sản",
-                        field: "fixed_asset_code",
-                    },
-                    {
-                        label: "Tên tài sản",
-                        field: "fixed_asset_name",
-                    },
-                    {
-                        label: "Loại tài sản",
-                        field: "fixed_asset_category_name",
-                    },
-                    {
-                        label: "Bộ phận sử dụng",
-                        field: "department_name",
-                    },
-                    {
-                        label: "Số lượng",
-                        field: "quantity",
-                    },
-                    {
-                        label: "Nguyên giá",
-                        field: "cost",
-                        dataFormat: this.formatMoney
-                    },
-                    {
-                        label: "Ngày mua",
-                        field: "purchase_date",
-                        dataFormat: this.formatDate
-                    },
-                    {
-                        label: "Tỷ lệ hao mòn (%)",
-                        field: "depreciation_rate",
-                    },
-                    {
-                        label: "Năm bắt đầu theo dõi",
-                        field: "tracked_year",
-                    },
-                    {
-                        label: "Số năm sử dụng",
-                        field: "life_time",
-                    },
-                    {
-                        label: "Ngày bắt đầu sử dụng",
-                        field: "production_date",
-                        dataFormat: this.formatDate
-                    },
-                    {
-                        label: "Hao mòn năm",
-                        field: "depreciation_year",
-                    },
-                ],
+        dividerPosition: 42, // Độ dài bảng 1 với đơn vị vh (42vh)
+        menuSelect: false, // Có mở rộng menu chọn cách hiển thị bảng hay không
     }
   },
 
@@ -600,13 +558,19 @@ export default {
 
     // Cài đặt keyboard shortcut
     window.addEventListener('keydown', function(e) {
-        if(e.keyCode == Enum.KeyCode.SelectTable) {
-            document.getElementById(`table0`).focus()
-        }
-        else if(e.which == Enum.KeyCode.F3 && e.ctrlKey == true){
+        // Ctrl + F3 để focus ô tìm kiếm
+        if(e.which == Enum.KeyCode.F3 && e.ctrlKey == true){
             document.getElementById(`searchInput`).focus()
         }
     });
+  },
+
+  updated() {
+    // Đặt lại số trang khi tìm kiếm
+    if(this.totalPage < this.page) {
+        this.page = this.totalPage
+        this.loadData()
+    } 
   },
 
   watch: {
@@ -617,10 +581,7 @@ export default {
     },
     totalCount: {
         handler(newVal, oldVal) {
-            if(newVal == 0 && this.page > 1 && this.keyword == ""){
-                this.prevPage()
-            }
-            else if(newVal == 0) {
+            if(newVal == 0) {
                 this.totalCount2 = 0
                 this.assets = []
                 this.resetChecked()
@@ -628,12 +589,6 @@ export default {
             else if(newVal > 0 && oldVal == 0) this.rowFocus = 0
         }
     },
-    checked: {
-        deep: true,
-        handler() {
-            console.log("1");
-        }
-    }
   },
 
   computed: {
@@ -652,7 +607,6 @@ export default {
     // Tạo api cập nhật chi tiết chứng từ
     updateDetailApi : function() {
         return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?add="+this.tableView+"&page="+this.page
-        //?add=&addCount=0&delete=&deleteCount=0
     },
   },
 
@@ -670,15 +624,6 @@ export default {
     // endDragging () {
     //   document.removeEventListener('mousemove', this.handleDragging)
     // },
-
-    /**
-     * Click 1 dòng trong bảng để highlight
-     * NDDAT (15/09/2022)
-     * @param {int} index số thứ tự dòng
-     */
-    rowSelect(index) {
-        this.rowSelected = index
-    },
 
     /**
      * Check vào checkbox khi click vào dòng
@@ -711,12 +656,11 @@ export default {
      * NDDAT (15/11/2022)
      * @param {int} index số thứ tự dòng của checkbox
      * @param {int} code id của dòng chứa checkbox được click
+     * @param {PointerEvent} event sự kiện click khi nhấn giữ shift
      */
     checkedMethodOnClickShift(index, code, event) {
         event.preventDefault();
         this.rowSelected = index
-        // Mã chứng từ của lần chọn trước
-        // let oldCode = this.checked[this.checked.length-1]
         // Nếu dòng chọn đã check thì bỏ check
         if (this.checkboxSelected[index] == code){
             for (let i in this.checked) {
@@ -740,29 +684,22 @@ export default {
         }
         
         if(this.checked.length > 1) {
-            // this.checked.splice(-1)
-            // Lấy vị trí của lần check trước
             let nearIndex
             let min = null
             // Tìm vị trí gần nhất đã check so với ô đang check
             for (let i in this.checkboxSelected) {
-                // if(this.checkboxSelected[i] == oldCode) oldIndex = i
-                // if(i!=0&&index==0)
                 if(this.checkboxSelected[i]&&i!=index) {
                     if(min == null){
                         min = (i>=index) ? i-index : index-i
                         nearIndex = i
-                        console.log("startNear: "+nearIndex);
                     } 
                     let temp = (i>=index) ? i-index : index-i
                     if(temp < min) {
                         min = temp
                         nearIndex = i
-                        console.log("updateNear: "+nearIndex);
                     }
                 }
             }
-            console.log("finalNear: "+nearIndex);
             // Check các dòng ở giữa dòng vừa check và dòng check lần trước
             if(nearIndex < index)
                 for(let i = nearIndex; i <= index; i++) {
@@ -776,9 +713,6 @@ export default {
                     this.checkboxSelected[i] = this.vouchers[i].voucher_id
                     this.vouchersSelected[i] = this.vouchers[i]
                 }
-            // this.checked[this.checked.length] = code
-            console.log(this.checkboxSelected);
-            console.log(this.checked);
         }
         this.checkedAllInspect()
     },
@@ -812,7 +746,6 @@ export default {
                 }
             }
         }
-        console.log(this.checkboxSelected);
         this.checkedAllInspect()
     },
 
@@ -834,8 +767,6 @@ export default {
      */
     btnDeleteOnClick() {
         this.rowFocusDelete = this.checked
-        console.log(this.checked);
-        console.log(this.checkboxSelected);
         this.deleteTextCreate()
         this.deleteShow = true
     },
@@ -847,9 +778,6 @@ export default {
     deleteTextCreate() {
         if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> chứng từ đã được chọn. Bạn có muốn xóa các chứng từ này khỏi danh sách?"
         else {
-        //     var id
-        //     if(this.checked.length == 1) id = this.checked[0];
-        //     else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
             var id = this.rowFocusDelete[0]
             for (let index in this.vouchers) {
                 if (id == this.vouchers[index].voucher_id){
@@ -881,7 +809,6 @@ export default {
      * NDDAT (15/09/2022)
      */
     closeDelete() {
-        // document.getElementById(`table${this.rowFocus+1}`).focus()
         this.deleteShow = false
     },
 
@@ -891,59 +818,14 @@ export default {
      */
     confirmDelete() {
         // Xóa chứng từ
-        // if(this.rowFocusDelete[0] || this.checked[0]){
-        if(this.rowFocusDelete.length == 1) {
+        if(this.rowFocusDelete.length > 0) {
             if(this.rowFocusDelete[0]){
                 try{
                     // Xóa dữ liệu:
                     var url = Resource.Url.Voucher + "/batch-delete"
-                    // var body = ""
-                    // if(this.checked[0]) body = this.checked
-                    // else body = this.rowFocusDelete
                     var body = this.rowFocusDelete
                     fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
                     .then(res =>{
-                        var status = res.status
-                        switch(status) {
-                            case 400: 
-                                this.backEndErrorNotify(Resource.ErrorCode[400])
-                                break
-                            case 405: 
-                                this.backEndErrorNotify(Resource.ErrorCode[405])
-                                break
-                            case 500: 
-                                this.backEndErrorNotify(Resource.ErrorCode[500])
-                                break
-                            default: 
-                                if(this.assets.length <= 0) {
-                                    this.addArray = []
-                                    this.deleteArray = []
-                                    this.closeDelete()
-                                    this.loadData()
-                                    this.rowFocus = 0
-                                    this.rowFocusDelete = []
-                                    this.checked = []
-                                }
-                        }
-                    })
-                    .catch(res => {
-                        console.error(res);
-                    })
-                } catch (error) {
-                    console.error(error);
-                }
-            }
-    
-            // Xóa các tài sản của chứng từ
-            if(this.assets.length > 0) {
-                var method = Resource.Method.Post
-                url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
-                body = []
-                for(let asset of this.assets) {
-                    body.push(asset.fixed_asset_id)
-                }
-                fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
-                .then(res =>{
                         var status = res.status
                         switch(status) {
                             case 400: 
@@ -965,30 +847,72 @@ export default {
                                 this.checked = []
                         }
                     })
-                .catch(res => {
-                    console.error(res)
-                })
+                    .catch(res => {
+                        console.error(res);
+                        this.closeDelete()
+                        this.toastFailedShow = true
+                        setTimeout(() => this.toastFailedShow = false, 3000)
+                    })
+                } catch (error) {
+                    console.error(error);
+                    this.closeDelete()
+                    this.toastFailedShow = true
+                    setTimeout(() => this.toastFailedShow = false, 3000)
+                }
             }
+    
+            // Xóa các tài sản của chứng từ
+            // if(this.assets.length > 0) {
+            //     var method = Resource.Method.Post
+            //     url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
+            //     body = []
+            //     for(let asset of this.assets) {
+            //         body.push(asset.fixed_asset_id)
+            //     }
+            //     fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+            //     .then(res =>{
+            //             var status = res.status
+            //             switch(status) {
+            //                 case 400: 
+            //                     this.backEndErrorNotify(Resource.ErrorCode[400])
+            //                     break
+            //                 case 405: 
+            //                     this.backEndErrorNotify(Resource.ErrorCode[405])
+            //                     break
+            //                 case 500: 
+            //                     this.backEndErrorNotify(Resource.ErrorCode[500])
+            //                     break
+            //                 default: 
+            //                     this.addArray = []
+            //                     this.deleteArray = []
+            //                     this.closeDelete()
+            //                     this.loadData()
+            //                     this.rowFocus = 0
+            //                     this.rowFocusDelete = []
+            //                     this.checked = []
+            //             }
+            //         })
+            //     .catch(res => {
+            //         console.error(res)
+            //     })
+            // }
         }
-        else {
-            this.addArray = []
-            this.deleteArray = []
-            this.closeDelete()
-            this.loadData()
-            this.rowFocus = 0
-            this.rowFocusDelete = []
-            this.checked = []
-        }
+        // else {
+        //     this.addArray = []
+        //     this.deleteArray = []
+        //     this.closeDelete()
+        //     this.loadData()
+        //     this.rowFocus = 0
+        //     this.rowFocusDelete = []
+        //     this.checked = []
+        // }
     },
 
     /**
      * Ẩn dialog chi tiết tài sản
      * NDDAT (15/09/2022)
      */
-    hideDialogMethod () {
-        // if(this.rowFocus > -1) {
-        //     document.getElementById(`table${this.rowFocus}`).focus()
-        // }
+    hideDialogMethod() {
         this.dialogShow = false
         this.loadData()
     },
@@ -1001,7 +925,6 @@ export default {
         this.rowFocus = 0
         this.resetChecked()
         this.hideDialogMethod()
-        this.loadDetailData()
         this.toastShow = true
         setTimeout(() => this.toastShow = false, 3000)
     },
@@ -1013,9 +936,7 @@ export default {
      */
     rowEdit(voucher) {
         this.voucherSelected = voucher
-        // this.assetCode = this.assetSelected.fixed_asset_code
         this.detailFormMode = Enum.FormMode.Edit
-        // this.title = Resource.DialogTitle.Edit
         this.dialogShow = true
     },
 
@@ -1038,7 +959,6 @@ export default {
      */
     searchMethod(keyword) {
         this.keyword = keyword
-        console.log(this.keyword);
         this.loadData()
     },
 
@@ -1168,33 +1088,33 @@ export default {
      * Về trang trước ở table-2
      * NDDAT (12/11/2022)
      */
-    prevPage2() {
-        if(this.page2 > 1){
-            this.page2--
-            this.loadData()
-        }  
-    },
+    // prevPage2() {
+    //     if(this.page2 > 1){
+    //         this.page2--
+    //         this.loadData()
+    //     }  
+    // },
 
     /**
      * Sang trang sau ở table-2
      * NDDAT (12/11/2022)
      */
-    nextPage2() {
-        if(this.page2 < this.totalPage2){
-            this.page2++
-            this.loadData()
-        }    
-    },
+    // nextPage2() {
+    //     if(this.page2 < this.totalPage2){
+    //         this.page2++
+    //         this.loadData()
+    //     }    
+    // },
 
     /**
      * Tới trang được chọn ở table-2
      * NDDAT (12/11/2022)
      * @param {int} page số trang
      */
-    toPage2(page2) {
-        this.page2 = page2
-        this.loadData()
-    },
+    // toPage2(page2) {
+    //     this.page2 = page2
+    //     this.loadData()
+    // },
 
     /**
      * Tính tổng số trang của bảng
@@ -1257,7 +1177,6 @@ export default {
             fetch(this.api, {method: Resource.Method.Get})
             .then(res => res.json())
             .then(data => {
-                // this.assets = Object.values(data)[0]
                 this.vouchers = Object.values(data)[0]
                 this.totalCount = Object.values(data)[1]
                 this.totalCost = Object.values(data)[3]
@@ -1269,9 +1188,14 @@ export default {
             .catch(res => {
                 console.error(res);
                 this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         } catch (error) {
             console.error(error);
+            this.isLoading = false
+            this.toastFailedShow = true
+            setTimeout(() => this.toastFailedShow = false, 3000)
         }
     },
 
@@ -1299,9 +1223,14 @@ export default {
                 .catch(res => {
                     console.error(res);
                     this.isLoading = false
+                    this.toastFailedShow = true
+                    setTimeout(() => this.toastFailedShow = false, 3000)
                 })
             } catch (error) {
                 console.error(error);
+                this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             }
         }
     },

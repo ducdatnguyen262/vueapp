@@ -28,7 +28,7 @@ export default {
         // Nhân bản tài sản
         Duplicate: 3
     },
-
+    
     // Loại combobox
     ComboboxType: {
         // Phòng ban

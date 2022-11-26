@@ -72,6 +72,11 @@ export default {
         Name: "budget_name"
     },
 
+    Toast: {
+        success: "Lưu dữ liệu thành công.",
+        failed: "Có lỗi xảy ra."
+    },
+
     // Mã lỗi
     ErrorCode: {
         // Error 400

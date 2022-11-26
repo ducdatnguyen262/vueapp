@@ -2,7 +2,6 @@
     <div class="dialog-container" v-on:keydown="keyboardEvent" v-show="thisShow">
         <div class="dialog dialog-voucher">
             <div class="dialog__header background-white">
-                <!-- <h2 class="dialog-title">{{title}}</h2> -->
                 <h2 class="dialog-title">{{title}} chứng từ ghi tăng</h2>
                 <button class="dialog-x-container">
                     <div 
@@ -108,7 +107,12 @@
                             <th>Tên tài sản</th>
                             <th>Bộ phận sử dụng</th>
                             <th>Nguyên giá</th>
-                            <th>Hao mòn năm</th>
+                            <th>                       
+                                <div class="position-relative">
+                                    HM/KH lũy kế
+                                    <d-tooltip text="Hao mòn khấu hao lũy kế"></d-tooltip>
+                                </div>
+                            </th>
                             <th>Giá trị còn lại</th>
                         </tr>
                     </thead>
@@ -265,8 +269,6 @@
                     class="mr-10" 
                     :id="'close-asset-detail'"
                     @click="btnCloseOnClick" 
-                    @keydown.shift="focusWithShift" 
-                    @keydown.tab="focusBack"
                 />
                 <d-button 
                     tabindex="113" 
@@ -318,6 +320,11 @@
         @loadDetailData="loadDetailData"
     />
 
+    <!-- Toast thông báo thất bại -->
+    <transition name="toast">
+        <d-toast v-show="toastFailedShow" type="failed"></d-toast>
+    </transition>
+
     <!-- Context Menu -->
     <v-contextmenu ref="contextmenu">
         <v-contextmenu-item @click="selectAssetsShow=true;thisShow=false">Thêm</v-contextmenu-item>
@@ -345,7 +352,6 @@ export default {
     components: { DButton, DDialog, DDialog1Button, DTooltipWarning, DDialog3Button, VoucherSelectAssets, VoucherUpdateAsset, DTooltip },
     props: {
         voucherSelected: Function, // Chứng từ được chọn
-        //assetSelected: Function, // Tài sản được chọn
         assetsSelected: {
             type: Array
         },
@@ -419,6 +425,7 @@ export default {
             ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+            toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
             selectAssetsShow: false,
             updateAssetShow: false, // Dialog sửa tài sản có hiện không
             thisShow: true,
@@ -443,18 +450,10 @@ export default {
                 this.isEdited = true
             }
         },
-        // assets: {
-        //     deep: true,
-        //     handler() {
-        //         this.updateAssetSum()
-        //     }
-        // }
         asset_lenght: {
             deep: true,
             handler() {
-                // if(newVal > oldVal) {
-                //     }
-                    this.updateAssetSum()
+                this.updateAssetSum()
             }
         }
     },
@@ -474,15 +473,12 @@ export default {
         // Cập nhật giá trị dialog
         this.updateVoucher()
         this.loadDetailData()
-        // this.updateAsset()
         // Truyền vào các giá trị mặc định
         this.defaultValue()
         // Sinh mã tiếp theo nếu là thêm và nhân bản
         if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
             this.generateNextCode()
         }
-        // Truyền vào các tài sản được chọn
-        // this.assets = this.assetsSelected
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -529,7 +525,6 @@ export default {
          */
         updateAssets(assets, totalCost) {
             this.assets = assets
-            console.log("/: "+totalCost);
             this.totalCost = totalCost
         },
 
@@ -590,7 +585,7 @@ export default {
          * Xử lí sự kiện keyboard shortcut
          * NDDAT (12/10/2022)
          */
-        keyboardEvent (e) {
+        keyboardEvent(e) {
             if (e.which == Enum.KeyCode.ESC) {
                 if(this.notifyShow == true){
                     this.closeNotify()
@@ -616,7 +611,7 @@ export default {
         },
 
         /**
-         * Gọi API lấy mã tài sản tiếp theo rồi gán vào mã hiện tại
+         * Gọi API lấy mã chứng từ tiếp theo rồi gán vào mã hiện tại
          * NDDAT (29/09/2022)
          */
         generateNextCode() {
@@ -632,9 +627,14 @@ export default {
                 .catch(res => {
                     console.error(res);
                     this.isLoading = false
+                    this.toastFailedShow = true
+                    setTimeout(() => this.toastFailedShow = false, 3000)
                 })
             } catch (error) {
                 console.error(error);
+                this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             }
         },
 
@@ -655,9 +655,9 @@ export default {
          * NDDAT (04/10/2022)
          * @param {string} type loại dữ liệu
          */
-        notNegative(type) {
-            if(this.asset[type] < 0) this.asset[type] = 0
-        },
+        // notNegative(type) {
+        //     if(this.asset[type] < 0) this.asset[type] = 0
+        // },
 
         /**
          * Tạo thông điệp cho dialog cảnh báo lỗi validate
@@ -743,27 +743,16 @@ export default {
         },
 
         /**
-         * Chuyển focus lên đầu sau khi đến cuối dialog tài sản
-         * NDDAT (15/09/2022)
-         */
-        focusBack() {
-            if(!this.shiftPressed) {
-                this.$refs.btnx.focus()
-            }
-            this.shiftPressed = false
-        },
-
-        /**
          * Focus ngược khi dùng Shift+Tab
          * NDDAT (15/09/2022)
          */
-        focusWithShift(e) {
-            if(e.tab) {
-                document.getElementById('close-asset-detail').focus()
-            } else {
-                this.shiftPressed = true
-            }
-        },
+        // focusWithShift(e) {
+        //     if(e.tab) {
+        //         document.getElementById('close-asset-detail').focus()
+        //     } else {
+        //         this.shiftPressed = true
+        //     }
+        // },
 
         /**
          * Tìm kiếm theo mã và tên tài sản
@@ -797,8 +786,6 @@ export default {
                     let temp = this.addArray
                     this.addArray = this.addArray.filter(val => !this.deleteArray.includes(val));
                     this.deleteArray = this.deleteArray.filter(val => !temp.includes(val));
-                    console.log(this.addArray);
-                    console.log(this.deleteArray);
 
                     // Truyền dữ liệu mặc định
                     this.voucher.cost = this.totalCost
@@ -815,6 +802,8 @@ export default {
                 }         
             } catch (error) {
                 console.error(error);
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             }
         },
 
@@ -869,7 +858,6 @@ export default {
                             break
                         default: 
                             if(this.formMode == Enum.FormMode.Add) {
-                                // console.log(Object.values(data).join(''));
                                 this.addedVoucherId = Object.values(data).join('')
                                 this.saveDetailVoucher(Resource.VoucherDetailType.Add)
                             }
@@ -879,6 +867,8 @@ export default {
             })
             .catch(res => {
                 console.error(res)
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         },
 
@@ -915,6 +905,8 @@ export default {
                 })
             .catch(res => {
                 console.error(res)
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         },
 
@@ -939,9 +931,14 @@ export default {
             .catch(res => {
                 console.error(res);
                 this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         } catch (error) {
             console.error(error);
+            this.isLoading = false
+            this.toastFailedShow = true
+            setTimeout(() => this.toastFailedShow = false, 3000)
         }
     },
 

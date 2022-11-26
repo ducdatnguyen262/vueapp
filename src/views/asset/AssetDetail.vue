@@ -263,6 +263,11 @@
         @hideDialog="updateAssetShow=false;thisShow=true"
         :assetSelected="assetSelected"
     />
+
+    <!-- Toast thông báo thất bại -->
+    <transition name="toast">
+        <d-toast v-show="toastFailedShow" type="failed"></d-toast>
+    </transition>
 </template>
 
 <script>
@@ -340,6 +345,7 @@ export default {
             ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
+            toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
             updateAssetShow: false, // Dialog sửa tài sản có hiện không
         }
     },
@@ -355,8 +361,7 @@ export default {
 
     created() {
         // Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
-        this.updateAsset()  
-        console.log("debug"); 
+        this.updateAsset()
         // Truyền vào các giá trị mặc định
         this.defaultValue()
         // Sinh mã tiếp theo nếu là thêm và nhân bản
@@ -459,9 +464,14 @@ export default {
                 .catch(res => {
                     console.error(res);
                     this.isLoading = false
+                    this.toastFailedShow = true
+                    setTimeout(() => this.toastFailedShow = false, 3000)
                 })
             } catch (error) {
                 console.error(error);
+                this.isLoading = false
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             }
         },
 
@@ -661,6 +671,8 @@ export default {
                 }         
             } catch (error) {
                 console.error(error);
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             }
         },
 
@@ -734,6 +746,8 @@ export default {
             })
             .catch(res => {
                 console.error(res)
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         },
 

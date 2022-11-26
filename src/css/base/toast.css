@@ -1,6 +1,6 @@
 .toast-wrapper {
     position: fixed;
-    bottom: 8px;
+    top: 8px;
     right: 8px;
     background-color: #fff;
 }
@@ -13,6 +13,7 @@
     width: 300px;
     border-radius: 4px;
     box-shadow: 0 3px 8px 3px rgb(0 0 0 / 16%);
+    z-index: 4;
 }
 
 .success-icon {
@@ -22,4 +23,11 @@
     margin: 0 16px;
     border: 4px solid #b0eccd;
     border-radius: 50%;
+}
+
+.failed-icon {
+    background-image: url("../../assets/icon/danger-icon.jpg");
+    width: 20px;
+	height: 20px;
+    margin: 0 16px;
 }

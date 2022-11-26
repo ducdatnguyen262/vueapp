@@ -43,6 +43,7 @@
                                 filterable 
                                 placeholder="Chọn nguồn hình thành" 
                                 class="source-item-cbb"
+                                :tabindex="`20${index*2}`"
                                 :class="{'input--error':!source.budget_id && this.isSubmited, 'duplicate-source-input--error':duplicateValidate[index] == 1 && this.isSubmited,}"
                             >
                                 <el-option
@@ -72,9 +73,10 @@
                             <input 
                                 v-model="sourceCost[index]"
                                 type="text"
-                                tabindex="105" 
                                 class="dialog-input source-item-input"
                                 style="text-align: right;"
+                                onkeypress='return event.charCode >= 48 && event.charCode <= 57'
+                                :tabindex="`20${index*2+1}`"
                                 :class="{'input--error':!source.cost && source.cost!=0 && this.isSubmited}"
                                 @input="inputMoneySourceCost(index)"
                             >
@@ -153,6 +155,11 @@
         :text="backendErrorMsg"
         @closeNotify="closeBackendError"
     />
+
+    <!-- Toast thông báo thất bại -->
+    <transition name="toast">
+        <d-toast v-show="toastFailedShow" type="failed"></d-toast>
+    </transition>
 </template>
 
 <script>
@@ -226,16 +233,13 @@ export default {
             closeMsg: Resource.ErrorMsg.CloseMsg, // Văn bản khi đóng form
             closeEditedMsg: Resource.ErrorMsg.CloseEditedMsg, // Văn bản khi đóng form sau khi chỉnh sửa
             shiftPressed: false, // Nút Shift có đang được bấm hay không
-            ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
-            firstMinus: true,
-            sources: [{budget_id: "", budget_name: "", cost: 0}],
-            costs: [{ cost: ""}],
-            sumCost:0,
-            textCost:"",
-            budget_options: [],
-            duplicateValidate: [],
+            toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
+            sources: [{budget_id: "", budget_name: "", cost: 0}], // Mảng lưu nguồn ngân sách truyền vào
+            sumCost: 0, // Tổng nguyên giá
+            budget_options: [], // Mảng lưu các tên nguồn ngân sách
+            duplicateValidate: [], // Mảng có giá trị 1 tại vị trí trùng
             sourceCost:[], // Lưu số tiền của nguồn ngân sách dưới dạng string có đấu '.'
         }
     },
@@ -263,21 +267,13 @@ export default {
         // Lấy dữ liệu combobox
         this.loadDataCbb()
 
+        // Truyền vào nguồn ngân sách
         for(let i in this.sources) {
             this.sourceCost[i] = this.formatMoney(this.sources[i].cost)
         }
-
-        // Cài đặt keyboard shortcut
-        const component = this;
-        this.handler = function (e) {
-            component.$emit('keydown', e);
-        }
-        window.addEventListener('keydown', this.handler)
     },
 
     mounted() {
-        // Focus vào ô đầu của dialog
-        this.focusFirst()
         // Đặt lại form là chưa sửa
         this.isEdited = false
     },
@@ -290,22 +286,11 @@ export default {
         }
     },
 
-    beforeUnmount() {
-        window.removeEventListener('keypress', this.handler);
-    },
-
     methods: {
-        // checkDuplicate(id, index) {
-        //     let check = false
-        //     for(let i=0; i<index; i++) {
-        //         if(this.sources[index].budget_id == id) {
-        //             check = true
-        //             break
-        //         }
-        //     }
-        //     return check
-        // },
-
+        /**
+         * Kiểm tra trùng nguồn ngân sách
+         * NDDAT (25/11/2022)
+         */
         checkDuplicate() {
             this.duplicateValidate = []
             let check = true
@@ -320,6 +305,10 @@ export default {
             return check
         },
 
+        /**
+         * Xử lí nhập số tiền của ô giá nguồn ngân sách
+         * NDDAT (09/11/2022)
+         */
         inputMoneySourceCost(index) {
             this.sourceCost[index] = this.sourceCost[index].replaceAll('.','')
             this.sources[index].cost = parseFloat(this.sourceCost[index])
@@ -348,7 +337,7 @@ export default {
          * Xử lí sự kiện keyboard shortcut
          * NDDAT (12/10/2022)
          */
-        keyboardEvent (e) {
+        keyboardEvent(e) {
             if (e.which == Enum.KeyCode.ESC) {
                 if(this.notifyShow == true){
                     this.closeNotify()
@@ -360,39 +349,24 @@ export default {
                     this.closeProValidate()
                 }
             }
-            else if(e.which == Enum.KeyCode.Ctrl){
-                this.ctrlPressed = true
-            }
-            else if(e.which == Enum.KeyCode.F8 && this.ctrlPressed == true){
+            else if(e.which == Enum.KeyCode.F8 && e.ctrlKey == true){
                 this.btnSaveOnClick()
-                this.ctrlPressed = false
             }
-            else if(e.which == Enum.KeyCode.F9 && this.ctrlPressed == true){
+            else if(e.which == Enum.KeyCode.F9 && e.ctrlKey == true){
                 this.btnCloseOnClick()
-                this.ctrlPressed = false
             }
         },
 
         /**
          * Cập nhật combobox nguồn ngân sách
+         * NDDAT (12/10/2022)
          */
-        comboboxBudget(main, id) {
-            this.sources[id-1].budget_name = main
-        },
+        // comboboxBudget(main, id) {
+        //     this.sources[id-1].budget_name = main
+        // },
         // comboboxBudget(id, code, name) {
         //     this.sources[id-1].budget_name = main
         // },
-
-        /**
-         * Cập nhật dữ liệu liên quan tới mã loại tài sản
-         * NDDAT (28/09/2022)
-         * @param {float} depreciation_rate 
-         * @param {int} life_time 
-         */
-        updateWithCategoryCode(depreciation_rate, life_time) {
-            this.asset.depreciation_rate = depreciation_rate ? depreciation_rate*100 : null
-            this.asset.life_time = life_time
-        },
 
         /**
          * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
@@ -404,15 +378,6 @@ export default {
             if (this.asset.production_date == null) this.asset.production_date = new Date()
             if (this.asset.tracked_year == null) this.asset.tracked_year = new Date().getFullYear()
             if (this.asset.cost == null) this.asset.cost = 0
-        },
-
-        /**
-         * Cập nhật lại các giá trị nếu nó âm 
-         * NDDAT (04/10/2022)
-         * @param {string} type loại dữ liệu
-         */
-        notNegative(type) {
-            if(this.asset[type] < 0) this.asset[type] = 0
         },
 
         /**
@@ -432,7 +397,6 @@ export default {
          */
         closeNotify() {
             this.notifyShow = false
-            this.focusFirst()
         },
 
         /**
@@ -441,7 +405,6 @@ export default {
          */
         closeValidate() {
             this.validateShow = false
-            this.focusFirst()
         },
 
         /**
@@ -450,7 +413,6 @@ export default {
          */
         closeProValidate() {
             this.validateProShow = false
-            this.focusFirst()
         },
 
         /**
@@ -459,7 +421,6 @@ export default {
          */
         closeBackendError() {
             this.backendError = false
-            this.focusFirst()
         },
 
         /**
@@ -501,14 +462,6 @@ export default {
         },
 
         /**
-         * Focus vào phần tử đầu tiên
-         * NDDAT (15/09/2022)
-         */
-        focusFirst() {
-            // this.$refs.asset_code.focus()
-        },
-
-        /**
          * Chuyển focus lên đầu sau khi đến cuối dialog tài sản
          * NDDAT (15/09/2022)
          */
@@ -536,9 +489,6 @@ export default {
          * NDDAT (15/09/2022)
          */
         btnCloseOnClick() {
-            // Xét xem form đã được sửa chưa
-            // if(this.isEdited) this.validateProShow = true
-            // else this.notifyShow = true
             this.$emit("hideDialog")
         },
 
@@ -556,7 +506,6 @@ export default {
                     }
                 }
                 this.asset.budget = JSON.stringify(this.sources)
-                // this.$emit('updateAsset', this.sumCost, this.textCost)
                 this.saveData()
             }
         },
@@ -579,7 +528,6 @@ export default {
                     this.errorArray.push(Resource.IsEmpty.source_cost);
                 } 
             }
-            // if(!sourceIdRequred && !sourceCostRequired) return true
             if (sourceIdRequred || sourceCostRequired) {
                 this.createValidateMessage()
                 this.validateShow = true
@@ -634,6 +582,8 @@ export default {
             })
             .catch(res => {
                 console.error(res)
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             })
         },
 
@@ -645,16 +595,20 @@ export default {
             try {
                 // Gọi api lấy dữ liệu
                 fetch(Resource.Url.Budget, { method: "GET" })
-                    .then(res => res.json())
-                    .then(data => {
+                .then(res => res.json())
+                .then(data => {
                     this.budget_options = Object.values(data);
                 })
-                    .catch(res => {
+                .catch(res => {
                     console.error(res);
+                    this.toastFailedShow = true
+                    setTimeout(() => this.toastFailedShow = false, 3000)
                 });
             }
             catch (error) {
                 console.error(error);
+                this.toastFailedShow = true
+                setTimeout(() => this.toastFailedShow = false, 3000)
             }        
         },
 
@@ -690,7 +644,7 @@ export default {
             this.asset.created_by = this.assetSelected.created_by
             this.asset.created_date = this.assetSelected.created_date
             this.asset.modified_by = this.assetSelected.modified_by
-            this.asset.modified_date = this.assetSelected.modified_date    
+            this.asset.modified_date = this.assetSelected.modified_date
         }
     }
 }
