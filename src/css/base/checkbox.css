@@ -1,6 +1,8 @@
 input[type="checkbox" i] {
     margin: 0;
     outline: none;
+    height: 16px;
+    width: 16px;
 }
 
 input[type="checkbox" i]:hover,

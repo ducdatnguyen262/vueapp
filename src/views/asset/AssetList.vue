@@ -373,6 +373,8 @@ export default {
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
         deleteIncrement: false, // Có hiển thị dialog cảnh báo lỗi xóa tài sản ghi tăng không
         deleteIncrementMsg: "", // Thông điệp trong cảnh báo lỗi xóa tài sản ghi tăng
+        localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
+        dateFormat: Resource.DateFormat.VN, // Định dạng ngày hiện tại
         columns : [
                     {
                         label: "Mã tài sản",
@@ -882,7 +884,7 @@ export default {
      * @param {double} money số tiền
      */
     formatMoney(money) {
-        money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
+        money = new Intl.NumberFormat(this.localeCode, {}).format(money)
         return money
     },
 
@@ -897,7 +899,8 @@ export default {
         let day = dateFormat.getDate().toString().padStart(2, "0")
         let month = (dateFormat.getMonth() + 1).toString().padStart(2, "0")
         let year = dateFormat.getFullYear()
-        return day + '/' + month + '/' + year
+        if(this.dateFormat == Resource.DateFormat.VN) return day + '/' + month + '/' + year
+        if(this.dateFormat == Resource.DateFormat.US) return month + '/' + day + '/' + year
     },
 
     /**

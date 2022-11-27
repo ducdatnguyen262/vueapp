@@ -4,15 +4,15 @@
         <h2 style="margin: 0">Ghi tăng tài sản</h2>
         <div class="content-btns">
             <d-button 
-                tabindex="4" 
+                tabindex="1" 
                 text="Thêm" 
                 class="mr-11"
                 @click="btnAddOnClick" 
             />
             <div class="menuWarp">
                 <d-button 
-                    v-show="dividerPosition != 76"
-                    tabindex="4"
+                    v-show="dividerPosition != Table1Expand"
+                    tabindex="2"
                     class="menuExpand mr-11"
                     type="medium"
                     icon="menu"
@@ -20,8 +20,8 @@
                     @click="menuSelect=!menuSelect"
                 />
                 <d-button 
-                    v-show="dividerPosition == 76"
-                    tabindex="4"
+                    v-show="dividerPosition == Table1Expand"
+                    tabindex="2"
                     class="menuExpand mr-11"
                     type="medium"
                     icon="menuExpand"
@@ -30,13 +30,13 @@
                 />
                 <d-button 
                     v-show="menuSelect"
-                    tabindex="4"
+                    tabindex="3"
                     class="menuSelect mr-11"
                     style="top: 37px;"
                     text="Giao diện dọc"
                     type="medium"
                     icon="menuExpand"
-                    @click="dividerPosition = 42"
+                    @click="dividerPosition = Table1Normal"
                     @mouseup="menuSelect=!menuSelect"
                 />
                 <d-button 
@@ -47,7 +47,7 @@
                     text="Giao diện ngang"
                     type="medium"
                     icon="menu"
-                    @click="dividerPosition = 76"
+                    @click="dividerPosition = Table1Expand"
                     @mouseup="menuSelect=!menuSelect"
                 />
             </div>
@@ -55,15 +55,15 @@
         </div>
     </div>
 
-    <div class="wrapper" @mouseUp="endDragging()">
-        <div v-show="dividerPosition != -9">
+    <div class="wrapper">
+        <div v-show="dividerPosition != - Table1Toolbar - Table2Toolbar">
             <div class="content-menu content-menu--white">
                 <div class="content-search">
                     <div class="search">
                         <div class="search__icon"></div>
                         <input 
                             v-model="search" 
-                            tabindex="1" 
+                            tabindex="5" 
                             id="searchInput"
                             class="search__input search__input--long mr-11" 
                             type="text" 
@@ -74,11 +74,20 @@
                 </div>
                 <div class="content-btns">
                     <div v-show="checked.length > 1" class="position-relative">
-                        <div @click="btnDeleteOnClick()" class="button-no-border icon-delete"></div>
+                        <div @click="btnDeleteOnClick()" tabindex="6" class="button-no-border icon-delete"></div>
                         <d-tooltip text="Xóa"></d-tooltip>
                     </div>
                     <div class="position-relative">
-                        <div class="button-no-border icon-print"></div>
+                        <vue-excel-xlsx
+                            tabindex="7"
+                            class="button-no-border icon-print"
+                            :data="vouchers"
+                            :columns="columns"
+                            :file-name="'Danh sách chứng từ'"
+                            :file-type="'xlsx'"
+                            :sheet-name="'Danh sách chứng từ'"
+                            >
+                        </vue-excel-xlsx>
                         <d-tooltip text="In"></d-tooltip>
                     </div>
                     <div class="position-relative">
@@ -264,23 +273,23 @@
             @mouseDown="startDragging()" 
         /> -->
 
-        <div v-show="dividerPosition != 76">
+        <div v-show="dividerPosition != Table1Expand">
             <div class="content-menu content-menu-2--white">
                 <h3 style="margin:10px 0">Thông tin chi tiết</h3>
                 <div class="content-btns">
-                    <div v-show="dividerPosition != -9" class="position-relative">
-                        <div class="button-no-border icon-expand" @click="dividerPosition = -9;menuSelect=false"></div>
+                    <div v-show="dividerPosition != - Table1Toolbar - Table2Toolbar" class="position-relative">
+                        <div class="button-no-border icon-expand" @click="dividerPosition = - Table1Toolbar - Table2Toolbar;menuSelect=false"></div>
                         <d-tooltip text="Mở rộng"></d-tooltip>
                     </div>
-                    <div v-show="dividerPosition == -9" class="position-relative">
-                        <div class="button-no-border icon-shrink" @click="dividerPosition = 42"></div>
+                    <div v-show="dividerPosition == - Table1Toolbar - Table2Toolbar" class="position-relative">
+                        <div class="button-no-border icon-shrink" @click="dividerPosition = Table1Normal"></div>
                         <d-tooltip text="Thu nhỏ"></d-tooltip>
                     </div>
                 </div>
             </div>
 
             <!-- Table 2 -->
-            <div class="table-container table-2" :style="{height: `${78 - 9 - dividerPosition}vh`}">
+            <div class="table-container table-2" :style="{height: `${ContentSize - Table1Toolbar - Table2Toolbar - dividerPosition}vh`}">
                 <table class="table">
                     <thead class="thead">
                         <tr>
@@ -547,8 +556,40 @@ export default {
         assetCode: "", // Mã tài sản lưu lại khi mở form
         backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
-        dividerPosition: 42, // Độ dài bảng 1 với đơn vị vh (42vh)
+        dividerPosition: this.Table1Normal, // Độ dài bảng 1 với đơn vị vh
+        ContentSize: Resource.VoucherListSize.Content, // Độ dài nội dung chính (ô tìm kiếm và 2 bảng)
+        Table1Normal: Resource.VoucherListSize.Table1Normal, // Độ dài bảng 1
+        Table1Expand: Resource.VoucherListSize.Table1Expand, // Độ dài bảng 1 mở rộng
+        Table1Toolbar: Resource.VoucherListSize.Table1Toolbar, // Độ dài thanh toolbar bảng 1
+        Table2Toolbar: Resource.VoucherListSize.Table2Toolbar, // Độ dài thanh toolbar bảng 2
         menuSelect: false, // Có mở rộng menu chọn cách hiển thị bảng hay không
+        localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
+        dateFormat: Resource.DateFormat.VN, // Định dạng ngày hiện tại
+        columns : [
+                    {
+                        label: "Mã chứng từ",
+                        field: "voucher_code",
+                    },
+                    {
+                        label: "Ngày chứng từ",
+                        field: "voucher_date",
+                        dataFormat: this.formatDate
+                    },
+                    {
+                        label: "Ngày ghi tăng",
+                        field: "increment_date",
+                        dataFormat: this.formatDate
+                    },
+                    {
+                        label: "Tổng nguyên giá",
+                        field: "cost",
+                        dataFormat: this.formatMoney
+                    },
+                    {
+                        label: "Nội dung",
+                        field: "description",
+                    },
+                ],
     }
   },
 
@@ -1148,7 +1189,7 @@ export default {
      * @param {double} money số tiền
      */
     formatMoney(money) {
-        money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
+        money = new Intl.NumberFormat(this.localeCode, {}).format(money)
         return money
     },
 
@@ -1163,7 +1204,8 @@ export default {
         let day = dateFormat.getDate().toString().padStart(2, "0")
         let month = (dateFormat.getMonth() + 1).toString().padStart(2, "0")
         let year = dateFormat.getFullYear()
-        return day + '/' + month + '/' + year
+        if(this.dateFormat == Resource.DateFormat.VN) return day + '/' + month + '/' + year
+        if(this.dateFormat == Resource.DateFormat.US) return month + '/' + day + '/' + year
     },
 
     /**
@@ -1212,6 +1254,7 @@ export default {
                 .then(res => res.json())
                 .then(data => {
                     this.assets = Object.values(data)[0]
+                    console.log(this.assets);
                     this.totalCount2 = Object.values(data)[1]
                     this.totalCost2 = Object.values(data)[3]
                     this.totalDepreciation2 = Object.values(data)[4]

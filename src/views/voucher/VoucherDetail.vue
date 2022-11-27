@@ -35,7 +35,7 @@
                     <el-date-picker 
                         v-model="voucher.voucher_date" 
                         tabindex="108" 
-                        format="DD/MM/YYYY" 
+                        :format="dateFormat" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
@@ -48,7 +48,7 @@
                     <el-date-picker 
                         v-model="voucher.increment_date" 
                         tabindex="108" 
-                        format="DD/MM/YYYY" 
+                        :format="dateFormat" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
@@ -440,6 +440,8 @@ export default {
             deleteArray:[],
             addedVoucherId: "",
             keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản)
+            localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
+            dateFormat: Resource.DateFormat.VN, // Định dạng ngày hiện tại
         }
     },
 
@@ -577,7 +579,7 @@ export default {
          * @param {double} money số tiền
          */
         formatMoney(money) {
-            money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
+            money = new Intl.NumberFormat(this.localeCode, {}).format(money)
             return money
         },
 
@@ -861,7 +863,7 @@ export default {
                                 this.addedVoucherId = Object.values(data).join('')
                                 this.saveDetailVoucher(Resource.VoucherDetailType.Add)
                             }
-                            this.$emit("hideDialogSuccess")
+                            else this.$emit("hideDialogSuccess")
                     }
                 });
             })
@@ -901,6 +903,7 @@ export default {
                         default: 
                             if(type == Resource.VoucherDetailType.Add) this.addArray = []
                             else if(type == Resource.VoucherDetailType.Delete) this.deleteArray = []
+                            if(this.formMode == Enum.FormMode.Add) this.$emit("hideDialogSuccess")
                     }
                 })
             .catch(res => {

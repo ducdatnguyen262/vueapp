@@ -62,7 +62,7 @@
                                 class="source-item-input"
                                 :class="{'input--error':!source.cost && source.cost!=0 && this.isSubmited}" 
                                 :options="{
-                                    locale: 'vi-VN',
+                                    locale: localeCode,
                                     currency: 'EUR',
                                     currencyDisplay: 'hidden',
                                     valueRange: {min: 0},
@@ -102,7 +102,7 @@
                             class="source-item-input"
                             disabled
                             :options="{
-                                locale: 'vi-VN',
+                                locale: localeCode,
                                 currency: 'EUR',
                                 currencyDisplay: 'hidden',
                                 hideGroupingSeparatorOnFocus: false,
@@ -241,6 +241,7 @@ export default {
             budget_options: [], // Mảng lưu các tên nguồn ngân sách
             duplicateValidate: [], // Mảng có giá trị 1 tại vị trí trùng
             sourceCost:[], // Lưu số tiền của nguồn ngân sách dưới dạng string có đấu '.'
+            localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
         }
     },
 
@@ -310,7 +311,8 @@ export default {
          * NDDAT (09/11/2022)
          */
         inputMoneySourceCost(index) {
-            this.sourceCost[index] = this.sourceCost[index].replaceAll('.','')
+            if(this.localeCode == Resource.LanguageCode.VN) this.sourceCost[index] = this.sourceCost[index].replaceAll('.','')
+            if(this.localeCode == Resource.LanguageCode.US) this.sourceCost[index] = this.sourceCost[index].replaceAll(',','')
             this.sources[index].cost = parseFloat(this.sourceCost[index])
             this.sourceCost[index] = this.formatMoney(this.sourceCost[index])
             if(this.sourceCost[index] == "0") this.sources[index].cost = 0
@@ -457,7 +459,7 @@ export default {
          * @param {double} money số tiền
          */
         formatMoney(money) {
-            money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
+            money = new Intl.NumberFormat(this.localeCode, {}).format(money)
             return money
         },
 

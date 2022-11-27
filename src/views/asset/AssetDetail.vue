@@ -90,14 +90,13 @@
                         tabindex="105" 
                         :class="{'input--error':!asset.quantity && asset.quantity!='0' && this.isSubmited}" 
                         :options="{
-                            locale: 'vi-VN',
+                            locale: localeCode,
                             currency: 'EUR',
                             currencyDisplay: 'hidden',
                             valueRange: {min: 0},
                             hideGroupingSeparatorOnFocus: false,
                         }"
                         :disabled="asset.increment_status"
-                        @keyup="notNegative('quantity')"
                     />
                     <d-tooltip-warning text="Số lượng"></d-tooltip-warning>
                 </div>
@@ -108,7 +107,7 @@
                         tabindex="106" 
                         disabled
                         :options="{
-                            locale: 'vi-VN',
+                            locale: localeCode,
                             currency: 'EUR',
                             currencyDisplay: 'hidden',
                             hideGroupingSeparatorOnFocus: false,
@@ -128,7 +127,7 @@
                 /> -->
                 <div class="dialog-item">
                     <label>Tỉ lệ hao mòn (%) <span style="color: red;">*</span></label>
-                    <input 
+                    <!-- <input 
                         v-model="asset.depreciation_rate" 
                         tabindex="107" 
                         class="dialog-input" 
@@ -140,7 +139,22 @@
                         @keyup="notNegative('depreciation_rate')" 
                         @blur="focus = false" 
                         @focus="focus = true" 
-                    >
+                    > -->
+                    <d-input-money 
+                        v-model="asset.depreciation_rate" 
+                        tabindex="107" 
+                        :class="{'input--error':!asset.depreciation_rate && asset.depreciation_rate!='0' && this.isSubmited}" 
+                        :options="{
+                            locale: localeCode,
+                            currency: 'EUR',
+                            currencyDisplay: 'hidden',
+                            valueRange: {min: 0},
+                            hideGroupingSeparatorOnFocus: false,
+                        }"
+                        :disabled="asset.increment_status"
+                        @blur="focus = false" 
+                        @focus="focus = true" 
+                    />
                     <d-tooltip-warning text="Tỉ lệ hao mòn"></d-tooltip-warning>
                 </div>
                 <div class="dialog-item date-picker">
@@ -148,7 +162,7 @@
                     <el-date-picker 
                         v-model="asset.purchase_date" 
                         tabindex="108" 
-                        format="DD/MM/YYYY" 
+                        :format="dateFormat" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
@@ -162,7 +176,7 @@
                     <el-date-picker 
                         v-model="asset.production_date" 
                         tabindex="109" 
-                        format="DD/MM/YYYY" 
+                        :format="dateFormat" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
                         placeholder="Chọn ngày"
@@ -203,7 +217,7 @@
                         tabindex="112" 
                         :class="{'input--error':!asset.depreciation_year && asset.depreciation_year!='0' && this.isSubmited}"
                         :options="{
-                            locale: 'vi-VN',
+                            locale: localeCode,
                             currency: 'EUR',
                             currencyDisplay: 'hidden',
                             valueRange: {min: 0},
@@ -347,6 +361,8 @@ export default {
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
             updateAssetShow: false, // Dialog sửa tài sản có hiện không
+            localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
+            dateFormat: Resource.DateFormat.VN, // Định dạng ngày hiện tại
         }
     },
 

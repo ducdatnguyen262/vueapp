@@ -1,6 +1,6 @@
 .toast-wrapper {
     position: fixed;
-    top: 8px;
+    bottom: 8px;
     right: 8px;
     background-color: #fff;
 }

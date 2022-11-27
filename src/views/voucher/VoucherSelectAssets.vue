@@ -279,59 +279,7 @@ export default {
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
-            columns : [
-                        {
-                            label: "Mã tài sản",
-                            field: "fixed_asset_code",
-                        },
-                        {
-                            label: "Tên tài sản",
-                            field: "fixed_asset_name",
-                        },
-                        {
-                            label: "Loại tài sản",
-                            field: "fixed_asset_category_name",
-                        },
-                        {
-                            label: "Bộ phận sử dụng",
-                            field: "department_name",
-                        },
-                        {
-                            label: "Số lượng",
-                            field: "quantity",
-                        },
-                        {
-                            label: "Nguyên giá",
-                            field: "cost",
-                            dataFormat: this.formatMoney
-                        },
-                        {
-                            label: "Ngày mua",
-                            field: "purchase_date",
-                            dataFormat: this.formatDate
-                        },
-                        {
-                            label: "Tỷ lệ hao mòn (%)",
-                            field: "depreciation_rate",
-                        },
-                        {
-                            label: "Năm bắt đầu theo dõi",
-                            field: "tracked_year",
-                        },
-                        {
-                            label: "Số năm sử dụng",
-                            field: "life_time",
-                        },
-                        {
-                            label: "Ngày bắt đầu sử dụng",
-                            field: "production_date",
-                            dataFormat: this.formatDate
-                        },
-                        {
-                            label: "Hao mòn năm",
-                            field: "depreciation_year",
-                        },
-                    ],
+            localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
         }
     },
 
@@ -675,22 +623,8 @@ export default {
      * @param {double} money số tiền
      */
     formatMoney(money) {
-        money = new Intl.NumberFormat(Resource.LanguageCode.VN, {}).format(money)
+        money = new Intl.NumberFormat(this.localeCode, {}).format(money)
         return money
-    },
-
-    /**
-     * Định dạng ngày tháng
-     * NDDAT (18/10/2022)
-     * @param {string} date số tiền
-     */
-    formatDate(date) {
-        const dateFormat = new Date(date)
-        dateFormat.toLocaleDateString()
-        let day = dateFormat.getDate().toString().padStart(2, "0")
-        let month = (dateFormat.getMonth() + 1).toString().padStart(2, "0")
-        let year = dateFormat.getFullYear()
-        return day + '/' + month + '/' + year
     },
 
     /**

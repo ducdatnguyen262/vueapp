@@ -134,6 +134,7 @@
 .button-no-border {
     margin: 0 10px;
     cursor: pointer;
+    border: none;
 }
 
 .icon-add {

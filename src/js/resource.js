@@ -9,8 +9,11 @@ export default {
 
     // Tiêu đề cho dialog chi tiết tài sản
     DialogTitle: {
+        // Thêm
         Add: "Thêm tài sản",
+        // Sửa
         Edit: "Sửa tài sản",
+        // Nhân bản
         Duplicate: "Nhân bản tài sản"
     },
 
@@ -72,8 +75,11 @@ export default {
         Name: "budget_name"
     },
 
+    // Text của Toast
     Toast: {
+        // Thành công
         success: "Lưu dữ liệu thành công.",
+        // Thất bại
         failed: "Có lỗi xảy ra."
     },
 
@@ -117,12 +123,19 @@ export default {
 
     // Tiêu đề
     Title: {
+        // Thêm
         Add: "Thêm",
-        Edit: "Sửa"
+        // Sửa
+        Edit: "Sửa",
+        // Nhân bản
+        Duplicate: "Nhân bản",
     },
 
+    // Các loại thao tác với chi tiết chứng từ
     VoucherDetailType: {
+        // Thêm nhiều
         Add: "batch-add",
+        // Xóa nhiều
         Delete: "batch-delete",
     },
 
@@ -132,5 +145,27 @@ export default {
         VN: 'vi-VN',
         // Hoa kỳ
         US: 'en-US',
-    }
+    },
+
+    // Định dạng ngày tháng
+    DateFormat: {
+        // Việt Nam
+        VN: 'DD/MM/YYYY',
+        // Hoa kỳ
+        US: 'MM/DD/YYYY',
+    },
+
+    // Chiều cao trong giao diện ghi tăng (đơn vị vh)
+    VoucherListSize: {
+        // Phần nội dung chính
+        Content: 78,
+        // Bảng 1 bình thường
+        Table1Normal: 42,
+        // Bảng 1 mở rộng
+        Table1Expand: 76,
+        // Toolbar trên bảng 1
+        Table1Toolbar: 6,
+        // Toolbar trên bảng 1
+        Table2Toolbar: 3,
+    },
 }
