@@ -50,8 +50,7 @@
                     @click="dividerPosition = Table1Expand"
                     @mouseup="menuSelect=!menuSelect"
                 />
-            </div>
-            
+            </div>           
         </div>
     </div>
 
@@ -125,7 +124,6 @@
                             v-contextmenu:contextmenu
                             @click.right.exact="voucherSelected = voucher;"
                             @keydown.f2="rowEdit(voucher)" 
-                            @keydown.insert="rowDuplicate(voucher)" 
                             @keydown.delete="rowDelete(voucher.voucher_id)" 
                             @keydown.up="prevItem" @keydown.down="nextItem" 
                             @focus="rowFocus=index;voucherSelected=voucher;" 
@@ -146,7 +144,7 @@
                                 >
                             </td>
                             <td>{{index + 1}}</td>
-                            <td>{{voucher.voucher_code}}</td>
+                            <td @click="rowEdit(voucher)" style="color:#1AA4C8">{{voucher.voucher_code}}</td>
                             <td>{{formatDate(voucher.voucher_date)}}</td>
                             <td>{{formatDate(voucher.increment_date)}}</td>
                             <td>{{formatMoney(voucher.cost)}}</td>
@@ -267,12 +265,6 @@
             </div>
         </div>
 
-        <!-- <div 
-            class="divider" 
-            :style="{ top: `${dividerPosition+14}vh`}"
-            @mouseDown="startDragging()" 
-        /> -->
-
         <div v-show="dividerPosition != Table1Expand">
             <div class="content-menu content-menu-2--white">
                 <h3 style="margin:10px 0">Thông tin chi tiết</h3>
@@ -318,7 +310,6 @@
                             :id="'table'+index" 
                             :class="{'row--selected':(rowSelected2 == index), 'checkbox--selected':rowFocus2 == index}" 
                             @click.right="assetSelected = asset"
-                            @keydown.insert="rowDuplicate(asset)" 
                             @keydown.delete="rowDelete(asset.fixed_asset_id)" 
                             @keydown.up="prevItem" @keydown.down="nextItem" 
                             @focus="rowFocus2=index" 
@@ -449,7 +440,6 @@
         <v-contextmenu-item @click="btnAddOnClick">Thêm</v-contextmenu-item>
         <v-contextmenu-item @click="rowEdit(voucherSelected)">Sửa</v-contextmenu-item>
         <v-contextmenu-item @click="rowDelete(voucherSelected.voucher_id)">Xóa</v-contextmenu-item>
-        <v-contextmenu-item @click="rowDuplicate(voucherSelected)">Nhân bản</v-contextmenu-item>
     </v-contextmenu>
 
     <!-- Loading -->
@@ -482,7 +472,8 @@
         @closeNotify="this.deleteSelectedNone = false" 
     />
 
-    <d-dialog-1-button v-on:keydown="keyboardEvent"
+    <!-- Dialog cảnh cáo lỗi từ backend -->
+    <d-dialog-1-button
         v-if="backendError" 
         :text="backendErrorMsg"
         @closeNotify="this.backendError = false"
@@ -491,6 +482,11 @@
     <!-- Toast thông báo thành công -->
     <transition name="toast">
         <d-toast v-show="toastShow" type="success"></d-toast>
+    </transition>
+
+    <!-- Toast thông báo xóa thành công -->
+    <transition name="toast">
+        <d-toast v-show="toastDeleteShow" type="successDelete"></d-toast>
     </transition>
 
     <!-- Toast thông báo thất bại -->
@@ -519,7 +515,6 @@ export default {
         vouchers:[], // Mảng lưu các chứng từ đang hiện
         vouchersSelected:[], // Mảng lưu các chứng từ đang chọn
         voucherSelected: {}, // Chứng từ được chọn
-        voucherCode: "", // Mã của chứng từ được chọn
         assets:[], // Mảng lưu các tài sản đang hiện
         assetSelected: {}, // Tài sản được chọn
         search:"", // Lưu giá trị input tìm kiếm
@@ -540,6 +535,7 @@ export default {
         deleteText:"", // Nội dung dialog cảnh báo xóa
         deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
         toastShow: false, // Hiển thị toast thông báo thành công hay không
+        toastDeleteShow: false, // Hiển thị toast thông báo xóa thành công hay không
         toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
         tableView: 20, // Số trang hiển thị
         totalPage: 1, // Tổng số trang
@@ -551,9 +547,6 @@ export default {
         page2: 1, // Trang đang chọn bảng 2
         totalCount2: 0, // Tổng số bản ghi bảng 2
         keyword: "", // Từ khóa để tìm kiếm (theo số chứng từ và nội dung)
-        departmentId: "", // Mã phòng ban để tìm kiếm
-        categoryId: "", // Mã loại tài sản để tìm kiếm
-        assetCode: "", // Mã tài sản lưu lại khi mở form
         backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
         backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
         dividerPosition: this.Table1Normal, // Độ dài bảng 1 với đơn vị vh
@@ -565,7 +558,7 @@ export default {
         menuSelect: false, // Có mở rộng menu chọn cách hiển thị bảng hay không
         localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
         dateFormat: Resource.DateFormat.VN, // Định dạng ngày hiện tại
-        columns : [
+        columns : [ // Định dạng để Xuất (In)
                     {
                         label: "Mã chứng từ",
                         field: "voucher_code",
@@ -621,13 +614,15 @@ export default {
         }
     },
     totalCount: {
-        handler(newVal, oldVal) {
+        handler(newVal) {
+            // Khi không có bản ghi
             if(newVal == 0) {
                 this.totalCount2 = 0
                 this.assets = []
                 this.resetChecked()
             } 
-            else if(newVal > 0 && oldVal == 0) this.rowFocus = 0
+            // // Khi từ 0 bản ghi tăng lên
+            // else if(newVal > 0 && oldVal == 0) this.rowFocus = 0
         }
     },
   },
@@ -652,20 +647,6 @@ export default {
   },
 
   methods: {
-    // handleDragging (e) {
-    //   const percentage = (e.pageX / window.innerHeight) * 100
-
-    //   if (percentage >= 10 && percentage <= 90) {
-    //     this.dividerPosition = percentage.toFixed(2)
-    //   }
-    // },
-    // startDragging () {
-    //   document.addEventListener('mousemove', this.handleDragging)
-    // },
-    // endDragging () {
-    //   document.removeEventListener('mousemove', this.handleDragging)
-    // },
-
     /**
      * Check vào checkbox khi click vào dòng
      * NDDAT (15/11/2022)
@@ -798,7 +779,7 @@ export default {
         this.voucherSelected = {}
         this.assets = []
         this.detailFormMode = Enum.FormMode.Add
-        this.title = Resource.DialogTitle.Add
+        this.title = Resource.Title.Add
         this.dialogShow = true
     },
 
@@ -886,6 +867,8 @@ export default {
                                 this.rowFocus = 0
                                 this.rowFocusDelete = []
                                 this.checked = []
+                                this.toastDeleteShow = true
+                                setTimeout(() => this.toastDeleteShow = false, 3000)
                         }
                     })
                     .catch(res => {
@@ -978,18 +961,7 @@ export default {
     rowEdit(voucher) {
         this.voucherSelected = voucher
         this.detailFormMode = Enum.FormMode.Edit
-        this.dialogShow = true
-    },
-
-    /**
-     * Nhấn button hiển thị dialog nhân bản tài sản
-     * NDDAT (15/09/2022)
-     * @param {Asset} asset tài sản đang chọn
-     */
-    rowDuplicate(asset) {
-        this.assetSelected = asset
-        this.detailFormMode = Enum.FormMode.Duplicate
-        this.title = Resource.DialogTitle.Duplicate
+        this.title = Resource.Title.Edit
         this.dialogShow = true
     },
 
@@ -1000,6 +972,7 @@ export default {
      */
     searchMethod(keyword) {
         this.keyword = keyword
+        this.rowFocus = 0
         this.loadData()
     },
 

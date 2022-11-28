@@ -7,7 +7,7 @@
                 <button class="dialog-x-container">
                     <div 
                         ref="btnx"
-                        tabindex="100" 
+                        tabindex="200" 
                         class="dialog-x"
                         @keydown.enter="btnCloseOnClick()" 
                         @click="btnCloseOnClick()" 
@@ -22,7 +22,7 @@
                         <div class="search__icon"></div>
                         <input 
                             v-model="search" 
-                            tabindex="1" 
+                            tabindex="201" 
                             id="searchInput"
                             class="search__input search__input--long mr-11" 
                             type="text" 
@@ -53,10 +53,9 @@
                     </thead>
                     <tbody class="tbody">
                         <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
-                            tabindex="7" 
+                            tabindex="202" 
                             :id="'table'+index" 
                             :class="{'row--selected':(rowSelected == index), 'checkbox--selected':(checkboxSelected[index] == asset.fixed_asset_id) || checkedAll || rowFocus == index}"
-                            @keydown.f2="rowEdit(asset)" 
                             @keydown.up="prevItem" @keydown.down="nextItem" 
                             @focus="rowFocus=index" 
                             @click.exact="checkedMethodOnClick(index, asset.fixed_asset_id)"
@@ -179,7 +178,7 @@
 
             <div class="dialog__footer">
                 <d-button 
-                    tabindex="114" 
+                    tabindex="203" 
                     text="Hủy bỏ" 
                     type="white" 
                     class="mr-10" 
@@ -187,7 +186,7 @@
                     @click="btnCloseOnClick"
                 />
                 <d-button 
-                    tabindex="113" 
+                    tabindex="204" 
                     text="Đồng ý" 
                     @click="btnSelectOnClick" 
                 />
@@ -241,6 +240,9 @@ export default {
         assetsNoDisplay: {
             type: Array
         },
+        assetsDisplay: {
+            type: Array
+        }
     },
 
     data() {
@@ -249,32 +251,27 @@ export default {
             assetsSelected:[], // Mảng lưu các tài sản được chọn
             search:"", // Lưu giá trị input tìm kiếm
             isLoading: false, // Có đang loading hay không
-            dialogShow: false, // Hiển thị dialog hay không
-            assetSelected: {}, // Tài sản được chọn
-            detailFormMode: Enum.FormMode.Add, // Loại của dialog chi tiết tài sản
             rowSelected: -1, // Dòng được chọn tạm thời (click)
             rowHover: -1, // Dòng được hover
             rowFocus: -1, // Dòng được focus
-            rowFocusDelete: [], // Chứa id của dòng được focus để xóa
             title: "", // Title của dialog dialog chi tiết tài sản
             checkedAll: false, // Có check toàn bộ checkbox hay không
             checked: [], // Danh sách các dòng được chọn (checkbox)
             checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
-            deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
-            deleteText:"", // Nội dung dialog cảnh báo xóa
             deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
             toastShow: false, // Hiển thị toast thông báo thành công hay không
             tableView: 20, // Số trang hiển thị
             totalPage: 1, // Tổng số trang
             page: 1, // Trang đang chọn
             totalCount: 0, // Tổng số bản ghi
-            totalQuantity: 0, // Tổng số lượng
-            totalCost: 0, // Tổng số nguyên giá
-            totalDepreciation: 0, // Tổng số hao mòn lũy kế
-            totalRemain: 0, // Tổng số còn lại
+            pseudoPage: [], // Trang lưu nếu tài sản dư ra
+            pseudoCount: -1, // Số trang nếu tài sản dư ra
+            searchInput: "", // Từ khóa để lọc
+            // totalQuantity: 0, // Tổng số lượng
+            // totalCost: 0, // Tổng số nguyên giá
+            // totalDepreciation: 0, // Tổng số hao mòn lũy kế
+            // totalRemain: 0, // Tổng số còn lại
             keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
-            departmentId: "", // Mã phòng ban để tìm kiếm
-            categoryId: "", // Mã loại tài sản để tìm kiếm
             assetCode: "", // Mã tài sản lưu lại khi mở form
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
@@ -286,6 +283,8 @@ export default {
     created() {
         // Thực hiện gọi api lấy dữ liệu
         this.loadData()
+        console.log("debug");
+        console.log(this.assetsNoDisplay);
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -308,66 +307,29 @@ export default {
         window.removeEventListener('keypress', this.handler);
     },
 
+    updated() {
+        // Đặt lại số trang khi tìm kiếm
+        if(this.totalPage < this.page) {
+            this.page = this.totalPage
+            this.loadData()
+        }
+    },
+
     computed: {
         // Tạo api lấy tài sản
         api : function() {
-            return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&departmentId="+this.departmentId+"&categoryId="+this.categoryId+"&limit="+this.tableView+"&page="+this.page+"&mode="+Enum.GetRecordMode.NotSelectedNotIncrement
+            return Resource.Url.Asset+"/filters?keyword="+this.keyword+"&limit="+this.tableView+"&page="+this.page+"&mode="+Enum.GetRecordMode.NotSelectedNotIncrement
+        },
+        // Danh sách tài sản được lọc
+        filterAssets: function() {
+            return this.assetsDisplay.filter(
+                ({fixed_asset_code, fixed_asset_name}) => [fixed_asset_code, fixed_asset_name]
+                .some(val => val.toLowerCase().includes(this.searchInput))
+            );
         },
     },
 
   methods: {
-    /**
-     * Nhấn button hiển thị dialog thêm tài sản
-     * NDDAT (15/09/2022)
-     */
-    btnAddOnClick() { 
-        this.assetSelected = {}
-        this.detailFormMode = Enum.FormMode.Add
-        this.title = Resource.DialogTitle.Add
-        this.dialogShow = true
-    },
-
-    /**
-     * Tạo text cho dialog cảnh báo xóa
-     * NDDAT (26/09/2022)
-     */
-    deleteTextCreate() {
-        if(this.checked.length > 1) this.deleteText = "<b>"+(this.checked.length>9 ? this.checked.length : "0"+this.checked.length)+"</b> tài sản đã được chọn. Bạn có muốn xóa các tài sản này khỏi danh sách?"
-        else {
-            var id
-            if(this.checked.length == 1) id = this.checked[0];
-            else if(this.rowFocusDelete[0]) id = this.rowFocusDelete[0]
-            for (let index in this.assets) {
-                if (id == this.assets[index].fixed_asset_id){
-                    this.deleteText = "Bạn có muốn xóa tài sản <b>"+this.assets[index].fixed_asset_code+"</b> - <b>"+this.assets[index].fixed_asset_name+"</b>?"
-                    break;
-                }
-            } 
-        }
-    },
-
-    /**
-     * Đóng dialog cảnh báo xóa tài sản
-     * NDDAT (15/09/2022)
-     */
-    closeDelete() {
-        document.getElementById(`table${this.rowFocus+1}`).focus()
-        this.deleteShow = false
-    },
-
-    /**
-     * Nhấn button hiển thị dialog sửa tài sản
-     * NDDAT (15/09/2022)
-     * @param {Asset} asset tài sản đang chọn
-     */
-    rowEdit(asset) {
-        this.assetSelected = asset
-        this.assetCode = this.assetSelected.fixed_asset_code
-        this.detailFormMode = Enum.FormMode.Edit
-        this.title = Resource.DialogTitle.Edit
-        this.dialogShow = true
-    },
-
     /**
      * Tìm kiếm theo mã và tên tài sản
      * NDDAT (27/09/2022)
@@ -375,6 +337,7 @@ export default {
      */
     searchMethod(keyword) {
         this.keyword = keyword
+        this.searchInput = keyword
         this.loadData()
     },
 
@@ -397,6 +360,15 @@ export default {
         if (!this.checkedAll) {
             for (let asset of this.assets) {
                 this.checked.push(asset.fixed_asset_id)
+            }
+        }
+        // Cập nhật dãy checkboxSelected và assetsSelected lưu các dòng được check
+        for (let i in this.checked) {
+            for (let index in this.assets) {
+                if (this.checked[i] == this.assets[index].fixed_asset_id) {
+                    this.checkboxSelected[index] = this.assets[index].fixed_asset_id
+                    this.assetsSelected[index] = this.assets[index]
+                }
             }
         }
     },
@@ -444,6 +416,9 @@ export default {
                 }
             }
         }
+        console.log(this.checked);
+        console.log(this.checkboxSelected);
+        console.log(this.assetsSelected);
         this.checkedAllInspect()
     },
 
@@ -608,16 +583,6 @@ export default {
     },
 
     /**
-     * Hiện thị cảnh báo lỗi truyền từ BackEnd
-     * NDDAT (12/10/2022)
-     * @param {string} text Thông điệp trong cảnh báo
-     */
-    backEndErrorNotify(text) {
-        this.backendErrorMsg = text
-        this.backendError = true;
-    },
-
-    /**
      * Định dạng tiền tệ
      * NDDAT (18/09/2022)
      * @param {double} money số tiền
@@ -628,15 +593,61 @@ export default {
     },
 
     /**
+     * Cập nhật bảng tài sản
+     * NDDAT (28/11/2022)
+     */
+    updateAssetsTable() {
+        if(this.totalCount == this.filterAssets.length) {
+            for(let asset of this.filterAssets) {
+                this.assets.push(asset)
+            }
+        }
+        else if(this.totalCount%this.tableView > this.filterAssets.length || this.totalCount%this.tableView == 0) {
+            if(this.page == this.totalPage) {
+                for(let asset of this.filterAssets) {
+                    this.assets.push(asset)
+                }
+            }
+        }
+        else if (this.totalCount%this.tableView == this.filterAssets.length) {
+            this.pseudoCount = this.totalPage
+            this.pseudoPage = this.filterAssets
+        }
+        else {
+            this.pseudoCount = this.totalPage
+            this.pseudoPage = []
+            for (let i = 0; i < this.totalCount%this.tableView; i++) {
+                this.pseudoPage.push(this.filterAssets[i])
+            }
+            if(this.page == this.pseudoCount) this.assets = this.pseudoPage
+            if(this.page == this.totalPage-1) {
+                for (let i = this.totalCount%this.tableView; i < this.filterAssets.length; i++) {
+                    this.assets.push(this.filterAssets[i])
+                }
+            }
+        }
+        // this.pseudoPage = []
+        // this.pseudoCount = this.totalPage + 1
+        // if(this.assets.length > this.tableView) {
+        //     this.totalPage++
+        //     while(this.assets.length > this.tableView) {
+        //         pseudoPage.push(this.assets[this.assets.length-1])
+        //         this.assets.pop()
+        //     }
+        // }
+        // if(newVal == pseudoCount) {
+        //     this.assets = pseudoPage
+        // }
+    },
+
+    /**
      * Gọi api lấy dữ liệu
      * NDDAT (15/09/2022)
      */
     loadData() {
         try{
             // Chuyển danh sách tài sản thành danh sách id tài sản
-            let assetids = this.assetsNoDisplay.map(function (obj) {
-                return obj.fixed_asset_id;
-            });
+            let assetids = this.assetsNoDisplay.map(obj => obj.fixed_asset_id);
 
             // Gọi api lấy dữ liệu
             this.isLoading = true
@@ -645,11 +656,13 @@ export default {
             .then(data => {
                 this.assets = Object.values(data)[0]
                 this.totalCount = Object.values(data)[1]
-                this.totalQuantity = Object.values(data)[2]
-                this.totalCost = Object.values(data)[3]
-                this.totalDepreciation = Object.values(data)[4]
-                this.totalRemain = Object.values(data)[5]
+                // this.totalQuantity = Object.values(data)[2]
+                // this.totalCost = Object.values(data)[3]
+                // this.totalDepreciation = Object.values(data)[4]
+                // this.totalRemain = Object.values(data)[5]
+                this.totalCount += this.filterAssets.length
                 this.totalPageMethod()
+                this.updateAssetsTable()
                 this.checkedAllInspect()
                 this.isLoading = false
             })
@@ -683,27 +696,11 @@ export default {
                 this.closeProValidate()
             }
         }
-        else if(e.which == Enum.KeyCode.Ctrl){
-            this.ctrlPressed = true
-        }
-        else if(e.which == Enum.KeyCode.F8 && this.ctrlPressed == true){
+        else if(e.which == Enum.KeyCode.F8 && e.ctrlKey == true){
             this.btnSelectOnClick()
-            this.ctrlPressed = false
         }
-        else if(e.which == Enum.KeyCode.F9 && this.ctrlPressed == true){
+        else if(e.which == Enum.KeyCode.F9 && e.ctrlKey == true){
             this.btnCloseOnClick()
-            this.ctrlPressed = false
-        }
-    },
-
-    /**
-     * Tạo thông điệp cho dialog cảnh báo lỗi validate
-     * NDDAT (19/09/2022)
-     */        
-    createValidateMessage() {
-        this.errorMessage = Resource.ErrorMsg.ValidateEmpty
-        for(let i in this.errorArray) {
-            this.errorMessage = this.errorMessage + '\n' + ' - ' + this.errorArray[i]
         }
     },
 

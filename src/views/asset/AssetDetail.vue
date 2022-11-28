@@ -356,7 +356,6 @@ export default {
             closeMsg: Resource.ErrorMsg.CloseMsg, // Văn bản khi đóng form
             closeEditedMsg: Resource.ErrorMsg.CloseEditedMsg, // Văn bản khi đóng form sau khi chỉnh sửa
             shiftPressed: false, // Nút Shift có đang được bấm hay không
-            ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
@@ -450,16 +449,11 @@ export default {
                     this.closeProValidate()
                 }
             }
-            else if(e.which == Enum.KeyCode.Ctrl){
-                this.ctrlPressed = true
-            }
-            else if(e.which == Enum.KeyCode.F8 && this.ctrlPressed == true){
+            else if(e.which == Enum.KeyCode.F8 && e.ctrlKey == true){
                 this.btnSaveOnClick()
-                this.ctrlPressed = false
             }
-            else if(e.which == Enum.KeyCode.F9 && this.ctrlPressed == true){
+            else if(e.which == Enum.KeyCode.F9 && e.ctrlKey == true){
                 this.btnCloseOnClick()
-                this.ctrlPressed = false
             }
         },
 
@@ -746,7 +740,7 @@ export default {
                 .then(data => {
                     switch(status) {
                         case 400: 
-                            if(Object.values(data)[3][0]) this.backEndErrorNotify(Object.values(data)[3][0])
+                            if(Object.values(data)[3]) this.backEndErrorNotify(Object.values(data)[3])
                             else this.backEndErrorNotify(Resource.ErrorCode[400])
                             break
                         case 405: 

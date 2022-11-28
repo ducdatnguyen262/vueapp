@@ -6,7 +6,7 @@
                 <button class="dialog-x-container">
                     <div 
                         ref="btnx"
-                        tabindex="100" 
+                        tabindex="200" 
                         class="dialog-x"
                         @keydown.enter="btnCloseOnClick()" 
                         @click="btnCloseOnClick()" 
@@ -114,7 +114,7 @@
 
             <div class="dialog__footer">
                 <d-button 
-                    tabindex="114" 
+                    tabindex="310" 
                     text="Hủy" 
                     type="white" 
                     class="mr-10" 
@@ -124,7 +124,7 @@
                     @keydown.tab="focusBack"
                 />
                 <d-button 
-                    tabindex="113" 
+                    tabindex="311" 
                     text="Lưu" 
                     @click="btnSaveOnClick" 
                 />
@@ -178,7 +178,7 @@ export default {
     components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DTooltipWarning },
     props: {
         assetSelected: Function, // Tài sản được chọn
-        assets: [],
+        assets: [], // Danh sách tài sản của cùng chứng từ
         formMode: {
             type: Number,
             default: Enum.FormMode.Add
@@ -323,7 +323,7 @@ export default {
          * NDDAT (09/11/2022)
          */
         addField(list) {
-            list.push({budget_id: "", budget_name: "", cost: 0});
+            list.push({budget_id: "", budget_name: "", cost: null});
             this.inputMoneySourceCost(0)
         },
 
@@ -333,6 +333,7 @@ export default {
          */
         removeField(index, list) {
             list.splice(index, 1)
+            this.sourceCost.splice(index, 1)
         },
 
         /**

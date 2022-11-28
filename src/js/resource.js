@@ -79,6 +79,8 @@ export default {
     Toast: {
         // Thành công
         success: "Lưu dữ liệu thành công.",
+        // Xóa thành công
+        successDelete: "Xóa dữ liệu thành công.",
         // Thất bại
         failed: "Có lỗi xảy ra."
     },

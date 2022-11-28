@@ -16,7 +16,8 @@
     z-index: 4;
 }
 
-.success-icon {
+.success-icon,
+.successDelete-icon {
     background-image: url("../../assets/icon/checked.png");
     width: 20px;
 	height: 20px;

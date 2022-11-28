@@ -23,10 +23,10 @@
                         v-model="voucher.voucher_code" 
                         tabindex="101" 
                         maxlength="20"
-                        ref="asset_code" 
+                        ref="voucher_code" 
                         class="dialog-input" 
                         type="text"
-                        :class="{'input--error':!voucher.voucher_code && this.isSubmited}" 
+                        :class="{'input--error':(!voucher.voucher_code || this.backendErrorMsg == 'Mã chứng từ không được trùng') && this.isSubmited}" 
                     >
                     <d-tooltip-warning text="Mã chứng từ"></d-tooltip-warning>
                 </div>
@@ -34,7 +34,7 @@
                     <label>Ngày bắt đầu sử dụng <span style="color: red;">*</span></label>
                     <el-date-picker 
                         v-model="voucher.voucher_date" 
-                        tabindex="108" 
+                        tabindex="102" 
                         :format="dateFormat" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
@@ -47,7 +47,7 @@
                     <label>Ngày ghi tăng <span style="color: red;">*</span></label>
                     <el-date-picker 
                         v-model="voucher.increment_date" 
-                        tabindex="108" 
+                        tabindex="103" 
                         :format="dateFormat" 
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         type="date" 
@@ -60,7 +60,7 @@
                     <label>Nội dung</label>
                     <input 
                         v-model="voucher.description" 
-                        tabindex="102" 
+                        tabindex="104" 
                         maxlength="255"
                         class="dialog-input dialog-input-bigger"
                         type="text"
@@ -75,25 +75,25 @@
                         <div class="search__icon"></div>
                         <input 
                             v-model="search" 
-                            tabindex="1" 
+                            tabindex="105" 
                             id="searchInput"
                             class="search__input search__input--long mr-11" 
                             type="text" 
                             placeholder="Tìm kiếm theo mã, tên tài sản"
-                            @keypress.enter="searchMethod(search)"
+                            @keypress.enter="searchInput = search"
                         >
                     </div>
                 </div>
                 <div class="content-btns">
                     <d-button 
-                        tabindex="114" 
+                        tabindex="106" 
                         text="Chọn tài sản" 
                         type="outline"
-                        @click="selectAssetsShow=true;thisShow=false" 
+                        @click="selectAssetsMethod()" 
                     />
                 </div>
             </div>
-            <div class="table-container table-2 mb-20">
+            <div class="table-container table-2 mb-20" style="box-shadow:none">
                 <table class="table">
                     <thead class="thead">
                         <tr>
@@ -117,8 +117,8 @@
                         </tr>
                     </thead>
                     <tbody class="tbody">
-                        <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
-                            tabindex="7" 
+                        <tr v-for="(asset, index) in filterAssets" :key="asset.fixed_asset_id" 
+                            tabindex="307" 
                             :id="'table'+index" 
                             :class="{'row--selected':(rowSelected == index), 'checkbox--selected':rowFocus2 == index}" 
                             v-contextmenu:contextmenu
@@ -144,7 +144,7 @@
                                 </div>
                                 <div v-show="rowHover == index" class="table-function" style="justify-content: flex-end;">
                                     <div class="position-relative mr-10">
-                                        <div @click="rowEdit(asset, index)" class="button--icon-edit"></div>
+                                        <div @click="rowEdit(asset)" class="button--icon-edit"></div>
                                         <d-tooltip text="Sửa"></d-tooltip>
                                     </div>
                                     <div class="position-relative">
@@ -172,98 +172,13 @@
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation)}}</b></td>
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost-totalDepreciation)}}</b></td>
                         </tr>
-                        <!-- <tr>
-                            <td colspan="7">
-                                <div class="tfooter-left">
-                                    <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
-                                    <div class="tfooter-total">
-                                        <select @change="page=1;loadData()" v-model="tableView">
-                                            <option value="20" selected>20</option>
-                                            <option value="50">50</option>
-                                            <option value="100">100</option>
-                                            <option value="200">200</option>
-                                        </select>
-                                    </div>
-                                    <div @click="prevPage()" class="tfooter-prev position-relative">
-                                        <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
-                                    </div>
-                                    <div 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == 1}" 
-                                        @click="toPage(1)" 
-                                    >
-                                        1
-                                    </div>
-                                    <div 
-                                        v-show="page>=3 && totalPage>5 && totalPage!=1" 
-                                        class="tfooter-page"
-                                    >
-                                        ...
-                                    </div>
-                                    <div 
-                                        v-show="(page<3 || totalPage==5 || totalPage==3) && totalPage>=3 " 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == 2}" 
-                                        @click="toPage(2)" 
-                                    >
-                                        2
-                                    </div>
-                                    <div 
-                                        v-show="page<3 && totalPage!=1 && totalPage>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == 3}" 
-                                        @click="toPage(3)" 
-                                    >
-                                        3
-                                    </div>
-                                    <div 
-                                        v-show="page>=3 && page<totalPage-1 && totalPage!=1" 
-                                        class="tfooter-page tfooter-page--selected"
-                                    >
-                                        {{page}}
-                                    </div>
-                                    <div 
-                                        v-show="page<totalPage-1 && totalPage>5 && totalPage!=1" 
-                                        class="tfooter-page"
-                                    >
-                                        ...
-                                    </div>
-                                    <div 
-                                        v-show="page>=totalPage-1 && totalPage!=1 && totalPage>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == totalPage-2}" 
-                                        @click="toPage(totalPage-2)" 
-                                    >
-                                        {{totalPage-2}}
-                                    </div>
-                                    <div 
-                                        v-show="(page>=totalPage-1 || totalPage==5) && totalPage!=1 && totalPage>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page == totalPage-1}" 
-                                        @click="toPage(totalPage-1)" 
-                                    >
-                                        {{totalPage-1}}
-                                    </div>
-                                    <div 
-                                        v-show="totalPage>1" :class="{'tfooter-page--selected':page == totalPage}" 
-                                        class="tfooter-page"
-                                        @click="toPage(totalPage)" 
-                                    >
-                                        {{totalPage}}
-                                    </div>
-                                    <div @click="nextPage()" class="tfooter-next position-relative">
-                                        <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr> -->
                     </tfoot>
                 </table>
             </div>
 
             <div class="dialog__footer">
                 <d-button 
-                    tabindex="114" 
+                    tabindex="308" 
                     text="Hủy" 
                     type="white" 
                     class="mr-10" 
@@ -271,7 +186,7 @@
                     @click="btnCloseOnClick" 
                 />
                 <d-button 
-                    tabindex="113" 
+                    tabindex="309" 
                     text="Lưu" 
                     @click="btnSaveOnClick" 
                 />
@@ -306,6 +221,7 @@
     <voucher-select-assets
         v-if="selectAssetsShow"
         :assetsNoDisplay="assets"
+        :assetsDisplay="deletedAssets"
         @hideDialog="selectAssetsShow=false;thisShow=true"
         @selectAssets="selectAssets"
     />
@@ -359,7 +275,7 @@ export default {
             type: Number,
             default: Enum.FormMode.Add
         },
-        assetCode: String,
+        title: String,
     },
     
     data() {
@@ -376,39 +292,9 @@ export default {
                 modified_by:"",
                 modified_date:"",
             },
-            // asset: { // Lưu dữ liệu 1 tài sản
-            //     fixed_asset_id:"",
-            //     fixed_asset_code:"",
-            //     fixed_asset_name:"",
-            //     organization_id:"",
-            //     organization_code:"",
-            //     organization_name:"",
-            //     department_id:"",
-            //     department_code:"",
-            //     department_name:"",
-            //     fixed_asset_category_id:"",
-            //     fixed_asset_category_code:"",
-            //     fixed_asset_category_name:"",
-            //     quantity:"",
-            //     cost:"",
-            //     depreciation_rate:"",
-            //     purchase_date:"",
-            //     production_year:"",
-            //     production_date:"",
-            //     tracked_year:"",
-            //     life_time:"",
-            //     active:"",
-            //     depreciation_year:"",
-            //     created_by:"",
-            //     created_date:"",
-            //     modified_by:"",
-            //     modified_date:"",
-            // },
-            //assetsSelected:[], // Mảng lưu các tài sản được chọn
             asset: {},
             assets:[], // Mảng lưu các tài sản hiển thị
             assetSelected: {}, // Tài sản được chọn
-            indexSelected: -1, // Mã số của tài sản được chọn
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
@@ -421,24 +307,23 @@ export default {
             firstTimeEdited: true, // Form đã được chỉnh sửa sau khi truyền hết dữ liệu chưa
             closeMsg: Resource.ErrorMsg.CloseMsg, // Văn bản khi đóng form
             closeEditedMsg: Resource.ErrorMsg.CloseEditedMsg, // Văn bản khi đóng form sau khi chỉnh sửa
-            shiftPressed: false, // Nút Shift có đang được bấm hay không
-            ctrlPressed: false, // Nút Ctrl có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
             selectAssetsShow: false,
             updateAssetShow: false, // Dialog sửa tài sản có hiện không
-            thisShow: true,
-            rowSelected:-1,
-            rowHover: -1,
-            totalCount: 0,
-            totalCost: 0,
-            totalDepreciation: 0,
-            totalRemain: 0,
-            title:"", // Tiêu đề dialog
-            addArray:[],
-            deleteArray:[],
-            addedVoucherId: "",
+            thisShow: true, // Dialog này có hiện không
+            searchInput: "", // Từ khóa để lọc
+            rowSelected:-1, // Dòng được chọn khi click
+            rowHover: -1, // Dòng được hover
+            totalCount: 0, // Tổng số tài sản
+            totalCost: 0, // Tổng nguyên giá tài sản
+            totalDepreciation: 0, // Tổng hao mòn lũy kế tài sản
+            totalRemain: 0, // Tổng còn lại tài sản
+            addArray:[], // Dãy id các tài sản được thêm
+            deleteArray:[], // Dãy id các tài sản bị bỏ
+            deletedAssets:[], // Dãy các tài sản bị bỏ
+            addedVoucherId: "", // Id chứng từ vừa thêm
             keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản)
             localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
             dateFormat: Resource.DateFormat.VN, // Định dạng ngày hiện tại
@@ -468,7 +353,14 @@ export default {
         // Số lượng tài sản
         asset_lenght: function() {
             return this.assets.length
-        }
+        },
+        // Danh sách tài sản được lọc
+        filterAssets: function() {
+            return this.assets.filter(
+                ({fixed_asset_code, fixed_asset_name}) => [fixed_asset_code, fixed_asset_name]
+                .some(val => val.toLowerCase().includes(this.searchInput))
+            );
+        },
     },
 
     created() {
@@ -524,6 +416,7 @@ export default {
          * Cập nhật tài sản được chọn
          * NDDAT (18/11/2022)
          * @param {array} assets dãy các tài sản
+         * @param {int} totalCost tổng nguyên giá các tài sản
          */
         updateAssets(assets, totalCost) {
             this.assets = assets
@@ -539,6 +432,7 @@ export default {
             for(let i in this.assets) {
                 if(this.assets[i].fixed_asset_id == id) {
                     this.deleteArray.push(id)
+                    this.deletedAssets.push(this.assets[i])
                     this.assets.splice(i,1)
                     this.totalCount--
                     break
@@ -566,11 +460,20 @@ export default {
          * NDDAT (17/11/2022)
          * @param {Asset} asset tài sản đang chọn
          */
-        rowEdit(asset, index) {
+        rowEdit(asset) {
             this.assetSelected = asset
-            this.indexSelected = index
             this.updateAssetShow = true;
             this.thisShow = false
+        },
+
+        /**
+         * Hiển thị dialog chọn tài sản
+         * NDDAT (28/11/2022)
+         */
+        selectAssetsMethod() {
+            this.selectAssetsShow=true;
+            this.thisShow=false;
+            this.deletedAssets = this.deletedAssets.filter(val => !this.addArray.includes(val.fixed_asset_id));
         },
 
         /**
@@ -599,16 +502,11 @@ export default {
                     this.closeProValidate()
                 }
             }
-            else if(e.which == Enum.KeyCode.Ctrl){
-                this.ctrlPressed = true
-            }
-            else if(e.which == Enum.KeyCode.F8 && this.ctrlPressed == true){
+            else if(e.which == Enum.KeyCode.F8 && e.ctrlKey == true){
                 this.btnSaveOnClick()
-                this.ctrlPressed = false
             }
-            else if(e.which == Enum.KeyCode.F9 && this.ctrlPressed == true){
+            else if(e.which == Enum.KeyCode.F9 && e.ctrlKey == true){
                 this.btnCloseOnClick()
-                this.ctrlPressed = false
             }
         },
 
@@ -648,8 +546,8 @@ export default {
             // voucher
             if (this.voucher.voucher_date == null) this.voucher.voucher_date = new Date().toISOString()
             if (this.voucher.increment_date == null) this.voucher.increment_date = new Date().toISOString()
-            if(this.formMode == Enum.FormMode.Add) this.title = Resource.Title.Add
-            else if(this.formMode == Enum.FormMode.Edit) this.title = Resource.Title.Edit
+            // if(this.formMode == Enum.FormMode.Add) this.title = Resource.Title.Add
+            // else if(this.formMode == Enum.FormMode.Edit) this.title = Resource.Title.Edit
         },
 
         /**
@@ -741,7 +639,7 @@ export default {
          * NDDAT (15/09/2022)
          */
         focusFirst() {
-            this.$refs.asset_code.focus()
+            this.$refs.voucher_code.focus()
         },
 
         /**
@@ -761,10 +659,11 @@ export default {
          * NDDAT (27/09/2022)
          * @param {String} keyword từ khóa tìm kiếm
          */
-        searchMethod(keyword) {
-            this.keyword = keyword
-            this.loadDetailData()
-        },
+        // searchMethod(keyword) {
+        //     this.keyword = keyword
+        //     // this.searchInput = keyword
+        //     this.loadDetailData()
+        // },
 
         /**
          * Click vào button để đóng dialog tài sản
@@ -849,7 +748,7 @@ export default {
                 .then(data => {
                     switch(status) {
                         case 400: 
-                            if(Object.values(data)[3][0]) this.backEndErrorNotify(Object.values(data)[3][0])
+                            if(Object.values(data)[3]) this.backEndErrorNotify(Object.values(data)[3])
                             else this.backEndErrorNotify(Resource.ErrorCode[400])
                             break
                         case 405: 

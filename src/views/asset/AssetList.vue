@@ -296,7 +296,7 @@
     />
 
     <!-- Dialog cảnh cáo lỗi từ backend -->
-    <d-dialog-1-button v-on:keydown="keyboardEvent"
+    <d-dialog-1-button
         v-if="backendError" 
         :text="backendErrorMsg"
         @closeNotify="this.backendError = false"
@@ -312,6 +312,11 @@
     <!-- Toast thông báo thành công -->
     <transition name="toast">
         <d-toast v-show="toastShow" type="success"></d-toast>
+    </transition>
+
+    <!-- Toast thông báo xóa thành công -->
+    <transition name="toast">
+        <d-toast v-show="toastDeleteShow" type="successDelete"></d-toast>
     </transition>
 
     <!-- Toast thông báo thất bại -->
@@ -356,6 +361,7 @@ export default {
         deleteText:"", // Nội dung dialog cảnh báo xóa
         deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
         toastShow: false, // Hiển thị toast thông báo thành công hay không
+        toastDeleteShow: false, // Hiển thị toast thông báo xóa thành công hay không
         toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
         tableView: 20, // Số trang hiển thị
         totalPage: 1, // Tổng số trang
@@ -375,7 +381,7 @@ export default {
         deleteIncrementMsg: "", // Thông điệp trong cảnh báo lỗi xóa tài sản ghi tăng
         localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
         dateFormat: Resource.DateFormat.VN, // Định dạng ngày hiện tại
-        columns : [
+        columns : [ // Định dạng để Xuất (In)
                     {
                         label: "Mã tài sản",
                         field: "fixed_asset_code",
@@ -611,6 +617,8 @@ export default {
                             this.loadData()
                             this.rowFocusDelete = []
                             this.checked = []
+                            this.toastDeleteShow = true
+                            setTimeout(() => this.toastDeleteShow = false, 3000)
                     }
                 })
                 .catch(res => {
