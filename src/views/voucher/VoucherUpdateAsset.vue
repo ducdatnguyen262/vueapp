@@ -4,8 +4,7 @@
             <div class="dialog__header background-white">
                 <h2 class="dialog-title">Sửa tài sản {{assetSelected.fixed_asset_name}}</h2>
                 <button class="dialog-x-container">
-                    <div 
-                        ref="btnx"
+                    <div
                         tabindex="200" 
                         class="dialog-x"
                         @keydown.enter="btnCloseOnClick()" 
@@ -26,18 +25,6 @@
                 <div class="dialog-update-asset">
                     <div v-for="(source, index) in sources" :key="source.id" class="source-item">
                         <div class="dialog-item">
-                            <!-- <d-combobox 
-                                type="3" 
-                                main="budget_name" 
-                                class="source-item-cbb"
-                                tooptipText="Nguồn hình thành"
-                                :tabindex="`10${index}`" 
-                                :isSubmited="this.isSubmited"
-                                @comboboxSelected="comboboxBudget"
-                                :vmodelValue="source.budget_name"
-                                :budgetId="source.id"
-                                @budgetSelected="comboboxBudget"
-                            /> -->
                             <el-select 
                                 v-model="source.budget_id" 
                                 filterable 
@@ -56,20 +43,6 @@
                             <d-tooltip-warning text="Nguồn hình thành"></d-tooltip-warning>
                         </div>
                         <div class="dialog-item">
-                            <!-- <d-input-money
-                                v-model="source.cost"
-                                tabindex="105" 
-                                class="source-item-input"
-                                :class="{'input--error':!source.cost && source.cost!=0 && this.isSubmited}" 
-                                :options="{
-                                    locale: localeCode,
-                                    currency: 'EUR',
-                                    currencyDisplay: 'hidden',
-                                    valueRange: {min: 0},
-                                    hideGroupingSeparatorOnFocus: false,
-                                }"
-                                @keyup="notNegative('quantity')"
-                            /> -->
                             <input 
                                 v-model="sourceCost[index]"
                                 type="text"
@@ -118,10 +91,7 @@
                     text="Hủy" 
                     type="white" 
                     class="mr-10" 
-                    :id="'close-asset-detail'"
-                    @click="btnCloseOnClick" 
-                    @keydown.shift="focusWithShift" 
-                    @keydown.tab="focusBack"
+                    @click="btnCloseOnClick"
                 />
                 <d-button 
                     tabindex="311" 
@@ -131,25 +101,13 @@
             </div>
         </div>
     </div>
-    <d-dialog v-on:keydown="keyboardEvent"
-        v-if="notifyShow" 
-        textbtn="Hủy bỏ"
-        :text="closeMsg" 
-        @closeNotify="closeNotify" 
-        @confirmNotify="confirmNotifyMethod" 
-    />
+
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="validateShow" 
         :text="errorMessage"
         @closeNotify="closeValidate" 
     />
-    <d-dialog-3-button v-on:keydown="keyboardEvent"
-        v-if="validateProShow" 
-        :text="closeEditedMsg"
-        @closeNotify="closeProValidate" 
-        @closeNotSaveNotify="confirmNotifyMethod"
-        @confirmNotify="confirmSaveNotify" 
-    />
+
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="backendError" 
         :text="backendErrorMsg"
@@ -164,18 +122,16 @@
 
 <script>
 import DButton from '@/components/base/DButton.vue';
-import DDialog from '@/components/base/DDialog.vue';
 import DDialog1Button from '../../components/base/DDialog1Button.vue';
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
-import DDialog3Button from '@/components/base/DDialog3Button.vue';
 import DInputMoney from '@/components/base/DInputMoney.vue';
 import DTooltip from '@/components/base/DTooltip.vue';
 import DTooltipWarning from '@/components/base/DTooltipWarning.vue';
     
 export default {
     name:"AssetDetail",
-    components: { DButton, DDialog, DDialog1Button, DDialog3Button, DInputMoney, DTooltip, DTooltipWarning },
+    components: { DButton, DDialog1Button, DInputMoney, DTooltip, DTooltipWarning },
     props: {
         assetSelected: Function, // Tài sản được chọn
         assets: [], // Danh sách tài sản của cùng chứng từ
@@ -183,8 +139,6 @@ export default {
             type: Number,
             default: Enum.FormMode.Add
         },
-        title: String,
-        assetCode: String,
         totalCost: Number,
     },
     
@@ -220,38 +174,20 @@ export default {
                 modified_by:"",
                 modified_date:"",
             },
-            notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             errorArray: [], // Dãy chứa các lỗi validate
             errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
             validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate thiếu hay không
-            validateProShow: false, // Có hiển thị dialog cảnh báo lỗi validate nghiệp vụ hay không
-            temp: "", // Lưu giá trị tạm
             isSubmited: false, // Đã submit form hay chưa (sau khi submit thì mới validate)
             focus: false, // Có đang focus vào hay không
-            isEdited: false, // Form đã được chỉnh sửa chưa
-            firstTimeEdited: true, // Form đã được chỉnh sửa sau khi truyền hết dữ liệu chưa
-            closeMsg: Resource.ErrorMsg.CloseMsg, // Văn bản khi đóng form
-            closeEditedMsg: Resource.ErrorMsg.CloseEditedMsg, // Văn bản khi đóng form sau khi chỉnh sửa
-            shiftPressed: false, // Nút Shift có đang được bấm hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
             sources: [{budget_id: "", budget_name: "", cost: 0}], // Mảng lưu nguồn ngân sách truyền vào
-            sumCost: 0, // Tổng nguyên giá
             budget_options: [], // Mảng lưu các tên nguồn ngân sách
             duplicateValidate: [], // Mảng có giá trị 1 tại vị trí trùng
             sourceCost:[], // Lưu số tiền của nguồn ngân sách dưới dạng string có đấu '.'
             localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
         }
-    },
-
-    watch: {
-        asset: {
-            deep: true,
-            handler() {
-                this.isEdited = true
-            }
-        },
     },
 
     computed: {
@@ -271,19 +207,6 @@ export default {
         // Truyền vào nguồn ngân sách
         for(let i in this.sources) {
             this.sourceCost[i] = this.formatMoney(this.sources[i].cost)
-        }
-    },
-
-    mounted() {
-        // Đặt lại form là chưa sửa
-        this.isEdited = false
-    },
-
-    updated() {
-        // Xử lí để dữ liệu truyền vào form không được tính là đã sửa (isEdited)
-        if(this.isEdited && this.firstTimeEdited && this.formMode != Enum.FormMode.Edit){
-            this.isEdited = false
-            this.firstTimeEdited = false
         }
     },
 
@@ -309,6 +232,7 @@ export default {
         /**
          * Xử lí nhập số tiền của ô giá nguồn ngân sách
          * NDDAT (09/11/2022)
+         * @param {number} index số thứ tự dãy nguồn ngân sách 
          */
         inputMoneySourceCost(index) {
             if(this.localeCode == Resource.LanguageCode.VN) this.sourceCost[index] = this.sourceCost[index].replaceAll('.','')
@@ -321,6 +245,7 @@ export default {
         /**
          * Thêm một nguồn hình thành
          * NDDAT (09/11/2022)
+         * @param {array} list mảng lưu các nguồn ngân sách
          */
         addField(list) {
             list.push({budget_id: "", budget_name: "", cost: null});
@@ -330,6 +255,8 @@ export default {
         /**
          * Xóa một nguồn hình thành
          * NDDAT (09/11/2022)
+         * @param {number} index số thứ tự dãy nguồn ngân sách
+         * @param {array} list mảng lưu các nguồn ngân sách
          */
         removeField(index, list) {
             list.splice(index, 1)
@@ -339,17 +266,12 @@ export default {
         /**
          * Xử lí sự kiện keyboard shortcut
          * NDDAT (12/10/2022)
+         * @param {Event} e sư kiện khi tương tác bàn phím
          */
         keyboardEvent(e) {
             if (e.which == Enum.KeyCode.ESC) {
-                if(this.notifyShow == true){
-                    this.closeNotify()
-                }
-                else if (this.validateShow == true) {
+                if (this.validateShow == true) {
                     this.closeValidate()
-                }
-                else if (this.validateProShow == true) {
-                    this.closeProValidate()
                 }
             }
             else if(e.which == Enum.KeyCode.F8 && e.ctrlKey == true){
@@ -359,17 +281,6 @@ export default {
                 this.btnCloseOnClick()
             }
         },
-
-        /**
-         * Cập nhật combobox nguồn ngân sách
-         * NDDAT (12/10/2022)
-         */
-        // comboboxBudget(main, id) {
-        //     this.sources[id-1].budget_name = main
-        // },
-        // comboboxBudget(id, code, name) {
-        //     this.sources[id-1].budget_name = main
-        // },
 
         /**
          * Chọn ngày mặc định là ngày hiện tại nếu không có sẵn ngày
@@ -395,27 +306,11 @@ export default {
         },
 
         /**
-         * Xác nhận đóng cảnh báo
-         * NDDAT (30/09/2022)
-         */
-        closeNotify() {
-            this.notifyShow = false
-        },
-
-        /**
          * Xác nhận đóng cảnh báo validate thiếu dữ liệu
          * NDDAT (30/09/2022)
          */
         closeValidate() {
             this.validateShow = false
-        },
-
-        /**
-         * Xác nhận đóng cảnh báo validate nghiệp vụ
-         * NDDAT (30/09/2022)
-         */
-        closeProValidate() {
-            this.validateProShow = false
         },
 
         /**
@@ -462,29 +357,6 @@ export default {
         formatMoney(money) {
             money = new Intl.NumberFormat(this.localeCode, {}).format(money)
             return money
-        },
-
-        /**
-         * Chuyển focus lên đầu sau khi đến cuối dialog tài sản
-         * NDDAT (15/09/2022)
-         */
-        focusBack() {
-            if(!this.shiftPressed) {
-                this.$refs.btnx.focus()
-            }
-            this.shiftPressed = false
-        },
-
-        /**
-         * Focus ngược khi dùng Shift+Tab
-         * NDDAT (15/09/2022)
-         */
-        focusWithShift(e) {
-            if(e.tab) {
-                document.getElementById('close-asset-detail').focus()
-            } else {
-                this.shiftPressed = true
-            }
         },
 
         /**
@@ -569,7 +441,6 @@ export default {
                             this.backEndErrorNotify(Resource.ErrorCode[500])
                             break
                         default: 
-                            // this.$emit("loadDetailData")
                             var totalCostAfterUpdate = 0
                             for(let asset of this.assets) {
                                 if(asset.fixed_asset_id == this.asset.fixed_asset_id) {

@@ -2,7 +2,6 @@
     <div class="dialog-container" v-on:keydown="keyboardEvent">
         <div class="dialog dialog-voucher">
             <div class="dialog__header background-white">
-                <!-- <h2 class="dialog-title">{{title}}</h2> -->
                 <h2 class="dialog-title">Chọn tài sản ghi tăng</h2>
                 <button class="dialog-x-container">
                     <div 
@@ -193,30 +192,6 @@
             </div>
         </div>
     </div>
-    <d-dialog v-on:keydown="keyboardEvent"
-        v-if="notifyShow" 
-        textbtn="Hủy bỏ"
-        :text="closeMsg" 
-        @closeNotify="closeNotify" 
-        @confirmNotify="confirmNotifyMethod" 
-    />
-    <d-dialog-1-button v-on:keydown="keyboardEvent"
-        v-if="validateShow" 
-        :text="errorMessage"
-        @closeNotify="closeValidate" 
-    />
-    <d-dialog-3-button v-on:keydown="keyboardEvent"
-        v-if="validateProShow" 
-        :text="closeEditedMsg"
-        @closeNotify="closeProValidate" 
-        @closeNotSaveNotify="confirmNotifyMethod"
-        @confirmNotify="confirmSaveNotify" 
-    />
-    <d-dialog-1-button v-on:keydown="keyboardEvent"
-        v-if="backendError" 
-        :text="backendErrorMsg"
-        @closeNotify="closeBackendError"
-    />
 
     <!-- Toast thông báo thất bại -->
     <transition name="toast">
@@ -227,14 +202,12 @@
 <script>
 import DButton from '../../components/base/DButton.vue'
 import DTooltip from '@/components/base/DTooltip.vue'
-import DDialog from '@/components/base/DDialog.vue'
 import Enum from '../../js/enum.js'
 import Resource from '../../js/resource.js'
-import DDialog1Button from '@/components/base/DDialog1Button.vue'
 
 
 export default {
-    components: { DButton, DTooltip, DDialog, DDialog1Button },
+    components: { DButton, DTooltip },
     name:"AssetList",
     props: {
         assetsNoDisplay: {
@@ -254,12 +227,9 @@ export default {
             rowSelected: -1, // Dòng được chọn tạm thời (click)
             rowHover: -1, // Dòng được hover
             rowFocus: -1, // Dòng được focus
-            title: "", // Title của dialog dialog chi tiết tài sản
             checkedAll: false, // Có check toàn bộ checkbox hay không
             checked: [], // Danh sách các dòng được chọn (checkbox)
             checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
-            deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
-            toastShow: false, // Hiển thị toast thông báo thành công hay không
             tableView: 20, // Số trang hiển thị
             totalPage: 1, // Tổng số trang
             page: 1, // Trang đang chọn
@@ -267,14 +237,7 @@ export default {
             pseudoPage: [], // Trang lưu nếu tài sản dư ra
             pseudoCount: -1, // Số trang nếu tài sản dư ra
             searchInput: "", // Từ khóa để lọc
-            // totalQuantity: 0, // Tổng số lượng
-            // totalCost: 0, // Tổng số nguyên giá
-            // totalDepreciation: 0, // Tổng số hao mòn lũy kế
-            // totalRemain: 0, // Tổng số còn lại
             keyword: "", // Từ khóa để tìm kiếm (theo mã và tên tài sản )
-            assetCode: "", // Mã tài sản lưu lại khi mở form
-            backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
-            backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
             localeCode: Resource.LanguageCode.VN, // Mã ngôn ngữ hiện tại
         }
@@ -283,8 +246,6 @@ export default {
     created() {
         // Thực hiện gọi api lấy dữ liệu
         this.loadData()
-        console.log("debug");
-        console.log(this.assetsNoDisplay);
 
         // Cài đặt keyboard shortcut
         const component = this;
@@ -400,8 +361,8 @@ export default {
     /**
      * Click vào checkbox để chọn dòng đó
      * NDDAT (15/09/2022)
-     * @param {int} order số thứ tự dòng của checkbox
-     * @param {int} code id của dòng chứa checkbox được click
+     * @param {number} order số thứ tự dòng của checkbox
+     * @param {number} code id của dòng chứa checkbox được click
      */
     checkedMethod(order, code) {
         if (this.checkboxSelected[order] == code){
@@ -416,17 +377,14 @@ export default {
                 }
             }
         }
-        console.log(this.checked);
-        console.log(this.checkboxSelected);
-        console.log(this.assetsSelected);
         this.checkedAllInspect()
     },
 
     /**
      * Check vào checkbox khi click vào dòng
      * NDDAT (15/11/2022)
-     * @param {int} index số thứ tự dòng của checkbox
-     * @param {int} code id của dòng chứa checkbox được click
+     * @param {number} index số thứ tự dòng của checkbox
+     * @param {number} code id của dòng chứa checkbox được click
      */
     checkedMethodOnClick(index, code) {
         this.rowSelected = index
@@ -457,8 +415,8 @@ export default {
     /**
      * Check vào checkbox khi click vào dòng khi đang giữ Shift
      * NDDAT (15/11/2022)
-     * @param {int} index số thứ tự dòng của checkbox
-     * @param {int} code id của dòng chứa checkbox được click
+     * @param {number} index số thứ tự dòng của checkbox
+     * @param {number} code id của dòng chứa checkbox được click
      * @param {PointerEvent} event sự kiện click khi nhấn giữ shift
      */
     checkedMethodOnClickShift(index, code, event) {
@@ -565,7 +523,7 @@ export default {
     /**
      * Tới trang được chọn
      * NDDAT (25/09/2022)
-     * @param {int} page số trang
+     * @param {number} page số trang
      */
     toPage(page) {
         this.page = page
@@ -626,18 +584,6 @@ export default {
                 }
             }
         }
-        // this.pseudoPage = []
-        // this.pseudoCount = this.totalPage + 1
-        // if(this.assets.length > this.tableView) {
-        //     this.totalPage++
-        //     while(this.assets.length > this.tableView) {
-        //         pseudoPage.push(this.assets[this.assets.length-1])
-        //         this.assets.pop()
-        //     }
-        // }
-        // if(newVal == pseudoCount) {
-        //     this.assets = pseudoPage
-        // }
     },
 
     /**
@@ -656,10 +602,6 @@ export default {
             .then(data => {
                 this.assets = Object.values(data)[0]
                 this.totalCount = Object.values(data)[1]
-                // this.totalQuantity = Object.values(data)[2]
-                // this.totalCost = Object.values(data)[3]
-                // this.totalDepreciation = Object.values(data)[4]
-                // this.totalRemain = Object.values(data)[5]
                 this.totalCount += this.filterAssets.length
                 this.totalPageMethod()
                 this.updateAssetsTable()
@@ -685,86 +627,12 @@ export default {
      * NDDAT (12/10/2022)
      */
     keyboardEvent(e) {
-        if (e.which == Enum.KeyCode.ESC) {
-            if(this.notifyShow == true){
-                this.closeNotify()
-            }
-            else if (this.validateShow == true) {
-                this.closeValidate()
-            }
-            else if (this.validateProShow == true) {
-                this.closeProValidate()
-            }
-        }
-        else if(e.which == Enum.KeyCode.F8 && e.ctrlKey == true){
+        if(e.which == Enum.KeyCode.F8 && e.ctrlKey == true){
             this.btnSelectOnClick()
         }
         else if(e.which == Enum.KeyCode.F9 && e.ctrlKey == true){
             this.btnCloseOnClick()
         }
-    },
-
-    /**
-     * Xác nhận đóng cảnh báo
-     * NDDAT (30/09/2022)
-     */
-    closeNotify() {
-        this.notifyShow = false
-        this.focusFirst()
-    },
-
-    /**
-     * Xác nhận đóng cảnh báo validate thiếu dữ liệu
-     * NDDAT (30/09/2022)
-     */
-    closeValidate() {
-        this.validateShow = false
-        this.focusFirst()
-    },
-
-    /**
-     * Xác nhận đóng cảnh báo validate nghiệp vụ
-     * NDDAT (30/09/2022)
-     */
-    closeProValidate() {
-        this.validateProShow = false
-        this.focusFirst()
-    },
-
-    /**
-     * Xác nhận đóng cảnh báo lỗi từ backend
-     * NDDAT (12/10/2022)
-     */
-    closeBackendError() {
-        this.backendError = false
-        this.focusFirst()
-    },
-
-    /**
-     * Xác nhận lưu khai báo
-     * NDDAT (30/09/2022)
-     */
-    confirmSaveNotify() {
-        this.closeProValidate()
-        this.btnSelectOnClick()
-    },
-
-    /**
-     * Xác nhận hủy bỏ khai báo
-     * NDDAT (15/09/2022)
-     */
-    confirmNotifyMethod() {
-        this.closeNotify()
-        this.closeProValidate()
-        this.$emit("hideDialog")
-    },
-
-    /**
-     * Focus vào phần tử đầu tiên
-     * NDDAT (15/09/2022)
-     */
-    focusFirst() {
-        this.$refs.asset_code.focus()
     },
 
     /**

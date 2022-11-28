@@ -308,9 +308,7 @@
                         <tr v-for="(asset, index) in assets" :key="asset.fixed_asset_id" 
                             tabindex="7" 
                             :id="'table'+index" 
-                            :class="{'row--selected':(rowSelected2 == index), 'checkbox--selected':rowFocus2 == index}" 
-                            @click.right="assetSelected = asset"
-                            @keydown.delete="rowDelete(asset.fixed_asset_id)" 
+                            :class="{'row--selected':(rowSelected2 == index), 'checkbox--selected':rowFocus2 == index}"
                             @keydown.up="prevItem" @keydown.down="nextItem" 
                             @focus="rowFocus2=index" 
                             @click="rowSelected2 = index"
@@ -341,93 +339,8 @@
                             </td>
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost2)}}</b></td>
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalDepreciation2)}}</b></td>
-                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalRemain2)}}</b></td>
+                            <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost2 - totalDepreciation2)}}</b></td>
                         </tr>
-                        <!-- <tr>
-                            <td colspan="7">
-                                <div class="tfooter-left">
-                                    <div class="tfooter-text">Tổng số: <b>{{totalCount2}}</b> bản ghi</div>
-                                    <div class="tfooter-total">
-                                        <select @change="page2=1;loadData()" v-model="tableView2">
-                                            <option value="20" selected>20</option>
-                                            <option value="50">50</option>
-                                            <option value="100">100</option>
-                                            <option value="200">200</option>
-                                        </select>
-                                    </div>
-                                    <div @click="prevPage2()" class="tfooter-prev position-relative">
-                                        <d-tooltip text="Trang trước" class="tool-tip--top"></d-tooltip>
-                                    </div>
-                                    <div 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page2 == 1}" 
-                                        @click="toPage2(1)" 
-                                    >
-                                        1
-                                    </div>
-                                    <div 
-                                        v-show="page2>=3 && totalPage2>5 && totalPage2!=1" 
-                                        class="tfooter-page"
-                                    >
-                                        ...
-                                    </div>
-                                    <div 
-                                        v-show="(page2<3 || totalPage2==5 || totalPage2==3) && totalPage2>=3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page2 == 2}" 
-                                        @click="toPage2(2)" 
-                                    >
-                                        2
-                                    </div>
-                                    <div 
-                                        v-show="page2<3 && totalPage2!=1 && totalPage2>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page2 == 3}" 
-                                        @click="toPage2(3)" 
-                                    >
-                                        3
-                                    </div>
-                                    <div 
-                                        v-show="page2>=3 && page2<totalPage2-1 && totalPage2!=1" 
-                                        class="tfooter-page tfooter-page--selected"
-                                    >
-                                        {{page2}}
-                                    </div>
-                                    <div 
-                                        v-show="page2<totalPage2-1 && totalPage2>5 && totalPage2!=1" 
-                                        class="tfooter-page"
-                                    >
-                                        ...
-                                    </div>
-                                    <div 
-                                        v-show="page2>=totalPage2-1 && totalPage2!=1 && totalPage2>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page2 == totalPage2-2}" 
-                                        @click="toPage2(totalPage-2)" 
-                                    >
-                                        {{totalPage2-2}}
-                                    </div>
-                                    <div 
-                                        v-show="(page2>=totalPage2-1 || totalPage2==5) && totalPage2!=1 && totalPage2>3" 
-                                        class="tfooter-page"
-                                        :class="{'tfooter-page--selected':page2 == totalPage2-1}" 
-                                        @click="toPage2(totalPage2-1)" 
-                                    >
-                                        {{totalPage2-1}}
-                                    </div>
-                                    <div 
-                                        v-show="totalPage2>1" :class="{'tfooter-page--selected':page2 == totalPage2}" 
-                                        class="tfooter-page"
-                                        @click="toPage2(totalPage2)" 
-                                    >
-                                        {{totalPage2}}
-                                    </div>
-                                    <div @click="nextPage2()" class="tfooter-next position-relative">
-                                        <d-tooltip text="Trang sau" class="tool-tip--top"></d-tooltip>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr> -->
                     </tfoot>
                 </table>
             </div>
@@ -463,13 +376,6 @@
         :text="deleteText" textbtn="Xóa"
         @closeNotify="closeDelete" 
         @confirmNotify="confirmDelete" 
-    />
-
-    <!-- Dialog cảnh báo khi xóa nhưng không chọn tài sản nào -->
-    <d-dialog-1-button 
-        v-if="deleteSelectedNone" 
-        text="Vui lòng chọn tài sản trước khi xóa."
-        @closeNotify="this.deleteSelectedNone = false" 
     />
 
     <!-- Dialog cảnh cáo lỗi từ backend -->
@@ -516,7 +422,6 @@ export default {
         vouchersSelected:[], // Mảng lưu các chứng từ đang chọn
         voucherSelected: {}, // Chứng từ được chọn
         assets:[], // Mảng lưu các tài sản đang hiện
-        assetSelected: {}, // Tài sản được chọn
         search:"", // Lưu giá trị input tìm kiếm
         isLoading: false, // Có đang loading hay không
         dialogShow: false, // Hiển thị dialog hay không
@@ -533,7 +438,6 @@ export default {
         checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
         deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
         deleteText:"", // Nội dung dialog cảnh báo xóa
-        deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
         toastShow: false, // Hiển thị toast thông báo thành công hay không
         toastDeleteShow: false, // Hiển thị toast thông báo xóa thành công hay không
         toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
@@ -620,9 +524,7 @@ export default {
                 this.totalCount2 = 0
                 this.assets = []
                 this.resetChecked()
-            } 
-            // // Khi từ 0 bản ghi tăng lên
-            // else if(newVal > 0 && oldVal == 0) this.rowFocus = 0
+            }
         }
     },
   },
@@ -639,19 +541,14 @@ export default {
             return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?limit=-1"
         else return -1;
     },
-
-    // Tạo api cập nhật chi tiết chứng từ
-    updateDetailApi : function() {
-        return Resource.Url.Voucher+"/detail/"+this.vouchers[this.rowFocus].voucher_id+"?add="+this.tableView+"&page="+this.page
-    },
   },
 
   methods: {
     /**
      * Check vào checkbox khi click vào dòng
      * NDDAT (15/11/2022)
-     * @param {int} index số thứ tự dòng của checkbox
-     * @param {int} code id của dòng chứa checkbox được click
+     * @param {number} index số thứ tự dòng của checkbox
+     * @param {number} code id của dòng chứa checkbox được click
      */
     checkedMethodOnClick(index, code) {
         this.rowSelected = index
@@ -676,8 +573,8 @@ export default {
     /**
      * Check vào checkbox khi click vào dòng khi đang giữ Shift
      * NDDAT (15/11/2022)
-     * @param {int} index số thứ tự dòng của checkbox
-     * @param {int} code id của dòng chứa checkbox được click
+     * @param {number} index số thứ tự dòng của checkbox
+     * @param {number} code id của dòng chứa checkbox được click
      * @param {PointerEvent} event sự kiện click khi nhấn giữ shift
      */
     checkedMethodOnClickShift(index, code, event) {
@@ -742,8 +639,8 @@ export default {
     /**
      * Check vào checkbox khi click vào dòng khi đang giữ Ctrl
      * NDDAT (15/11/2022)
-     * @param {int} index số thứ tự dòng của checkbox
-     * @param {int} code id của dòng chứa checkbox được click
+     * @param {number} index số thứ tự dòng của checkbox
+     * @param {number} code id của dòng chứa checkbox được click
      */
     checkedMethodOnClickCtrl(index, code) {
         this.rowSelected = index
@@ -816,14 +713,9 @@ export default {
      * @param {string} id ID tài sản đang focus
      */
     rowDelete(id) {
-        if(id) {
-            this.rowFocusDelete[0] = id;
-            this.deleteTextCreate()
-            this.deleteShow = true
-        }
-        else {
-            this.deleteSelectedNone = true
-        }
+        this.rowFocusDelete[0] = id;
+        this.deleteTextCreate()
+        this.deleteShow = true
     },
 
     /**
@@ -884,52 +776,7 @@ export default {
                     setTimeout(() => this.toastFailedShow = false, 3000)
                 }
             }
-    
-            // Xóa các tài sản của chứng từ
-            // if(this.assets.length > 0) {
-            //     var method = Resource.Method.Post
-            //     url = Resource.Url.Voucher + `/detail/batch-delete?voucherId=${this.rowFocusDelete[0]}`
-            //     body = []
-            //     for(let asset of this.assets) {
-            //         body.push(asset.fixed_asset_id)
-            //     }
-            //     fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
-            //     .then(res =>{
-            //             var status = res.status
-            //             switch(status) {
-            //                 case 400: 
-            //                     this.backEndErrorNotify(Resource.ErrorCode[400])
-            //                     break
-            //                 case 405: 
-            //                     this.backEndErrorNotify(Resource.ErrorCode[405])
-            //                     break
-            //                 case 500: 
-            //                     this.backEndErrorNotify(Resource.ErrorCode[500])
-            //                     break
-            //                 default: 
-            //                     this.addArray = []
-            //                     this.deleteArray = []
-            //                     this.closeDelete()
-            //                     this.loadData()
-            //                     this.rowFocus = 0
-            //                     this.rowFocusDelete = []
-            //                     this.checked = []
-            //             }
-            //         })
-            //     .catch(res => {
-            //         console.error(res)
-            //     })
-            // }
         }
-        // else {
-        //     this.addArray = []
-        //     this.deleteArray = []
-        //     this.closeDelete()
-        //     this.loadData()
-        //     this.rowFocus = 0
-        //     this.rowFocusDelete = []
-        //     this.checked = []
-        // }
     },
 
     /**
@@ -968,7 +815,7 @@ export default {
     /**
      * Tìm kiếm theo mã và tên tài sản
      * NDDAT (27/09/2022)
-     * @param {String} keyword từ khóa tìm kiếm
+     * @param {string} keyword từ khóa tìm kiếm
      */
     searchMethod(keyword) {
         this.keyword = keyword
@@ -1027,8 +874,8 @@ export default {
     /**
      * Click vào checkbox để chọn dòng đó
      * NDDAT (15/09/2022)
-     * @param {int} order số thứ tự dòng của checkbox
-     * @param {int} code id của dòng chứa checkbox được click
+     * @param {number} order số thứ tự dòng của checkbox
+     * @param {number} code id của dòng chứa checkbox được click
      */
     checkedMethod(order, code) {
         if (this.checkboxSelected[order] == code){
@@ -1049,6 +896,7 @@ export default {
     /**
      * Focus vào item trước đó
      * NDDAT (07/10/2022)
+     * @param {Event} e sự kiện ấn mũi tên lên
      */
     prevItem(e) {
         if(e.target.previousElementSibling){
@@ -1059,6 +907,7 @@ export default {
     /**
      * Focus vào item tiếp theo
      * NDDAT (07/10/2022)
+     * @param {Event} e sự kiện ấn mũi tên xuống
      */
     nextItem(e) {
         if(e.target.nextElementSibling){
@@ -1091,44 +940,12 @@ export default {
     /**
      * Tới trang được chọn
      * NDDAT (25/09/2022)
-     * @param {int} page số trang
+     * @param {number} page số trang
      */
     toPage(page) {
         this.page = page
         this.loadData()
     },
-
-    /**
-     * Về trang trước ở table-2
-     * NDDAT (12/11/2022)
-     */
-    // prevPage2() {
-    //     if(this.page2 > 1){
-    //         this.page2--
-    //         this.loadData()
-    //     }  
-    // },
-
-    /**
-     * Sang trang sau ở table-2
-     * NDDAT (12/11/2022)
-     */
-    // nextPage2() {
-    //     if(this.page2 < this.totalPage2){
-    //         this.page2++
-    //         this.loadData()
-    //     }    
-    // },
-
-    /**
-     * Tới trang được chọn ở table-2
-     * NDDAT (12/11/2022)
-     * @param {int} page số trang
-     */
-    // toPage2(page2) {
-    //     this.page2 = page2
-    //     this.loadData()
-    // },
 
     /**
      * Tính tổng số trang của bảng
@@ -1227,11 +1044,9 @@ export default {
                 .then(res => res.json())
                 .then(data => {
                     this.assets = Object.values(data)[0]
-                    console.log(this.assets);
                     this.totalCount2 = Object.values(data)[1]
                     this.totalCost2 = Object.values(data)[3]
                     this.totalDepreciation2 = Object.values(data)[4]
-                    this.totalRemain2 = Object.values(data)[5]
                     this.totalPageMethod()
                     this.checkedAllInspect()
                     this.isLoading = false

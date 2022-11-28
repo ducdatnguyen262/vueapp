@@ -291,7 +291,7 @@
     <!-- Dialog cảnh báo khi xóa nhưng không chọn tài sản nào -->
     <d-dialog-1-button 
         v-if="deleteSelectedNone" 
-        text="Vui lòng chọn tài sản trước khi xóa."
+        :text="deleteSelectedNoneMsg"
         @closeNotify="this.deleteSelectedNone = false" 
     />
 
@@ -359,7 +359,8 @@ export default {
         checkboxSelected: [], // Danh sách các dòng được chọn (checkbox) với chỉ số trùng với chỉ số các dòng hiển thị
         deleteShow: false, // Hiển thị dialog cảnh báo xóa hay không
         deleteText:"", // Nội dung dialog cảnh báo xóa
-        deleteSelectedNone: false, // // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
+        deleteSelectedNone: false, // Hiển thị dialog cảnh báo khi xóa mà không chọn tài sản nào
+        deleteSelectedNoneMsg: Resource.ErrorMsg.DeleteNotSelected, // Text dialog cảnh báo khi xóa mà không chọn tài sản nào
         toastShow: false, // Hiển thị toast thông báo thành công hay không
         toastDeleteShow: false, // Hiển thị toast thông báo xóa thành công hay không
         toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không

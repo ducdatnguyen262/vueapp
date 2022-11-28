@@ -107,6 +107,8 @@ export default {
         ValidateDuplicateCode: "Mã tài sản đã tồn tại",
         // Lời nhắn khi trùng nguồn chi phí
         ValidateDuplicateSource: "Nguồn chi phí đã tồn tại",
+        // Lời nhắn khi xóa mà không chọn tài sản
+        DeleteNotSelected: "Vui lòng chọn tài sản trước khi xóa.",
     },
 
     // Url

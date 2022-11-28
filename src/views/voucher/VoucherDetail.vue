@@ -292,7 +292,6 @@ export default {
                 modified_by:"",
                 modified_date:"",
             },
-            asset: {},
             assets:[], // Mảng lưu các tài sản hiển thị
             assetSelected: {}, // Tài sản được chọn
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
@@ -310,7 +309,7 @@ export default {
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
-            selectAssetsShow: false,
+            selectAssetsShow: false, // Dialog chọn tài sản có hiện không
             updateAssetShow: false, // Dialog sửa tài sản có hiện không
             thisShow: true, // Dialog này có hiện không
             searchInput: "", // Từ khóa để lọc
@@ -319,7 +318,6 @@ export default {
             totalCount: 0, // Tổng số tài sản
             totalCost: 0, // Tổng nguyên giá tài sản
             totalDepreciation: 0, // Tổng hao mòn lũy kế tài sản
-            totalRemain: 0, // Tổng còn lại tài sản
             addArray:[], // Dãy id các tài sản được thêm
             deleteArray:[], // Dãy id các tài sản bị bỏ
             deletedAssets:[], // Dãy các tài sản bị bỏ
@@ -398,6 +396,7 @@ export default {
     },
 
     beforeUnmount() {
+        // Loại bỏ EventListener của keypress
         window.removeEventListener('keypress', this.handler);
     },
 
@@ -416,7 +415,7 @@ export default {
          * Cập nhật tài sản được chọn
          * NDDAT (18/11/2022)
          * @param {array} assets dãy các tài sản
-         * @param {int} totalCost tổng nguyên giá các tài sản
+         * @param {number} totalCost tổng nguyên giá các tài sản
          */
         updateAssets(assets, totalCost) {
             this.assets = assets
@@ -489,6 +488,7 @@ export default {
         /**
          * Xử lí sự kiện keyboard shortcut
          * NDDAT (12/10/2022)
+         * @param {event} e sự kiện khi tương tác với bàn phím
          */
         keyboardEvent(e) {
             if (e.which == Enum.KeyCode.ESC) {
@@ -546,18 +546,7 @@ export default {
             // voucher
             if (this.voucher.voucher_date == null) this.voucher.voucher_date = new Date().toISOString()
             if (this.voucher.increment_date == null) this.voucher.increment_date = new Date().toISOString()
-            // if(this.formMode == Enum.FormMode.Add) this.title = Resource.Title.Add
-            // else if(this.formMode == Enum.FormMode.Edit) this.title = Resource.Title.Edit
         },
-
-        /**
-         * Cập nhật lại các giá trị nếu nó âm 
-         * NDDAT (04/10/2022)
-         * @param {string} type loại dữ liệu
-         */
-        // notNegative(type) {
-        //     if(this.asset[type] < 0) this.asset[type] = 0
-        // },
 
         /**
          * Tạo thông điệp cho dialog cảnh báo lỗi validate
@@ -628,6 +617,7 @@ export default {
         /**
          * Hiện thị cảnh báo lỗi truyền từ BackEnd
          * NDDAT (12/10/2022)
+         * @param {string} text Thông điệp của cảnh báo lỗi
          */
         backEndErrorNotify(text) {
             this.backendErrorMsg = text
@@ -641,29 +631,6 @@ export default {
         focusFirst() {
             this.$refs.voucher_code.focus()
         },
-
-        /**
-         * Focus ngược khi dùng Shift+Tab
-         * NDDAT (15/09/2022)
-         */
-        // focusWithShift(e) {
-        //     if(e.tab) {
-        //         document.getElementById('close-asset-detail').focus()
-        //     } else {
-        //         this.shiftPressed = true
-        //     }
-        // },
-
-        /**
-         * Tìm kiếm theo mã và tên tài sản
-         * NDDAT (27/09/2022)
-         * @param {String} keyword từ khóa tìm kiếm
-         */
-        // searchMethod(keyword) {
-        //     this.keyword = keyword
-        //     // this.searchInput = keyword
-        //     this.loadDetailData()
-        // },
 
         /**
          * Click vào button để đóng dialog tài sản
@@ -776,6 +743,7 @@ export default {
         /**
          * Lưu các tài sản của chứng
          * NDDAT (21/11/2022)
+         * @param {string} type loại lưu chi tiết chứng từ
          */
         saveDetailVoucher(type) {
             var method = Resource.Method.Post
@@ -812,37 +780,36 @@ export default {
             })
         },
 
-    /**
-     * Gọi api lấy dữ liệu các tài sản khi chọn 1 chứng từ
-     * NDDAT (15/09/2022)
-     */
-    loadDetailData() {
-        try{
-            // Gọi api lấy dữ liệu
-            this.isLoading = true
-            fetch(this.getDetailApi, {method: Resource.Method.Get})
-            .then(res => res.json())
-            .then(data => {
-                this.assets = Object.values(data)[0]
-                this.totalCount = Object.values(data)[1]
-                this.totalCost = Object.values(data)[3]
-                this.totalDepreciation = Object.values(data)[4]
-                this.totalRemain = Object.values(data)[5]
-                this.isLoading = false
-            })
-            .catch(res => {
-                console.error(res);
+        /**
+         * Gọi api lấy dữ liệu các tài sản khi chọn 1 chứng từ
+         * NDDAT (15/09/2022)
+         */
+        loadDetailData() {
+            try{
+                // Gọi api lấy dữ liệu
+                this.isLoading = true
+                fetch(this.getDetailApi, {method: Resource.Method.Get})
+                .then(res => res.json())
+                .then(data => {
+                    this.assets = Object.values(data)[0]
+                    this.totalCount = Object.values(data)[1]
+                    this.totalCost = Object.values(data)[3]
+                    this.totalDepreciation = Object.values(data)[4]
+                    this.isLoading = false
+                })
+                .catch(res => {
+                    console.error(res);
+                    this.isLoading = false
+                    this.toastFailedShow = true
+                    setTimeout(() => this.toastFailedShow = false, 3000)
+                })
+            } catch (error) {
+                console.error(error);
                 this.isLoading = false
                 this.toastFailedShow = true
                 setTimeout(() => this.toastFailedShow = false, 3000)
-            })
-        } catch (error) {
-            console.error(error);
-            this.isLoading = false
-            this.toastFailedShow = true
-            setTimeout(() => this.toastFailedShow = false, 3000)
-        }
-    },
+            }
+        },
 
         /**
          * Cập nhật giá trị mảng voucher thành giá trị chứng từ truyền vào
@@ -873,39 +840,6 @@ export default {
                 this.totalDepreciation += asset.depreciation_year*asset.life_time
             }
         },
-
-        /**
-         * Cập nhật giá trị mảng asset thành giá trị tài sản truyền vào
-         * NDDAT (06/10/2022)
-         */
-        // updateAsset() {
-        //     this.asset.fixed_asset_id = this.assetSelected.fixed_asset_id
-        //     this.asset.fixed_asset_code = this.assetSelected.fixed_asset_code
-        //     this.asset.fixed_asset_name = this.assetSelected.fixed_asset_name
-        //     this.asset.organization_id = this.assetSelected.organization_id
-        //     this.asset.organization_code = this.assetSelected.organization_code
-        //     this.asset.organization_name = this.assetSelected.organization_name
-        //     this.asset.department_id = this.assetSelected.department_id
-        //     this.asset.department_code = this.assetSelected.department_code
-        //     this.asset.department_name = this.assetSelected.department_name
-        //     this.asset.fixed_asset_category_id = this.assetSelected.fixed_asset_category_id
-        //     this.asset.fixed_asset_category_code = this.assetSelected.fixed_asset_category_code
-        //     this.asset.fixed_asset_category_name = this.assetSelected.fixed_asset_category_name
-        //     this.asset.quantity = this.assetSelected.quantity
-        //     this.asset.cost = this.assetSelected.cost
-        //     this.asset.depreciation_rate = this.assetSelected.depreciation_rate
-        //     this.asset.purchase_date = this.assetSelected.purchase_date
-        //     this.asset.production_year = this.assetSelected.production_year
-        //     this.asset.production_date = this.assetSelected.production_date
-        //     this.asset.tracked_year = this.assetSelected.tracked_year
-        //     this.asset.life_time = this.assetSelected.life_time
-        //     this.asset.active = this.assetSelected.active
-        //     this.asset.depreciation_year = this.assetSelected.depreciation_year
-        //     this.asset.created_by = this.assetSelected.created_by
-        //     this.asset.created_date = this.assetSelected.created_date
-        //     this.asset.modified_by = this.assetSelected.modified_by
-        //     this.asset.modified_date = this.assetSelected.modified_date    
-        // }
     }
 }
 </script>
