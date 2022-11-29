@@ -247,6 +247,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Loading -->
+    <div v-if="isLoading" class="loading">
+        <div class="loader"></div>
+    </div>
+
     <d-dialog v-on:keydown="keyboardEvent"
         v-if="notifyShow" 
         textbtn="Hủy bỏ"
@@ -344,6 +350,7 @@ export default {
                 modified_date:"",
             },
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
+            isLoading: false, // Có đang loading hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
             errorArray: [], // Dãy chứa các lỗi validate
             errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
@@ -465,7 +472,7 @@ export default {
             try{
                 // Gọi api lấy dữ liệu
                 this.isLoading = true
-                fetch(Resource.Url.Asset + `/nextCode`, {method: Resource.Method.Get})
+                fetch(Resource.Url.Asset + `/nextCode`, {method: Resource.Method.Get, headers:{'Authorization': `Bearer ${localStorage.getItem("token")}`}})
                 .then(res => res.json())
                 .then(data => {
                     this.asset.fixed_asset_code = Object.values(data)[0]
@@ -733,7 +740,8 @@ export default {
                 method = Resource.Method.Put
                 url = url + `/${this.asset.fixed_asset_id}`
             }
-            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
+            this.isLoading = true
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}, body: JSON.stringify(this.asset)})
             .then(res =>{
                 var status = res.status
                 res.json()
@@ -742,20 +750,26 @@ export default {
                         case 400: 
                             if(Object.values(data)[3]) this.backEndErrorNotify(Object.values(data)[3])
                             else this.backEndErrorNotify(Resource.ErrorCode[400])
+                            this.isLoading = false
                             break
                         case 405: 
                             this.backEndErrorNotify(Resource.ErrorCode[405])
+                            this.isLoading = false
                             break
                         case 500: 
                             this.backEndErrorNotify(Resource.ErrorCode[500])
+                            this.isLoading = false
                             break
                         default: 
                             this.$emit("hideDialogSuccess")
+                            this.isLoading = false
+
                     }
                 });
             })
             .catch(res => {
                 console.error(res)
+                this.isLoading = false
                 this.toastFailedShow = true
                 setTimeout(() => this.toastFailedShow = false, 3000)
             })

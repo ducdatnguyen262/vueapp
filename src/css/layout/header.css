@@ -76,3 +76,43 @@
 	height: 5px;
     margin-right: 24px;
 }
+
+.user_detail {
+    position: absolute;
+    width: 240px;
+	height: 180px;
+    background-color: #ffffff;
+    z-index: 4;
+    top: 30px;
+    right: -20px;
+    border-radius: 4px;
+}
+
+.user-detail-warpper {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.user-detail-warpper:hover {
+    background-color: #1aa4c833;
+}
+
+.user-detail-text {
+    color: #000;
+    font-size: 18px;
+    padding: 0 20px;
+}
+
+.user-detail-warpper--disabled {
+    cursor: default;
+}
+
+.user-detail-warpper--disabled:hover {
+    background-color: #ffffff;
+}
+
+.user-detail-warpper--disabled .user-detail-text {
+    color: #a6a6a6;
+    cursor: default;
+}

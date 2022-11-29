@@ -595,9 +595,11 @@ export default {
         // Cập nhật dãy checkboxSelected và vouchersSelected lưu các dòng được check
         for (let i in this.checked) {
             for (let index in this.assets) {
-                if (this.checked[i] == this.vouchers[index].voucher_id) {
-                    this.checkboxSelected[index] = this.vouchers[index].voucher_id
-                    this.vouchersSelected[index] = this.vouchers[index]
+                if(index < this.vouchers.length){
+                    if (this.checked[i] == this.vouchers[index].voucher_id) {
+                        this.checkboxSelected[index] = this.vouchers[index].voucher_id
+                        this.vouchersSelected[index] = this.vouchers[index]
+                    }
                 }
             }
         }
@@ -619,6 +621,7 @@ export default {
                     }
                 }
             }
+            console.log(nearIndex);
             // Check các dòng ở giữa dòng vừa check và dòng check lần trước
             if(nearIndex < index)
                 for(let i = nearIndex; i <= index; i++) {
@@ -738,18 +741,22 @@ export default {
                     // Xóa dữ liệu:
                     var url = Resource.Url.Voucher + "/batch-delete"
                     var body = this.rowFocusDelete
-                    fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+                    this.isLoading = true
+                    fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}, body: JSON.stringify(body)})
                     .then(res =>{
                         var status = res.status
                         switch(status) {
                             case 400: 
                                 this.backEndErrorNotify(Resource.ErrorCode[400])
+                                this.isLoading = false
                                 break
                             case 405: 
                                 this.backEndErrorNotify(Resource.ErrorCode[405])
+                                this.isLoading = false
                                 break
                             case 500: 
                                 this.backEndErrorNotify(Resource.ErrorCode[500])
+                                this.isLoading = false
                                 break
                             default: 
                                 this.addArray = []
@@ -759,6 +766,7 @@ export default {
                                 this.rowFocus = 0
                                 this.rowFocusDelete = []
                                 this.checked = []
+                                this.isLoading = false
                                 this.toastDeleteShow = true
                                 setTimeout(() => this.toastDeleteShow = false, 3000)
                         }
@@ -766,12 +774,14 @@ export default {
                     .catch(res => {
                         console.error(res);
                         this.closeDelete()
+                        this.isLoading = false
                         this.toastFailedShow = true
                         setTimeout(() => this.toastFailedShow = false, 3000)
                     })
                 } catch (error) {
                     console.error(error);
                     this.closeDelete()
+                    this.isLoading = false
                     this.toastFailedShow = true
                     setTimeout(() => this.toastFailedShow = false, 3000)
                 }
@@ -1006,7 +1016,7 @@ export default {
         try{
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.api, {method: Resource.Method.Get})
+            fetch(this.api, {method: Resource.Method.Get , headers:{'Authorization': `Bearer ${localStorage.getItem("token")}`}})
             .then(res => res.json())
             .then(data => {
                 this.vouchers = Object.values(data)[0]
@@ -1040,7 +1050,7 @@ export default {
             try{
                 // Gọi api lấy dữ liệu
                 this.isLoading = true
-                fetch(this.getDetailApi, {method: Resource.Method.Get})
+                fetch(this.getDetailApi, {method: Resource.Method.Get, headers:{'Authorization': `Bearer ${localStorage.getItem("token")}`}})
                 .then(res => res.json())
                 .then(data => {
                     this.assets = Object.values(data)[0]

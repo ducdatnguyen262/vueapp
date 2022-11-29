@@ -118,6 +118,11 @@
     <transition name="toast">
         <d-toast v-show="toastFailedShow" type="failed"></d-toast>
     </transition>
+
+    <!-- Loading -->
+    <div v-if="isLoading" class="loading">
+        <div class="loader"></div>
+    </div>
 </template>
 
 <script>
@@ -179,6 +184,7 @@ export default {
             validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate thiếu hay không
             isSubmited: false, // Đã submit form hay chưa (sau khi submit thì mới validate)
             focus: false, // Có đang focus vào hay không
+            isLoading: false, // Có đang loading hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
@@ -424,7 +430,8 @@ export default {
             // Cất dữ liệu:
             var method = Resource.Method.Put
             var url = Resource.Url.Asset + `/${this.asset.fixed_asset_id}`
-            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.asset)})
+            this.isLoading = true
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}, body: JSON.stringify(this.asset)})
             .then(res =>{
                 var status = res.status
                 res.json()
@@ -433,12 +440,15 @@ export default {
                         case 400: 
                             if(Object.values(data)[3][0]) this.backEndErrorNotify(Object.values(data)[3][0])
                             else this.backEndErrorNotify(Resource.ErrorCode[400])
+                            this.isLoading = false
                             break
                         case 405: 
                             this.backEndErrorNotify(Resource.ErrorCode[405])
+                            this.isLoading = false
                             break
                         case 500: 
                             this.backEndErrorNotify(Resource.ErrorCode[500])
+                            this.isLoading = false
                             break
                         default: 
                             var totalCostAfterUpdate = 0
@@ -451,11 +461,13 @@ export default {
                             }
                             this.$emit("updateAssets", this.assets, totalCostAfterUpdate)
                             this.btnCloseOnClick()
+                            this.isLoading = false
                     }
                 });
             })
             .catch(res => {
                 console.error(res)
+                this.isLoading = false
                 this.toastFailedShow = true
                 setTimeout(() => this.toastFailedShow = false, 3000)
             })
@@ -468,19 +480,23 @@ export default {
         loadDataCbb() {
             try {
                 // Gọi api lấy dữ liệu
-                fetch(Resource.Url.Budget, { method: "GET" })
+                this.isLoading = false
+                fetch(Resource.Url.Budget, { method: "GET", headers:{'Authorization': `Bearer ${localStorage.getItem("token")}`}})
                 .then(res => res.json())
                 .then(data => {
                     this.budget_options = Object.values(data);
+                    this.isLoading = false
                 })
                 .catch(res => {
                     console.error(res);
+                    this.isLoading = false
                     this.toastFailedShow = true
                     setTimeout(() => this.toastFailedShow = false, 3000)
                 });
             }
             catch (error) {
                 console.error(error);
+                this.isLoading = false
                 this.toastFailedShow = true
                 setTimeout(() => this.toastFailedShow = false, 3000)
             }        

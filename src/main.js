@@ -14,22 +14,26 @@ import {createRouter, createWebHistory } from 'vue-router'
 import contextmenu from "v-contextmenu";
 import "v-contextmenu/dist/themes/default.css";
 import VueExcelXlsx from "vue-excel-xlsx";
+import axios from 'axios';
+import VueAxios from 'vue-axios'
 
 // B2: Định nghĩa các router
 const routers = [
     {
-        path:"/login", 
+        path:"/", 
+        alias: ['/login'],
+        name: "LoginView",
         component:LoginView
     },
     {
         path:"/",
         component:MainView,
         children:[
-            {path:"", redirect:"ghi-tang", component:HomeList},
-            {path:"tong-quan", component:OverviewList},
-            {path:"tai-san", component:AssetList},
-            {path:"ghi-tang", component:VoucherList},
-            {path:"bao-cao", component:ReportList},
+            {path:"home", name:"HomeList", component:HomeList},
+            {path:"tong-quan", name:"OverviewList",component:OverviewList},
+            {path:"tai-san", name:"AssetList",component:AssetList},
+            {path:"ghi-tang", name:"VoucherList",component:VoucherList},
+            {path:"bao-cao", name:"ReportList",component:ReportList},
         ]
     },
 ]
@@ -43,9 +47,11 @@ const router = createRouter({
 // ROUTES
 // STORE
 const app = createApp(App)
+app.config.globalProperties.hostname = "http://localhost:8080/"
 app.use(VueExcelXlsx)
 app.use(contextmenu)
 app.use(ElementPlus, {locale:vi})
 app.use(ElementPlus)
 app.use(router)
+app.use(VueAxios, axios)
 app.mount('#app')

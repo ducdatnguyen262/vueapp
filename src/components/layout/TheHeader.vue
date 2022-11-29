@@ -19,12 +19,24 @@
             <div class="header-help mr-20 position-relative">
                 <d-tooltip text="Trợ giúp"></d-tooltip>
             </div>
-            <div class="header-user position-relative">
-                <d-tooltip text="Người dùng" class="tool-tip--left"></d-tooltip>
+            <div @click.self="userDetailShow=!userDetailShow" @blur="userDetailShow=false"  class="header-user position-relative">
+                <div v-show="userDetailShow" class="user_detail">
+                    <div style="font-size:20px;margin:12px 20px"><b>Username: {{text}}</b></div>    
+                    <a class="user-detail-warpper user-detail-warpper--disabled">
+                        <div class="icon-password"></div>
+                        <div class="user-detail-text">Đổi mật khẩu</div>
+                    </a>
+                    <a class="user-detail-warpper user-detail-warpper--disabled">
+                        <div class="icon-user"></div>
+                        <div class="user-detail-text">Quản lý tài khoản</div>
+                    </a>
+                    <a @click="logout" class="user-detail-warpper">
+                        <div class="icon-logout"></div>
+                        <div class="user-detail-text">Đăng xuất</div>
+                    </a>
+                </div>
             </div>
-            <div class="header-down position-relative">
-                <d-tooltip text="Mở rộng" class="tool-tip--left"></d-tooltip>
-            </div>
+            <div @click="userDetailShow=!userDetailShow" class="header-down"></div>
         </div>
     </div>
 </template>
@@ -32,7 +44,20 @@
 <script>
 import DTooltip from '../base/DTooltip.vue';
 export default {
-    components: { DTooltip }
+    components: { DTooltip },
+    data() {
+        return {
+            userDetailShow:false,
+            text:`${localStorage.getItem("username")}`
+        }
+    },
+    methods: {
+        logout() {
+            localStorage.setItem('token', null)
+            localStorage.setItem('username', 'Yêu cầu đăng nhập!')
+            this.$router.push({name: "LoginView"})
+        }
+    }
 }
 </script>
 

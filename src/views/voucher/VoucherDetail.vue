@@ -247,6 +247,11 @@
         <v-contextmenu-item @click="rowEdit(this.assetSelected)">Sửa</v-contextmenu-item>
         <v-contextmenu-item @click="deleteOnKey(this.assetSelected.fixed_asset_id)">Xóa</v-contextmenu-item>
     </v-contextmenu>
+
+    <!-- Loading -->
+    <div v-if="isLoading" class="loading">
+        <div class="loader"></div>
+    </div>
 </template>
 
 <script>
@@ -296,6 +301,7 @@ export default {
             assetSelected: {}, // Tài sản được chọn
             notifyShow: false, // Có hiển thị dialog cảnh báo hay không
             v$: useValidate(), // Validate dữ liệu (sử dụng vuelidate)
+            isLoading: false, // Có đang loading hay không
             errorArray: [], // Dãy chứa các lỗi validate
             errorMessage: "", // Thông điệp hiện trong dialog cảnh báo lỗi validate
             validateShow: false, // Có hiển thị dialog cảnh báo lỗi validate thiếu hay không
@@ -518,7 +524,7 @@ export default {
             try{
                 // Gọi api lấy dữ liệu
                 this.isLoading = true
-                fetch(Resource.Url.Voucher + `/nextCode`, {method: Resource.Method.Get})
+                fetch(Resource.Url.Voucher + `/nextCode`, {method: Resource.Method.Get, headers:{'Authorization': `Bearer ${localStorage.getItem("token")}`}})
                 .then(res => res.json())
                 .then(data => {
                     this.voucher.voucher_code = Object.values(data)[0]
@@ -708,7 +714,8 @@ export default {
                 method = Resource.Method.Put
                 url = url + `/${this.voucher.voucher_id}`
             }
-            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(this.voucher)})
+            this.isLoading = true
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}, body: JSON.stringify(this.voucher)})
             .then(res =>{
                 var status = res.status
                 res.json()
@@ -717,12 +724,15 @@ export default {
                         case 400: 
                             if(Object.values(data)[3]) this.backEndErrorNotify(Object.values(data)[3])
                             else this.backEndErrorNotify(Resource.ErrorCode[400])
+                            this.isLoading = false
                             break
                         case 405: 
                             this.backEndErrorNotify(Resource.ErrorCode[405])
+                            this.isLoading = false
                             break
                         case 500: 
                             this.backEndErrorNotify(Resource.ErrorCode[500])
+                            this.isLoading = false
                             break
                         default: 
                             if(this.formMode == Enum.FormMode.Add) {
@@ -730,11 +740,13 @@ export default {
                                 this.saveDetailVoucher(Resource.VoucherDetailType.Add)
                             }
                             else this.$emit("hideDialogSuccess")
+                            this.isLoading = false
                     }
                 });
             })
             .catch(res => {
                 console.error(res)
+                this.isLoading = false
                 this.toastFailedShow = true
                 setTimeout(() => this.toastFailedShow = false, 3000)
             })
@@ -753,28 +765,33 @@ export default {
             var body = []
             if(type == Resource.VoucherDetailType.Add) body = this.addArray
             else if(type == Resource.VoucherDetailType.Delete) body = this.deleteArray
-
-            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+            this.isLoading = true
+            fetch(url, {method: method, headers:{ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}, body: JSON.stringify(body)})
             .then(res =>{
                     var status = res.status
                     switch(status) {
                         case 400: 
                             this.backEndErrorNotify(Resource.ErrorCode[400])
+                            this.isLoading = false
                             break
                         case 405: 
                             this.backEndErrorNotify(Resource.ErrorCode[405])
+                            this.isLoading = false
                             break
                         case 500: 
                             this.backEndErrorNotify(Resource.ErrorCode[500])
+                            this.isLoading = false
                             break
                         default: 
                             if(type == Resource.VoucherDetailType.Add) this.addArray = []
                             else if(type == Resource.VoucherDetailType.Delete) this.deleteArray = []
                             if(this.formMode == Enum.FormMode.Add) this.$emit("hideDialogSuccess")
+                            this.isLoading = false
                     }
                 })
             .catch(res => {
                 console.error(res)
+                this.isLoading = false
                 this.toastFailedShow = true
                 setTimeout(() => this.toastFailedShow = false, 3000)
             })
@@ -788,7 +805,7 @@ export default {
             try{
                 // Gọi api lấy dữ liệu
                 this.isLoading = true
-                fetch(this.getDetailApi, {method: Resource.Method.Get})
+                fetch(this.getDetailApi, {method: Resource.Method.Get, headers:{'Authorization': `Bearer ${localStorage.getItem("token")}`}})
                 .then(res => res.json())
                 .then(data => {
                     this.assets = Object.values(data)[0]

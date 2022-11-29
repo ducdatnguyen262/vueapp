@@ -197,6 +197,11 @@
     <transition name="toast">
         <d-toast v-show="toastFailedShow" type="failed"></d-toast>
     </transition>
+
+    <!-- Loading -->
+    <div v-if="isLoading" class="loading">
+        <div class="loader"></div>
+    </div>
 </template>
 
 <script>
@@ -597,7 +602,7 @@ export default {
 
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.api, {method: Resource.Method.Post, headers:{'Content-Type': 'application/json'}, body: JSON.stringify(assetids)})
+            fetch(this.api, {method: Resource.Method.Post, headers:{'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}, body: JSON.stringify(assetids)})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]

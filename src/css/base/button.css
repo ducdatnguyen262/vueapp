@@ -211,6 +211,24 @@
 	height: 18px;
 }
 
+.icon-logout {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -111px -551px;
+	width: 18px;
+	height: 18px;
+}
+
+.icon-user {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -23px -23px;
+	width: 18px;
+	height: 18px;
+}
+
+.icon-password {
+    background: url('../../assets/icon/qlts-icon.png') no-repeat -67px -552px;
+	width: 18px;
+	height: 18px;
+}
+
 .button--icon-edit {
     background: url('../../assets/icon/qlts-icon.png') no-repeat -149px -63px;
     width: 16px;

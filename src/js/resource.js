@@ -109,6 +109,10 @@ export default {
         ValidateDuplicateSource: "Nguồn chi phí đã tồn tại",
         // Lời nhắn khi xóa mà không chọn tài sản
         DeleteNotSelected: "Vui lòng chọn tài sản trước khi xóa.",
+        // Thiếu Username
+        ValidateUsername: "Yêu cầu nhập Username",
+        // Thiếu Password
+        ValidatePassword: "Yêu cầu nhập Password",
     },
 
     // Url
@@ -123,6 +127,8 @@ export default {
         Budget: "https://localhost:7148/api/v1/Budgets",
         // Url của ghi tăng
         Voucher: "https://localhost:7148/api/v1/Vouchers",
+        // Url của người dùng
+        User: "https://localhost:7148/api/v1/Users",
     },
 
     // Tiêu đề

@@ -498,10 +498,12 @@ export default {
     btnDeleteOnClick() {
         let checkIncrement = false
         let incrementCount = 0
+        let id = ""
         let code = ""
         for(let check of this.checked){
             for(let asset of this.assets) {
                 if(asset.fixed_asset_id == check && asset.increment_status){
+                    id = asset.fixed_asset_id
                     code = asset.fixed_asset_code
                     incrementCount++
                     checkIncrement = true
@@ -512,8 +514,9 @@ export default {
             this.deleteSelectedNone =true
         }
         else if(this.checked.length == 1 && checkIncrement) {
-            let text = "Tài sản có mã <b>"+code+"</b> đã phát sinh chứng từ ghi tăng."
-            this.deleteIncrementNotify(text)
+            // let text = "Tài sản có mã <b>"+code+"</b> đã phát sinh chứng từ ghi tăng."
+            // this.deleteIncrementNotify(text)
+            this.deleteOnKey(id, code)
         }
         else if(this.checked.length > 1 && checkIncrement) {
             let text = "<b>"+(incrementCount>9 ? incrementCount : "0"+incrementCount)+"</b> tài sản được chọn không thể xóa. Vui lòng kiểm tra lại tài sản trước khi thực hiện xóa."
@@ -529,6 +532,7 @@ export default {
      * Nhấn phím tắt Delete hiển thị dialog cảnh báo xóa tài sản
      * NDDAT (07/10/2022)
      * @param {string} id ID tài sản đang focus
+     * @param {string} code Mã tài sản đang focus
      */
     deleteOnKey(id, code) {
         let checkIncrement = false
@@ -550,7 +554,7 @@ export default {
             // Gọi api lấy dữ liệu
             this.isLoading = true
             let url = Resource.Url.Asset + `/checkIncrement/` + assetId
-            fetch(url , {method: Resource.Method.Get})
+            fetch(url , {method: Resource.Method.Get, headers:{'Authorization': `Bearer ${localStorage.getItem("token")}`}})
             .then(res => res.json())
             .then(data => {
                 let voucherCode = Object.values(data)[0]
@@ -600,24 +604,29 @@ export default {
                 var body = ""
                 if(this.checked[0]) body = this.checked
                 else body = this.rowFocusDelete
-                fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+                this.isLoading = true
+                fetch(url, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}, body: JSON.stringify(body)})
                 .then(res =>{
                     var status = res.status
                     switch(status) {
                         case 400: 
                             this.backEndErrorNotify(Resource.ErrorCode[400])
+                            this.isLoading = false
                             break
                         case 405: 
                             this.backEndErrorNotify(Resource.ErrorCode[405])
+                            this.isLoading = false
                             break
                         case 500: 
                             this.backEndErrorNotify(Resource.ErrorCode[500])
+                            this.isLoading = false
                             break
                         default: 
                             this.closeDelete()
                             this.loadData()
                             this.rowFocusDelete = []
                             this.checked = []
+                            this.isLoading = false
                             this.toastDeleteShow = true
                             setTimeout(() => this.toastDeleteShow = false, 3000)
                     }
@@ -625,12 +634,14 @@ export default {
                 .catch(res => {
                     console.error(res);
                     this.closeDelete()
+                    this.isLoading = false
                     this.toastFailedShow = true
                     setTimeout(() => this.toastFailedShow = false, 3000)
                 })
             } catch (error) {
                 console.error(error);
                 this.closeDelete()
+                this.isLoading = false
                 this.toastFailedShow = true
                 setTimeout(() => this.toastFailedShow = false, 3000)
             }
@@ -920,7 +931,7 @@ export default {
         try{
             // Gọi api lấy dữ liệu
             this.isLoading = true
-            fetch(this.api, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json'}})
+            fetch(this.api, {method: Resource.Method.Post, headers:{ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("token")}`}})
             .then(res => res.json())
             .then(data => {
                 this.assets = Object.values(data)[0]
