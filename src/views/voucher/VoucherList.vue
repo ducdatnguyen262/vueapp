@@ -621,7 +621,6 @@ export default {
                     }
                 }
             }
-            console.log(nearIndex);
             // Check các dòng ở giữa dòng vừa check và dòng check lần trước
             if(nearIndex < index)
                 for(let i = nearIndex; i <= index; i++) {

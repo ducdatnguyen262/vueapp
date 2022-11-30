@@ -26,7 +26,7 @@
                         ref="voucher_code" 
                         class="dialog-input" 
                         type="text"
-                        :class="{'input--error':(!voucher.voucher_code || this.backendErrorMsg == 'Mã chứng từ không được trùng') && this.isSubmited}" 
+                        :class="{'input--error':(!voucher.voucher_code || this.backendErrorMsg == 'Mã chứng từ không được trùng.') && this.isSubmited}" 
                     >
                     <d-tooltip-warning text="Mã chứng từ"></d-tooltip-warning>
                 </div>
@@ -156,7 +156,7 @@
                         </tr>
                         <tr style="height:auto;"></tr>
                     </tbody>
-                    <el-empty v-if="totalCount==0" 
+                    <el-empty v-if="filterAssets.length==0"
                         description="Không có dữ liệu"
                         style="position: absolute; top: calc(50% - 70px); left: calc(50% - 80px);" 
                         :image-size="80"
@@ -165,7 +165,7 @@
                         <tr class="total-line">
                             <td colspan="4">
                                 <div class="tfooter-left">
-                                    <div class="tfooter-text">Tổng số: <b>{{totalCount}}</b> bản ghi</div>
+                                    <div class="tfooter-text">Tổng số: <b>{{filterAssets.length}}</b> bản ghi</div>
                                 </div>
                             </td>
                             <td colspan="1" class="plr-10"><b>{{formatMoney(totalCost)}}</b></td>
@@ -193,6 +193,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Dialog cảnh báo -->
     <d-dialog v-on:keydown="keyboardEvent"
         v-if="notifyShow" 
         textbtn="Hủy bỏ"
@@ -200,11 +202,15 @@
         @closeNotify="closeNotify" 
         @confirmNotify="confirmNotifyMethod" 
     />
+
+    <!-- Dialog validate dữ liệu -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="validateShow" 
         :text="errorMessage"
         @closeNotify="closeValidate" 
     />
+
+    <!-- Dialog cảnh báo đóng nếu đã sửa form -->
     <d-dialog-3-button v-on:keydown="keyboardEvent"
         v-if="validateProShow" 
         :text="closeEditedMsg"
@@ -212,12 +218,15 @@
         @closeNotSaveNotify="confirmNotifyMethod"
         @confirmNotify="confirmSaveNotify" 
     />
+
+    <!-- Dialog cảnh báo lỗi từ backend -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="backendError" 
         :text="backendErrorMsg"
         @closeNotify="closeBackendError"
     />
 
+    <!-- Dialog chon tài sản -->
     <voucher-select-assets
         v-if="selectAssetsShow"
         :assetsNoDisplay="assets"
@@ -226,11 +235,11 @@
         @selectAssets="selectAssets"
     />
 
+    <!-- Dialog cập nhật nguồn ngân sách tài sản -->
     <voucher-update-asset
         v-if="updateAssetShow"
         :assetSelected="assetSelected"
         :assets="assets"
-        :totalCost="totalCost"
         @hideDialog="updateAssetShow=false;thisShow=true"
         @updateAssets="updateAssets"
         @loadDetailData="loadDetailData"
@@ -321,7 +330,6 @@ export default {
             searchInput: "", // Từ khóa để lọc
             rowSelected:-1, // Dòng được chọn khi click
             rowHover: -1, // Dòng được hover
-            totalCount: 0, // Tổng số tài sản
             totalCost: 0, // Tổng nguyên giá tài sản
             totalDepreciation: 0, // Tổng hao mòn lũy kế tài sản
             addArray:[], // Dãy id các tài sản được thêm
@@ -341,10 +349,15 @@ export default {
                 this.isEdited = true
             }
         },
-        asset_lenght: {
+        filterAssets: {
             deep: true,
             handler() {
-                this.updateAssetSum()
+                this.totalCost = 0;
+                this.totalDepreciation = 0
+                for(let asset of this.filterAssets) {
+                    this.totalCost += asset.cost
+                    this.totalDepreciation += asset.depreciation_year * asset.life_time
+                }
             }
         }
     },
@@ -377,7 +390,6 @@ export default {
         if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
             this.generateNextCode()
         }
-
         // Cài đặt keyboard shortcut
         const component = this;
         this.handler = function (e) {
@@ -421,11 +433,9 @@ export default {
          * Cập nhật tài sản được chọn
          * NDDAT (18/11/2022)
          * @param {array} assets dãy các tài sản
-         * @param {number} totalCost tổng nguyên giá các tài sản
          */
-        updateAssets(assets, totalCost) {
+        updateAssets(assets) {
             this.assets = assets
-            this.totalCost = totalCost
         },
 
         /**
@@ -439,7 +449,6 @@ export default {
                     this.deleteArray.push(id)
                     this.deletedAssets.push(this.assets[i])
                     this.assets.splice(i,1)
-                    this.totalCount--
                     break
                 }
             }
@@ -455,7 +464,6 @@ export default {
                 if(asset!=null){
                     this.addArray.push(asset.fixed_asset_id)
                     this.assets.push(asset)
-                    this.totalCount++
                 } 
             }
         },
@@ -662,7 +670,11 @@ export default {
                     this.deleteArray = this.deleteArray.filter(val => !temp.includes(val));
 
                     // Truyền dữ liệu mặc định
-                    this.voucher.cost = this.totalCost
+                    let totalAssetsCost = 0
+                    for(let asset of this.assets) {
+                        totalAssetsCost += asset.cost
+                    }
+                    this.voucher.cost = totalAssetsCost
 
                     // Lưu dữ liệu
                     if(this.formMode == Enum.FormMode.Add) {
@@ -696,7 +708,7 @@ export default {
                 this.validateShow = true
                 return false
             } else if(this.assets.length == 0) {
-                this.errorMessage = "Chọn ít nhất 1 tài sản"
+                this.errorMessage = "Chọn ít nhất 1 tài sản."
                 this.validateShow = true
             } else {
                 return true
@@ -809,9 +821,6 @@ export default {
                 .then(res => res.json())
                 .then(data => {
                     this.assets = Object.values(data)[0]
-                    this.totalCount = Object.values(data)[1]
-                    this.totalCost = Object.values(data)[3]
-                    this.totalDepreciation = Object.values(data)[4]
                     this.isLoading = false
                 })
                 .catch(res => {
@@ -843,19 +852,6 @@ export default {
             this.voucher.created_date = this.voucherSelected.created_date
             this.voucher.modified_by = this.voucherSelected.modified_by
             this.voucher.modified_date = this.voucherSelected.modified_date    
-        },
-
-        /**
-         * Cập nhật các giá trị tổng của bảng asset
-         * NDDAT (18/11/2022)
-         */
-        updateAssetSum() {
-            this.totalCost = 0
-            this.totalDepreciation = 0
-            for(let asset of this.assets){
-                this.totalCost += asset.cost
-                this.totalDepreciation += asset.depreciation_year*asset.life_time
-            }
         },
     }
 }

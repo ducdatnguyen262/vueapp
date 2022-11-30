@@ -20,8 +20,7 @@ import VueAxios from 'vue-axios'
 // B2: Định nghĩa các router
 const routers = [
     {
-        path:"/", 
-        alias: ['/login'],
+        path:"/login",
         name: "LoginView",
         component:LoginView
     },
@@ -29,7 +28,7 @@ const routers = [
         path:"/",
         component:MainView,
         children:[
-            {path:"home", name:"HomeList", component:HomeList},
+            {path:"", redirect: "ghi-tang" , name:"HomeList", component:HomeList},
             {path:"tong-quan", name:"OverviewList",component:OverviewList},
             {path:"tai-san", name:"AssetList",component:AssetList},
             {path:"ghi-tang", name:"VoucherList",component:VoucherList},

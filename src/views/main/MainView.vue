@@ -18,6 +18,13 @@ export default {
   components: {
     TheMenu, TheHeader, TheContent
   },
+
+  created() {
+    // Xem đã đăng nhập chưa
+    if(localStorage.getItem('token') == 'null'){
+        this.$router.push({name: "LoginView"})
+    }
+  }
 }
 </script>
 

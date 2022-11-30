@@ -10,7 +10,7 @@
 }
 
 .table-1 {
-    height: 41vh;
+    height: 42vh;
 }
 
 .table-1 .thead th:nth-child(3),
@@ -47,7 +47,7 @@
 }
 
 .table-2 {
-    height: 28vh;
+    height: 27vh;
     background: #f5f5f5;
 }
 

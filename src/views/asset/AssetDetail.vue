@@ -253,6 +253,7 @@
         <div class="loader"></div>
     </div>
 
+    <!-- Dialog cảnh báo -->
     <d-dialog v-on:keydown="keyboardEvent"
         v-if="notifyShow" 
         textbtn="Hủy bỏ"
@@ -260,11 +261,15 @@
         @closeNotify="closeNotify" 
         @confirmNotify="confirmNotifyMethod" 
     />
+
+    <!-- Dialog validate dữ liệu -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="validateShow" 
         :text="errorMessage"
         @closeNotify="closeValidate" 
     />
+
+    <!-- Dialog cảnh báo đóng nếu đã sửa form -->
     <d-dialog-3-button v-on:keydown="keyboardEvent"
         v-if="validateProShow" 
         :text="closeEditedMsg"
@@ -272,12 +277,15 @@
         @closeNotSaveNotify="confirmNotifyMethod"
         @confirmNotify="confirmSaveNotify" 
     />
+
+    <!-- Dialog cảnh cáo lỗi từ backend -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="backendError" 
         :text="backendErrorMsg"
         @closeNotify="closeBackendError"
     />
 
+    <!-- Dialog cập nhật nguồn ngân sách tài sản -->
     <voucher-update-asset
         v-if="updateAssetShow"
         @hideDialog="updateAssetShow=false;thisShow=true"
@@ -390,7 +398,6 @@ export default {
         if ((this.formMode == Enum.FormMode.Add) || (this.formMode == Enum.FormMode.Duplicate)) {
             this.generateNextCode()
         }
-
         // Cài đặt keyboard shortcut
         const component = this;
         this.handler = function (e) {
@@ -443,6 +450,7 @@ export default {
         /**
          * Xử lí sự kiện keyboard shortcut
          * NDDAT (12/10/2022)
+         * @param {Event} e Sự kiện bàn phím
          */
         keyboardEvent (e) {
             if (e.which == Enum.KeyCode.ESC) {
@@ -629,6 +637,7 @@ export default {
         /**
          * Hiện thị cảnh báo lỗi truyền từ BackEnd
          * NDDAT (12/10/2022)
+         * @param {string} text thông điệp hiện lên trên cảnh báo
          */
         backEndErrorNotify(text) {
             this.backendErrorMsg = text
@@ -657,6 +666,7 @@ export default {
         /**
          * Focus ngược khi dùng Shift+Tab
          * NDDAT (15/09/2022)
+         * @param {Event} e Sự kiện
          */
         focusWithShift(e) {
             if(e.tab) {
@@ -716,11 +726,11 @@ export default {
                 this.validateShow = true
                 return false;
             } else if(this.asset.depreciation_year > this.asset.cost) {
-                this.errorMessage = "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá"
+                this.errorMessage = Resource.ErrorMsg.DepreciationYear
                 this.validateShow = true
                 return false;
             } else if (this.asset.depreciation_rate != parseFloat(100 / this.asset.life_time).toFixed(2)) {
-                this.errorMessage = "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng"
+                this.errorMessage = Resource.ErrorMsg.DepreciationRate
                 this.validateShow = true
                 return false;
             } else {

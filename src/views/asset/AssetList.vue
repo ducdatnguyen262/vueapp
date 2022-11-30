@@ -441,7 +441,6 @@ export default {
   created() {
     // Thực hiện gọi api lấy dữ liệu
     this.loadData()
-
     // Cài đặt keyboard shortcut
     window.addEventListener('keydown', function(e) {
         if(e.keyCode == Enum.KeyCode.SelectTable) {
@@ -514,8 +513,6 @@ export default {
             this.deleteSelectedNone =true
         }
         else if(this.checked.length == 1 && checkIncrement) {
-            // let text = "Tài sản có mã <b>"+code+"</b> đã phát sinh chứng từ ghi tăng."
-            // this.deleteIncrementNotify(text)
             this.deleteOnKey(id, code)
         }
         else if(this.checked.length > 1 && checkIncrement) {
@@ -549,6 +546,12 @@ export default {
         }
     },
 
+    /**
+     * Kiểm tra ghi tăng khi xóa
+     * NDDAT (30/10/2022)
+     * @param {string} assetId ID tài sản đang chọn
+     * @param {string} assetCode Mã tài sản đang chọn
+     */
     checkIncrementMethod(assetId, assetCode) {
         try{
             // Gọi api lấy dữ liệu
@@ -559,7 +562,7 @@ export default {
             .then(data => {
                 let voucherCode = Object.values(data)[0]
                 if(voucherCode != "-1") {
-                    let text = `Tài sản có mã <b>${assetCode}</b> đã phát sinh chứng từ ghi tăng có mã <b>${voucherCode}</b>`
+                    let text = `Tài sản có mã <b>${assetCode}</b> đã phát sinh chứng từ ghi tăng có mã <b>${voucherCode}</b>.`
                     this.deleteIncrementNotify(text)
                 }
                 else {
@@ -652,7 +655,7 @@ export default {
      * Ẩn dialog chi tiết tài sản
      * NDDAT (15/09/2022)
      */
-    hideDialogMethod () {
+    hideDialogMethod() {
         if(this.rowFocus > -1) {
             document.getElementById(`table${this.rowFocus}`).focus()
         }
@@ -819,6 +822,7 @@ export default {
     /**
      * Focus vào item trước đó
      * NDDAT (07/10/2022)
+     * @param {Event} e Sự kiện
      */
     prevItem(e) {
         if(e.target.previousElementSibling){
@@ -829,6 +833,7 @@ export default {
     /**
      * Focus vào item tiếp theo
      * NDDAT (07/10/2022)
+     * @param {Event} e Sự kiện
      */
     nextItem(e) {
         if(e.target.nextElementSibling){

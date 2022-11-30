@@ -5,19 +5,39 @@
             <div class="login-form">
                 <div class="login-logo"></div>
                 <div class="login-title">Đăng nhập để làm việc với <b>MISA QLTS</b></div>
-                <el-input v-model="user.username" ref="username" placeholder="Username, email hoặc số điện thoại" :class="{'input--error':this.validateUsername}" class="mt-20"/>
+                <el-input 
+                    v-model="user.username" 
+                    ref="username" 
+                    placeholder="Username, email hoặc số điện thoại" 
+                    class="mt-20"
+                    :class="{'input--error':this.validateUsername}" 
+                />
                 <div v-show="validateUsername" style="color:red;height:20px">{{validateUsernameText}}</div>
                 <div v-show="!validateUsername" class="mt-20"></div>
-                <el-input v-model="user.password" ref="password" placeholder="Mật khẩu" show-password :class="{'input--error':this.validatePassword}"/>
+                <el-input 
+                    v-model="user.password" 
+                    ref="password" 
+                    placeholder="Mật khẩu" 
+                    show-password 
+                    :class="{'input--error':this.validatePassword}"
+                />
                 <div v-show="validatePassword" style="color:red;height:20px">{{validatePasswordText}}</div>
                 <div v-show="!validatePassword" class="mt-20"></div>
-                <el-button @click="login" type="primary" class="login-btn" style="margin-top:120px">Đăng nhập</el-button>
+                <el-button 
+                    @click="login" 
+                    type="primary" 
+                    class="login-btn" 
+                    style="margin-top:120px"
+                >
+                    Đăng nhập
+                </el-button>
                 <a class="forgot-password">Quên mật khẩu?</a>
             </div>
         </div>
         <div class="copy-right">Copyright © 2020 MISA JSC</div>
     </div>
 
+    <!-- Dialog cảnh cáo lỗi từ backend -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="backendError" 
         :text="backendErrorMsg"
@@ -49,10 +69,10 @@ export default {
                 password: "",
             },
             toastFailedShow: false, // Hiển thị toast thông báo thất bại hay không
-            validateUsername: false,
-            validatePassword: false,
-            validateUsernameText: Resource.ErrorMsg.ValidateUsername,
-            validatePasswordText: Resource.ErrorMsg.ValidatePassword,
+            validateUsername: false, // Có nhập thiếu trường username không
+            validatePassword: false, // Có nhập thiếu trường password không
+            validateUsernameText: Resource.ErrorMsg.ValidateUsername, // Thông báo nhập thiếu trường username
+            validatePasswordText: Resource.ErrorMsg.ValidatePassword, // Thông báo nhập thiếu trường password
             isLoading: false, // Có đang loading hay không
             backendError: false, // Có hiển thị dialog cảnh báo lỗi từ backend không
             backendErrorMsg: "", // Thông điệp trong cảnh báo lỗi backend
@@ -66,6 +86,10 @@ export default {
     },
 
     methods: {
+        /**
+         * Đăng nhập
+         * NDDAT (29/11/2022)
+         */
         login() {
             if(this.checkValidation()) {
                 this.isLoading = true
@@ -89,12 +113,10 @@ export default {
                                 this.isLoading = false
                                 break
                             default: 
-                                console.log(data.token);
                                 localStorage.setItem('token', data.token)
                                 data.token = ""
                                 localStorage.setItem('user', data)
                                 localStorage.setItem('username', data.username)
-                                console.log(data);
                                 this.$router.push({name: "VoucherList"})
                                 this.isLoading = false
                         }
@@ -106,25 +128,13 @@ export default {
                     this.toastFailedShow = true
                     setTimeout(() => this.toastFailedShow = false, 3000)
                 })
-                
-                // this.axios.get(Resource.Url.User + this.user.username+ '/' + this.user.password)
-                //         .then(res => {
-                //             // Nếu người dùng hợp lệ
-                //             if(res.data.userId > 0) {
-                //                 localStorage.setItem('token', JSON.stringify(res.data.token))
-                //                 res.data.token = ""
-                //                 localStorage.setItem('user', JSON.stringify(res.data))
-                //                 this.$route.push({name: "VoucherList"})
-                //             }
-                //         })
-                //         .catch(error => {
-                //             if(error.res) {
-                //                 this.toastFailedShow = true
-                //                 setTimeout(() => this.toastFailedShow = false, 3000)
-                //             }
-                //         })
             }
         },
+
+        /**
+         * Kiểm tra nhập thiếu dữ liệu
+         * NDDAT (29/11/2022)
+         */
         checkValidation() {
             if(!this.user.password) {
                 this.$refs.password.focus()

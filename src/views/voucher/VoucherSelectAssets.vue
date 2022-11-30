@@ -174,7 +174,6 @@
                     </tfoot>
                 </table>
             </div>
-
             <div class="dialog__footer">
                 <d-button 
                     tabindex="203" 
@@ -251,7 +250,6 @@ export default {
     created() {
         // Thực hiện gọi api lấy dữ liệu
         this.loadData()
-
         // Cài đặt keyboard shortcut
         const component = this;
         this.handler = function (e) {

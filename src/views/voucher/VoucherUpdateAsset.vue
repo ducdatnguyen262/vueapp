@@ -102,12 +102,14 @@
         </div>
     </div>
 
+    <!-- Dialog validate dữ liệu -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="validateShow" 
         :text="errorMessage"
         @closeNotify="closeValidate" 
     />
 
+    <!-- Dialog cảnh báo lỗi từ backend -->
     <d-dialog-1-button v-on:keydown="keyboardEvent"
         v-if="backendError" 
         :text="backendErrorMsg"
@@ -144,7 +146,6 @@ export default {
             type: Number,
             default: Enum.FormMode.Add
         },
-        totalCost: Number,
     },
     
     data() {
@@ -209,7 +210,6 @@ export default {
         this.defaultValue()
         // Lấy dữ liệu combobox
         this.loadDataCbb()
-
         // Truyền vào nguồn ngân sách
         for(let i in this.sources) {
             this.sourceCost[i] = this.formatMoney(this.sources[i].cost)
@@ -349,6 +349,7 @@ export default {
         /**
          * Hiện thị cảnh báo lỗi truyền từ BackEnd
          * NDDAT (12/10/2022)
+         * @param {string} text Thông điệp của cảnh báo lỗi 
          */
         backEndErrorNotify(text) {
             this.backendErrorMsg = text
@@ -451,15 +452,13 @@ export default {
                             this.isLoading = false
                             break
                         default: 
-                            var totalCostAfterUpdate = 0
                             for(let asset of this.assets) {
                                 if(asset.fixed_asset_id == this.asset.fixed_asset_id) {
-                                    totalCostAfterUpdate = this.totalCost + this.asset.cost - asset.cost
                                     asset.cost = this.asset.cost
                                     asset.budget = this.asset.budget
                                 }
                             }
-                            this.$emit("updateAssets", this.assets, totalCostAfterUpdate)
+                            this.$emit("updateAssets", this.assets)
                             this.btnCloseOnClick()
                             this.isLoading = false
                     }

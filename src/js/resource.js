@@ -88,11 +88,11 @@ export default {
     // Mã lỗi
     ErrorCode: {
         // Error 400
-        400: "Dữ liệu đầu vào không hợp lệ",
+        400: "Dữ liệu đầu vào không hợp lệ.",
         // Error 405
-        405: "Phương thức yêu cầu của bạn không hợp lệ hoặc không được cho phép tại server",
+        405: "Phương thức yêu cầu của bạn không hợp lệ hoặc không được cho phép tại server.",
         // Error 500
-        500: "Lỗi phía Server"
+        500: "Lỗi phía Server."
     },
 
     // Error Message
@@ -104,15 +104,19 @@ export default {
         // Lời nhắn khi nhập thiếu
         ValidateEmpty: "Cần phải nhập thông tin: ",
         // Lời nhắn khi trùng mã tài sản
-        ValidateDuplicateCode: "Mã tài sản đã tồn tại",
+        ValidateDuplicateCode: "Mã tài sản đã tồn tại.",
         // Lời nhắn khi trùng nguồn chi phí
-        ValidateDuplicateSource: "Nguồn chi phí đã tồn tại",
+        ValidateDuplicateSource: "Nguồn chi phí đã tồn tại.",
         // Lời nhắn khi xóa mà không chọn tài sản
         DeleteNotSelected: "Vui lòng chọn tài sản trước khi xóa.",
         // Thiếu Username
         ValidateUsername: "Yêu cầu nhập Username",
         // Thiếu Password
         ValidatePassword: "Yêu cầu nhập Password",
+        // Validate hao mòn năm
+        DepreciationYear: "Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá.",
+        // Validate hao mòn năm
+        DepreciationRate: "Tỉ lệ hao mòn phải bằng 1/Số năm sử dụng.",
     },
 
     // Url
