@@ -999,7 +999,6 @@ export default {
      */
     formatDate(date) {
         const dateFormat = new Date(date)
-        dateFormat.toLocaleDateString()
         let day = dateFormat.getDate().toString().padStart(2, "0")
         let month = (dateFormat.getMonth() + 1).toString().padStart(2, "0")
         let year = dateFormat.getFullYear()
