@@ -493,7 +493,6 @@ export default {
   created() {
     // Thực hiện gọi api lấy dữ liệu
     this.loadData()
-
     // Cài đặt keyboard shortcut
     window.addEventListener('keydown', function(e) {
         // Ctrl + F3 để focus ô tìm kiếm
