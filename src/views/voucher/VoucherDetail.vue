@@ -486,7 +486,8 @@ export default {
         selectAssetsMethod() {
             this.selectAssetsShow=true;
             this.thisShow=false;
-            this.deletedAssets = this.deletedAssets.filter(val => !this.addArray.includes(val.fixed_asset_id));
+            this.fixAddDeleteArray()
+            this.deletedAssets = this.deletedAssets.filter(val => this.deleteArray.includes(val.fixed_asset_id));
         },
 
         /**
@@ -647,6 +648,21 @@ export default {
         },
 
         /**
+         * Lọc trùng trong addArray và deleteArray
+         * NDDAT (01/12/2022)
+         */
+        fixAddDeleteArray() {
+            for(let i in this.addArray) {
+                for(let j in this.deleteArray) {
+                    if(this.addArray[i] == this.deleteArray[j]) {
+                        this.addArray.splice(i,1)
+                        this.deleteArray.splice(j,1)
+                    } 
+                }
+            }
+        },
+
+        /**
          * Click vào button để đóng dialog tài sản
          * NDDAT (15/09/2022)
          */
@@ -665,9 +681,7 @@ export default {
             try{
                 if(this.validateData()) {
                     // Lấy 2 dãy thêm và xóa
-                    let temp = this.addArray
-                    this.addArray = this.addArray.filter(val => !this.deleteArray.includes(val));
-                    this.deleteArray = this.deleteArray.filter(val => !temp.includes(val));
+                    this.fixAddDeleteArray()
 
                     // Truyền dữ liệu mặc định
                     let totalAssetsCost = 0

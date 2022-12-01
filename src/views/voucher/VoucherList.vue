@@ -930,6 +930,7 @@ export default {
     prevPage() {
         if(this.page > 1){
             this.page--
+            this.rowFocus = 0;
             this.loadData()
         }  
     },
@@ -941,6 +942,7 @@ export default {
     nextPage() {
         if(this.page < this.totalPage){
             this.page++
+            this.rowFocus = 0;
             this.loadData()
         }    
     },
@@ -952,6 +954,7 @@ export default {
      */
     toPage(page) {
         this.page = page
+        this.rowFocus = 0;
         this.loadData()
     },
 
